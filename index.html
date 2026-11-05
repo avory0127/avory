@@ -524,7 +524,8 @@ table.age td.hot{color:var(--crit);font-weight:600}
 .pc-d .dn{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--ink-2);line-height:18px;align-self:flex-start;padding:0 4px;border-radius:9px}
 .pc-d.today .dn{background:var(--accent);color:#fff}
 .pc-d.sel{box-shadow:inset 0 0 0 2px var(--accent)}
-.pc-m{display:block;font-style:normal;font-size:10px;font-weight:700;line-height:15px;border-radius:4px;padding:1px 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.pc-m{display:block;font-style:normal;font-size:10px;font-weight:700;line-height:15px;border-radius:4px;padding:1px 2px;white-space:nowrap;overflow:hidden;text-overflow:clip;text-align:center;letter-spacing:-.2px}
+.pc-m .mb{margin-right:2px}
 .pc-m.ship{background:#1E7A55;color:#fff}.pc-m.inspect{background:#F8D9A0;color:#6B4100}.pc-m.mile{background:var(--steel-soft);color:var(--steel)}
 .pc-t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:10px;line-height:1.3;color:var(--ink);overflow:hidden;word-break:break-all}
 .pc-m .q{display:none}
@@ -541,7 +542,7 @@ table.age td.hot{color:var(--crit);font-weight:600}
   .pl-wd{font-size:12px}.pl-wd .zh{display:inline;font-weight:500;opacity:.8}
   .pc-d{min-height:120px;padding:5px 6px 8px;gap:3px}
   .pc-d .dn{font-size:14px}
-  .pc-m{font-size:12px;padding:2px 6px;line-height:17px}
+  .pc-m{font-size:12px;padding:2px 6px;line-height:17px;letter-spacing:0;text-overflow:ellipsis}.pc-m .mb{margin-right:5px}
   .pc-t{display:block;-webkit-line-clamp:unset;font-size:12px;word-break:normal}.pc-m .q{display:inline}
   .pc-t .st,.pc-t .to{display:inline}
   .pc-d .pc-t:nth-of-type(n+4){display:block}
@@ -551,13 +552,33 @@ table.age td.hot{color:var(--crit);font-weight:600}
 .pl-bat>span{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:600;padding:4px 10px 4px 5px;border-radius:999px;border:1px solid var(--line)}
 .bk{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:6px;color:#fff;font-size:11px;font-weight:800;padding:0 4px;flex:none}
 .pl-note{font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.6}
-.bat-row,.tier-row{display:grid;grid-template-columns:72px minmax(0,1.4fr) minmax(0,1fr) 40px;gap:8px;align-items:end}
+.bat-row,.tier-row{display:grid;grid-template-columns:76px minmax(0,1.4fr) minmax(0,1fr) 40px;gap:8px;align-items:end}
 .tier-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.3fr) 40px}
 .bat-row label,.tier-row label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:600;color:var(--ink-3);min-width:0}
 .bat-row .icon-btn,.tier-row .icon-btn{height:42px}
 /* price page */
 .pr-calc{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;padding:10px 12px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
 .pr-calc b{font-family:var(--f-mono);color:var(--ink)}
+.pl-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pj-chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;color:var(--ink-3);cursor:pointer;min-height:36px}
+.pj-chip i{width:10px;height:10px;border-radius:3px;opacity:.35}
+.pj-chip[aria-pressed=true]{border-color:var(--ink-2);color:var(--ink);background:var(--surface)}
+.pj-chip[aria-pressed=true] i{opacity:1}
+.pc-t .pj{font-style:normal;font-weight:800;font-size:9px;margin-right:3px;display:none}
+.pc-m .pjm{font-weight:600;opacity:.85;display:none}
+.pc-t.pjx{border-left:3px solid var(--pj);padding-left:3px}
+.pc-m.pjx{box-shadow:inset 4px 0 0 var(--pj)}
+@media (min-width:760px){.pc-t .pj,.pc-m .pjm{display:inline}.pc-t.pjx{border-left:0;padding-left:0}.pc-m.pjx{box-shadow:none}}
+.pl-wd small{font-size:9px;margin-left:2px;opacity:.85}
+.pl-wd.rest{background:#55708A}
+.pc-d.rest:not(.out){background:#FAFBFC}
+.pl-bat>span small{font-weight:500;color:var(--ink-3);font-size:12px;margin-left:2px}
+.pj-checks{display:flex;flex-direction:column;gap:2px}
+.pjdot{width:12px;height:12px;border-radius:3px;flex:none}
+.wd-checks{display:flex;flex-wrap:wrap;gap:2px 16px}
+.bat-row .bat-note{grid-column:1/-1}
+.pl-noteb{display:flex;flex-direction:column;gap:6px}
+.pl-noteb+.pl-noteb{border-top:1px solid var(--line-2);padding-top:12px}
 button.tile{font:inherit;color:inherit;width:100%;cursor:pointer}
 button.tile:hover{border-color:var(--ink-3)}
 </style>
@@ -673,7 +694,7 @@ const ROUTES = new Set(['home', 'partners', 'partner', 'po', 'ship', 'money', 'a
 /* ================= state ================= */
 const S = {
   co: JSON.parse(JSON.stringify(DEF_CO)), partners: [], pos: [], ships: [], txns: [], docs: [], plans: [], products: [],
-  planId: null, planYm: curYm(), planDay: '', planView: 'cal', prF: 'all', prQ: '',
+  planId: null, planSel: undefined, planYm: curYm(), planDay: '', planView: 'cal', prF: 'all', prQ: '',
   mode: 'connecting', canWrite: true, synced: new Set(), slow: false,
   route: 'home', month: curYm(), rmonth: curYm(),
   poF: { dir: 'all', st: 'active', q: '' }, shipF: 'active', docF: 'all', coTab: 'info', arapF: 'ar', quick: ''
@@ -682,7 +703,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.05-10';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-1';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -4131,44 +4152,56 @@ const xlDate = v => { if (typeof v === 'number' && v > 20000 && v < 80000) { con
 const PL_ST = [['排', '확정 · 工厂排期'], ['拟', '제안 · 待工厂确认'], ['done', '완료']];
 const PL_TYPE = [['task', '공정'], ['inspect', '验货 검사'], ['ship', '出货 출하'], ['mile', '이정표']];
 const PL_KIND = [['prod', '생산'], ['dev', '개발']];
-const PL_STEPS = ['在制料复核', '校准版本复核', '物料入库', 'IQC / 核版', 'SMT / AOI', '组装烧录', '调焦固化', '复焦检查', '测试/品质', '余量测试', '清尾复测', '余量补验', '包装入库', '方案评审', '打样', '样品确认', '开模', '试模', '试产', '小批量试产', '认证测试', '客户确认'];
 const PL_COLORS = ['#0D5E83', '#2463A5', '#6B4FA0', '#1E7A55', '#93600A', '#B83232'];
 const PL_SOFT = ['#E1EEF3', '#E3ECF8', '#ECE7F6', '#DFF2E8', '#FCF0DA', '#F8E2E2'];
+const PJ_COLORS = ['#173A52', '#8B3A8F', '#1E7A55', '#B5551D', '#2463A5', '#8A6D00'];
 const PL_WD_ZH = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
-const PL_LEGEND = '排 工厂排期　　拟 建议排程，待工厂确认　　跨日工序列在开始日，注明结束日。测试按日列出，验货和出货均为目标日期。';
+const PL_WD_KO = '월화수목금토일';
+const PL_LEGEND = '排 工厂排期　拟 建议排程，待工厂确认　周六 正常上班　周日 休息　跨日工序列在开始日，注明结束日。测试按日列出，验货和出货均为目标日期。';
 const plById = id => S.plans.find(x => x.id === id);
-function plCur() {
-  const p = plById(S.planId); if (p) return p;
-  const act = S.plans.filter(x => x.status !== 'done').sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-  return act[0] || S.plans[0] || null;
+const plOrder = (a, b) => (a.status === 'done') - (b.status === 'done') || num(a.createdAt) - num(b.createdAt) || String(a.name || '').localeCompare(String(b.name || ''));
+const plRest = pl => Array.isArray(pl && pl.restDays) ? pl.restDays : [6];
+const pjShort = pl => (pl.short || String(pl.name || '').split(/[\s+·/]+/).filter(Boolean)[0] || '일정').slice(0, 12);
+const pjCol = pl => pl.color || PJ_COLORS[Math.max(0, S.plans.slice().sort(plOrder).findIndex(p => p.id === pl.id)) % PJ_COLORS.length];
+/* which projects the calendar shows (kept on this device) */
+function plSelIds() { if (S.planSel === undefined) { try { S.planSel = JSON.parse(localStorage.getItem('avory-plsel') || 'null'); } catch (e) { S.planSel = null; } } return Array.isArray(S.planSel) ? S.planSel : null; }
+function plSetSel(ids) { S.planSel = ids; try { localStorage.setItem('avory-plsel', JSON.stringify(ids)); } catch (e) { } }
+function plSel() {
+  const ids = plSelIds(); let out = ids ? S.plans.filter(p => ids.includes(p.id)) : [];
+  if (!out.length) { const act = S.plans.filter(p => p.status !== 'done'); out = act.length ? act : S.plans.slice(0, 1); }
+  return out.sort(plOrder);
 }
+function plCur() { const sel = plSel(); const p = plById(S.planId); return p && sel.includes(p) ? p : (sel[0] || S.plans[0] || null); }
 const isMile = t => t.type === 'inspect' || t.type === 'ship' || t.type === 'mile';
 const tEnd = t => (t.end && t.end > t.start) ? t.end : t.start;
 const mdS = s => { const d = parseYmd(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
-const bIdx = (pl, k) => Math.max(0, (pl.batches || []).findIndex(b => b.k === k));
+const bIdx = (pl, k) => { const bs = pl.batches || []; let i = bs.findIndex(b => b.k === k); if (i < 0 && k) i = bs.findIndex(b => b.k === String(k).split(/[+&,/ ]/)[0]); return Math.max(0, i); };
 const bCol = (pl, k) => PL_COLORS[bIdx(pl, k) % PL_COLORS.length];
 const bSoft = (pl, k) => PL_SOFT[bIdx(pl, k) % PL_SOFT.length];
 const plUnit = pl => pl.unit || '套';
 const qtyStr = (q, unit) => { if (q === '' || q == null) return ''; const n = Number(String(q).replace(/,/g, '')); return Number.isFinite(n) && /^[\d,.\s]+$/.test(String(q)) ? `${n.toLocaleString('en-US')}${unit || ''}` : String(q); };
 const mileWord = t => t.type === 'inspect' ? '验货' : t.type === 'ship' ? '出货' : (t.name || '节点');
+const stWord = st => st === 'done' ? '✓' : (st || '');
 function tText(pl, t, o = {}) {
   const b = t.b ? t.b + ' ' : '';
   if (isMile(t)) return `${b}${mileWord(t)} ${qtyStr(t.qty, plUnit(pl))}`.trim();
-  const st = t.st === 'done' ? '✓' : (t.st || '');
-  return `${b}${o.noSt ? '' : st + ' '}${t.name || ''}${t.mark || ''}${t.qty !== '' && t.qty != null ? ' ' + qtyStr(t.qty) : ''}${tEnd(t) !== t.start ? ' 至' + mdS(tEnd(t)) : ''}`.replace(/\s+/g, ' ').trim();
+  return `${b}${o.noSt ? '' : stWord(t.st) + ' '}${tBody(t)}`.replace(/\s+/g, ' ').trim();
 }
-const plSorted = pl => (pl.tasks || []).map((t, i) => [t, i]).sort((a, b) => a[0].start.localeCompare(b[0].start) || bIdx(pl, a[0].b) - bIdx(pl, b[0].b) || a[1] - b[1]).map(x => x[0]);
-function plDay(pl, day) {
-  const ts = plSorted(pl);
-  return { miles: ts.filter(t => isMile(t) && t.start <= day && tEnd(t) >= day), tasks: ts.filter(t => !isMile(t) && t.start === day) };
-}
+const tBody = t => `${t.name || ''}${t.mark || ''}${t.qty !== '' && t.qty != null ? ' ' + qtyStr(t.qty) : ''}${tEnd(t) !== t.start ? ' 至' + mdS(tEnd(t)) : ''}`.trim();
+const plSorted = pl => (pl.tasks || []).map((t, i) => [t, i]).sort((a, b) => a[0].start.localeCompare(b[0].start) || bIdx(pl, a[0].b) - bIdx(pl, b[0].b) || String(a[0].b).length - String(b[0].b).length || a[1] - b[1]).map(x => x[0]);
+function plDay(pl, day) { const ts = plSorted(pl); return { miles: ts.filter(t => isMile(t) && t.start <= day && tEnd(t) >= day), tasks: ts.filter(t => !isMile(t) && t.start === day) }; }
+function dayItems(pls, day) { const miles = [], tasks = []; for (const pl of pls) { const d = plDay(pl, day); d.miles.forEach(t => miles.push({ pl, t })); d.tasks.forEach(t => tasks.push({ pl, t })); } return { miles, tasks }; }
 const plShipIn = (pl, ym) => sumBy((pl.tasks || []).filter(t => t.type === 'ship' && (t.start || '').startsWith(ym)), t => num(String(t.qty).replace(/,/g, '')));
+const shipIn = (pls, ym) => { const by = {}; for (const pl of pls) { const q = plShipIn(pl, ym); if (q) by[plUnit(pl)] = (by[plUnit(pl)] || 0) + q; } return Object.entries(by).map(([u, q]) => `${q.toLocaleString('en-US')} ${u}`).join(' · '); };
+const plHasIn = (pl, ym) => (pl.tasks || []).some(t => t.start.slice(0, 7) <= ym && tEnd(t).slice(0, 7) >= ym);
 function plMonths(pl) {
   const ts = (pl.tasks || []).filter(t => isYmd(t.start)); if (!ts.length) return [curYm()];
   let a = ts.reduce((m, t) => t.start < m ? t.start : m, '9999').slice(0, 7), z = ts.reduce((m, t) => tEnd(t) > m ? tEnd(t) : m, '0000').slice(0, 7);
   const out = []; for (let m = a; m <= z && out.length < 24; m = addMonths(m, 1)) out.push(m); return out;
 }
+const monthsBetween = (a, z) => { const out = []; if (!/^\d{4}-\d{2}$/.test(a) || !/^\d{4}-\d{2}$/.test(z)) return out; for (let m = a; m <= z && out.length < 12; m = addMonths(m, 1)) out.push(m); return out; };
 const plNote = (pl, ym) => ((pl.notes || []).find(n => n.ym === ym) || {}).text || '';
+const plUpdated = pls => { const t = Math.max(0, ...pls.map(p => num(p.updatedAt))); if (!t) return ''; const d = new Date(t); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
 function plGrid(ym) {
   const first = parseYmd(ym + '-01'); const lead = (first.getDay() + 6) % 7; const days = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
   const cells = []; for (let i = 0; i < lead; i++) cells.push(null); for (let d = 1; d <= days; d++) cells.push(`${ym}-${pad2(d)}`); while (cells.length % 7) cells.push(null);
@@ -4176,63 +4209,72 @@ function plGrid(ym) {
 }
 const bk = (pl, k) => k ? `<span class="bk" style="background:${bCol(pl, k)}">${esc(k)}</span>` : '';
 const stCls = st => st === '拟' ? 'st-n' : st === 'done' ? 'st-d' : 'st-p';
+const pjTag = pl => `<em class="pj" style="color:${pjCol(pl)}">${esc(pjShort(pl))}</em>`;
 
+function plHeadPanel(pl, multi) {
+  const upd = plUpdated([pl]);
+  return `<section class="panel pl-head" ${multi ? `style="border-left:4px solid ${pjCol(pl)}"` : ''}><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div style="min-width:0"><div class="eyebrow">${esc(L(PL_KIND, pl.kind || 'prod'))} 일정${pl.partnerName ? ' · ' + esc(pl.partnerName) : ''}${upd ? ` · 수정 ${fmtD(upd)}` : ''}</div><h2 style="font-size:${multi ? 17 : 20}px;margin:2px 0 0">${esc(pl.name || '')} <span style="font-weight:500;color:var(--ink-3)">${esc(pl.title || '')}</span></h2>
+      ${pl.customer || pl.poNo ? `<div class="row-s">${[pl.customer ? '고객 ' + esc(pl.customer) : '', pl.poNo ? 'PO ' + esc(pl.poNo) : ''].filter(Boolean).join(' · ')}</div>` : ''}</div>
+      <div class="actions"><button class="btn btn-s" data-act="pl-edit" data-id="${esc(pl.id)}">일정 설정</button><button class="btn btn-s" data-act="pl-shift" data-id="${esc(pl.id)}">일정 미루기</button></div></div>
+    ${(pl.batches || []).length ? `<div class="pl-bat">${pl.batches.map(b => `<span style="background:${bSoft(pl, b.k)}">${bk(pl, b.k)}${esc(b.name || '')} <b class="mono">${esc(qtyStr(b.qty, plUnit(pl)))}</b>${b.note ? `<small>${esc(b.note)}</small>` : ''}</span>`).join('')}</div>` : ''}
+  </div></section>`;
+}
 function viewPlan() {
-  const pl = plCur();
+  const all = S.plans.slice().sort(plOrder);
   const segTop = `<div class="seg" role="group" aria-label="일정 메뉴"><button data-act="go" data-to="plan" aria-pressed="true">생산·개발 일정</button><button data-act="go" data-to="ship" aria-pressed="false">출하·선적</button></div>`;
   const head = `<div class="page-head"><div><div class="eyebrow">Production · Development</div><h1>생산·개발 일정</h1></div><div class="actions"><label class="btn">엑셀 불러오기<input type="file" class="sr" accept=".xlsx" data-plimport="1"></label><button class="btn btn-p" data-act="pl-new">${svg('plus')}새 일정</button></div></div>`;
-  if (!pl) return `${head}<div class="filters">${segTop}</div><section class="panel"><div class="empty">아직 일정이 없어요. 공장과 맞춘 생산 일정이나 개발 일정을 만들어 두면 달력으로 보고, 엑셀·이미지로 바로 보낼 수 있어요.<span class="actions" style="justify-content:center"><button class="btn btn-s btn-p" data-act="pl-new">새 일정 만들기</button></span></div></section>`;
-  S.planId = pl.id;
+  if (!all.length) return `${head}<div class="filters">${segTop}</div><section class="panel"><div class="empty">아직 일정이 없어요. 공장과 맞춘 생산 일정이나 개발 일정을 만들어 두면 달력으로 보고, 사진·PDF·엑셀로 바로 보낼 수 있어요.<span class="actions" style="justify-content:center"><button class="btn btn-s btn-p" data-act="pl-new">새 일정 만들기</button></span></div></section>`;
+  const sel = plSel(), multi = sel.length > 1; S.planId = (plCur() || {}).id;
   const ym = S.planYm || curYm();
-  if (!S.planDay || !S.planDay.startsWith(ym)) { const t = todayStr(); S.planDay = t.startsWith(ym) ? t : ((plSorted(pl).find(x => x.start.startsWith(ym)) || {}).start || `${ym}-01`); }
-  const others = S.plans.slice().sort((a, b) => (a.status === 'done') - (b.status === 'done') || (b.updatedAt || 0) - (a.updatedAt || 0));
-  const shipQ = plShipIn(pl, ym);
+  if (!S.planDay || !S.planDay.startsWith(ym)) { const t = todayStr(); S.planDay = t.startsWith(ym) ? t : ((sel.flatMap(plSorted).filter(x => x.start.startsWith(ym)).sort((a, b) => a.start.localeCompare(b.start))[0] || {}).start || `${ym}-01`); }
+  const rest = plRest(sel[0]);
+  const ship = shipIn(sel, ym);
   const weeks = plGrid(ym), t0 = todayStr();
   const cell = day => {
     if (!day) return '<div class="pc-d out" aria-hidden="true"></div>';
-    const { miles, tasks } = plDay(pl, day); const wd = (parseYmd(day).getDay() + 6) % 7;
-    return `<button class="pc-d ${wd >= 5 ? 'we' : ''} ${day === t0 ? 'today' : ''} ${day === S.planDay ? 'sel' : ''}" data-act="pl-day" data-d="${day}" aria-label="${fmtD(day, true)} · ${miles.length + tasks.length}건"><b class="dn">${+day.slice(8)}</b>`
-      + miles.map(t => `<i class="pc-m ${t.type}">${esc((t.b ? t.b + ' ' : '') + mileWord(t))}<span class="q"> ${esc(qtyStr(t.qty, plUnit(pl)))}</span></i>`).join('')
-      + tasks.map(t => `<span class="pc-t ${stCls(t.st)}"><b style="color:${bCol(pl, t.b)}">${esc(t.b || '')}</b><span class="st">${esc(t.st === 'done' ? '✓' : t.st || '')} </span>${esc(t.name || '')}${t.mark ? esc(t.mark) : ''}${t.qty !== '' && t.qty != null ? `<span class="to"> ${esc(qtyStr(t.qty))}</span>` : ''}${tEnd(t) !== t.start ? `<span class="to"> 至${mdS(tEnd(t))}</span>` : ''}</span>`).join('')
+    const { miles, tasks } = dayItems(sel, day); const wd = (parseYmd(day).getDay() + 6) % 7;
+    return `<button class="pc-d ${rest.includes(wd) ? 'rest' : ''} ${day === t0 ? 'today' : ''} ${day === S.planDay ? 'sel' : ''}" data-act="pl-day" data-d="${day}" aria-label="${fmtD(day, true)} · ${miles.length + tasks.length}건"><b class="dn">${+day.slice(8)}</b>`
+      + miles.map(({ pl, t }) => `<i class="pc-m ${t.type}${multi ? ' pjx' : ''}" style="--pj:${pjCol(pl)}">${multi ? `<span class="pjm">${esc(pjShort(pl))}</span> ` : ''}${t.b ? `<span class="mb">${esc(t.b)}</span>` : ''}${esc(mileWord(t))}<span class="q"> ${esc(qtyStr(t.qty, plUnit(pl)))}</span></i>`).join('')
+      + tasks.map(({ pl, t }) => `<span class="pc-t ${stCls(t.st)}${multi ? ' pjx' : ''}" style="--pj:${pjCol(pl)}">${multi ? pjTag(pl) : ''}<b style="color:${bCol(pl, t.b)}">${esc(t.b || '')}</b><span class="st">${esc(stWord(t.st))} </span>${esc(t.name || '')}${t.mark ? esc(t.mark) : ''}${t.qty !== '' && t.qty != null ? `<span class="to"> ${esc(qtyStr(t.qty))}</span>` : ''}${tEnd(t) !== t.start ? `<span class="to"> 至${mdS(tEnd(t))}</span>` : ''}</span>`).join('')
       + (tasks.length > 3 ? `<small class="pc-more">+${tasks.length - 3}</small>` : '') + '</button>';
   };
-  const day = S.planDay, dd = plDay(pl, day);
+  const day = S.planDay, dd = dayItems(sel, day);
   const dayRows = [...dd.miles, ...dd.tasks];
-  const listMonth = plSorted(pl).filter(t => t.start.startsWith(ym) || (isMile(t) && t.start < `${ym}-01` && tEnd(t) >= `${ym}-01`));
-  const byDay = {}; for (const t of listMonth) (byDay[t.start < `${ym}-01` ? `${ym}-01` : t.start] = byDay[t.start < `${ym}-01` ? `${ym}-01` : t.start] || []).push(t);
-  const tRow = t => `<button class="row" data-act="pl-task" data-id="${esc(t.id)}"><div style="min-width:0"><div class="row-t">${bk(pl, t.b)}${isMile(t) ? `<span class="chip ${t.type === 'ship' ? 'c-good' : t.type === 'inspect' ? 'c-warn' : 'c-steel'}">${esc(mileWord(t))}</span>` : `<span class="chip ${t.st === 'done' ? 'c-good' : t.st === '拟' ? '' : 'c-steel'}">${esc(t.st === 'done' ? '완료' : t.st === '拟' ? '拟 제안' : '排 확정')}</span>`}<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${t.st === 'done' ? 'text-decoration:line-through;color:var(--ink-3)' : ''}">${esc(isMile(t) ? qtyStr(t.qty, plUnit(pl)) || mileWord(t) : t.name || '')}</span></div>
+  const listMonth = sel.flatMap(pl => plSorted(pl).filter(t => t.start.startsWith(ym) || (isMile(t) && t.start < `${ym}-01` && tEnd(t) >= `${ym}-01`)).map(t => ({ pl, t }))).sort((a, b) => a.t.start.localeCompare(b.t.start));
+  const byDay = {}; for (const x of listMonth) { const k = x.t.start < `${ym}-01` ? `${ym}-01` : x.t.start; (byDay[k] = byDay[k] || []).push(x); }
+  const tRow = ({ pl, t }) => `<button class="row" data-act="pl-task" data-pl="${esc(pl.id)}" data-id="${esc(t.id)}"><div style="min-width:0"><div class="row-t">${multi ? `<span class="chip" style="color:${pjCol(pl)}">${esc(pjShort(pl))}</span>` : ''}${bk(pl, t.b)}${isMile(t) ? `<span class="chip ${t.type === 'ship' ? 'c-good' : t.type === 'inspect' ? 'c-warn' : 'c-steel'}">${esc(mileWord(t))}</span>` : `<span class="chip ${t.st === 'done' ? 'c-good' : t.st === '拟' ? '' : 'c-steel'}">${esc(t.st === 'done' ? '완료' : t.st === '拟' ? '拟 제안' : '排 확정')}</span>`}<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${t.st === 'done' ? 'text-decoration:line-through;color:var(--ink-3)' : ''}">${esc(isMile(t) ? qtyStr(t.qty, plUnit(pl)) || mileWord(t) : (t.name || '') + (t.mark || ''))}</span></div>
     <div class="row-s">${fmtD(t.start, true)}${tEnd(t) !== t.start ? ` → ${fmtD(tEnd(t), true)}` : ''}${!isMile(t) && t.qty !== '' && t.qty != null ? ` · ${esc(qtyStr(t.qty))}` : ''}${t.note ? ' · ' + esc(t.note) : ''}</div></div><span class="row-r">${svg('chev')}</span></button>`;
-  const note = plNote(pl, ym);
+  const chips = all.length > 1 ? `<div class="pl-chips" role="group" aria-label="달력에 보일 프로젝트"><span class="muted" style="font-size:12px;font-weight:600">달력에 보기</span>${all.map(p => `<button class="pj-chip" data-act="pl-tog" data-id="${esc(p.id)}" aria-pressed="${sel.includes(p)}"><i style="background:${pjCol(p)}"></i>${esc(p.name || '이름 없음')}${p.status === 'done' ? ' · 끝' : ''}</button>`).join('')}${sel.length < all.length ? '<button class="btn btn-s btn-q" data-act="pl-all">모두</button>' : ''}</div>` : '';
   return `${head}
-  <div class="filters">${segTop}${others.length > 1 ? `<div class="seg" role="group" aria-label="일정 고르기" style="flex-wrap:wrap">${others.map(p => `<button data-act="pl-pick" data-id="${esc(p.id)}" aria-pressed="${p.id === pl.id}">${esc(p.name || '이름 없음')}${p.status === 'done' ? ' · 끝' : ''}</button>`).join('')}</div>` : ''}</div>
-  <section class="panel pl-head"><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:10px">
-    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div style="min-width:0"><div class="eyebrow">${esc(L(PL_KIND, pl.kind || 'prod'))} 일정${pl.partnerName ? ' · ' + esc(pl.partnerName) : ''}</div><h2 style="font-size:20px;margin:2px 0 0">${esc(pl.name || '')} <span style="font-weight:500;color:var(--ink-3)">${esc(pl.title || '')}</span></h2>
-      <div class="row-s">${[pl.customer ? '고객 ' + esc(pl.customer) : '', pl.poNo ? 'PO ' + esc(pl.poNo) : ''].filter(Boolean).join(' · ')}</div></div>
-      <div class="actions"><button class="btn btn-s" data-act="pl-edit">일정 설정</button><button class="btn btn-s" data-act="pl-shift">일정 미루기</button></div></div>
-    ${(pl.batches || []).length ? `<div class="pl-bat">${pl.batches.map(b => `<span style="background:${bSoft(pl, b.k)}">${bk(pl, b.k)}${esc(b.name || '')} <b class="mono">${esc(qtyStr(b.qty, plUnit(pl)))}</b></span>`).join('')}</div>` : ''}
-  </div></section>
-  <div class="filters">${monthNav('planYm', ym)}<span class="chip c-good" style="font-size:12px">이달 출하 계획 ${shipQ ? shipQ.toLocaleString('en-US') + plUnit(pl) : '없음'}</span>
-    <div class="seg" role="group" aria-label="보기"><button data-act="pl-view" data-v="cal" aria-pressed="${S.planView !== 'list'}">달력</button><button data-act="pl-view" data-v="list" aria-pressed="${S.planView === 'list'}">목록</button></div></div>
+  <div class="filters">${segTop}</div>${chips}
+  ${sel.map(pl => plHeadPanel(pl, multi)).join('')}
+  <div class="filters">${monthNav('planYm', ym)}<span class="chip c-good" style="font-size:12px">이달 출하 계획 ${ship || '없음'}</span>
+    <div class="seg" role="group" aria-label="보기"><button data-act="pl-view" data-v="cal" aria-pressed="${S.planView !== 'list'}">달력</button><button data-act="pl-view" data-v="list" aria-pressed="${S.planView === 'list'}">목록</button></div>
+    <button class="btn btn-s btn-p" data-act="pl-share">공유 · 사진·PDF</button></div>
   ${S.planView === 'list' ? `<section class="panel">${Object.keys(byDay).length ? Object.entries(byDay).map(([d, list]) => `<div class="day-h">${fmtD(d, true)}</div><div class="list">${list.map(tRow).join('')}</div>`).join('') : `<div class="empty">${ymLabel(ym)}에는 잡힌 작업이 없어요.</div>`}</section>`
-    : `<section class="panel pl-calp"><div class="pl-cal">${PL_WD_ZH.map((w, i) => `<div class="pl-wd ${i >= 5 ? 'we' : ''}">${'월화수목금토일'[i]}<span class="zh"> ${w}</span></div>`).join('')}${weeks.flat().map(cell).join('')}</div>
-    <div class="pl-legend"><span><i class="pc-m inspect">验货</i> 검사 목표일</span><span><i class="pc-m ship">出货</i> 출하 목표일</span><span><b>排</b> 공장 확정</span><span class="st-n"><b>拟</b> 제안·확인 대기</span></div></section>
+    : `<section class="panel pl-calp"><div class="pl-cal">${PL_WD_ZH.map((w, i) => `<div class="pl-wd ${rest.includes(i) ? 'rest' : ''}">${PL_WD_KO[i]}${rest.includes(i) ? '<small>休</small>' : ''}<span class="zh"> ${w}</span></div>`).join('')}${weeks.flat().map(cell).join('')}</div>
+    <div class="pl-legend"><span><i class="pc-m inspect">验货</i> 검사 목표일</span><span><i class="pc-m ship">出货</i> 출하 목표일</span><span><b>排</b> 공장 확정</span><span class="st-n"><b>拟</b> 제안·확인 대기</span>${rest.length ? `<span>${rest.map(i => PL_WD_KO[i]).join('·')} 쉬는 날</span>` : ''}</div></section>
   <section class="panel" id="pl-dayp"><div class="panel-h"><h2>${fmtD(day, true)}</h2><button class="btn btn-s" data-act="pl-add" data-d="${day}">${svg('plus')}이 날 작업 추가</button></div>
     ${dayRows.length ? `<div class="list">${dayRows.map(tRow).join('')}</div>` : '<div class="empty">이 날 잡힌 작업이 없어요.</div>'}</section>`}
-  <section class="panel"><div class="panel-h"><h2>${ymLabel(ym)} 메모</h2><button class="btn btn-s btn-q" data-act="pl-note">고치기</button></div><div class="panel-b"><div class="pl-note">${note ? esc(note) : '<span class="muted">달력 아래 각주처럼 붙는 메모예요. 엑셀·이미지에도 들어가요.</span>'}</div></div></section>
+  <section class="panel"><div class="panel-h"><h2>${ymLabel(ym)} 메모</h2></div><div class="panel-b" style="display:flex;flex-direction:column;gap:12px">${sel.map(pl => { const n = plNote(pl, ym); return `<div class="pl-noteb">${multi ? `<div class="row-t" style="margin-bottom:4px"><span class="chip" style="color:${pjCol(pl)}">${esc(pjShort(pl))}</span></div>` : ''}<div class="pl-note">${n ? esc(n) : '<span class="muted">달력 아래에 붙는 각주예요. 사진·PDF·엑셀에도 들어가요.</span>'}</div><div><button class="btn btn-s btn-q" data-act="pl-note" data-id="${esc(pl.id)}">고치기</button></div></div>`; }).join('')}</div></section>
   <section class="panel"><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:10px">
-    <div class="actions"><button class="btn btn-p" data-act="pl-add" data-d="${day}">${svg('plus')}작업 추가</button><button class="btn" data-act="pl-xlsx">${svg('upload')}엑셀로 받기</button><button class="btn" data-act="pl-png">이미지로 받기</button></div>
-    <small class="muted">엑셀은 달마다 한 장씩 달력 모양으로, 마지막 장에 작업 목록이 들어가요. 목록 장을 고쳐서 ‘엑셀 불러오기’로 다시 올리면 그대로 반영돼요. 이미지는 위챗으로 공장에 보내기 좋아요.</small></div></section>`;
+    <div class="actions"><button class="btn btn-p" data-act="pl-add" data-d="${day}">${svg('plus')}작업 추가</button><button class="btn" data-act="pl-share">공유 · 사진·PDF·엑셀</button></div>
+    <small class="muted">공유할 프로젝트와 기간을 골라 사진(위챗용)·PDF로 보내요. 엑셀은 프로젝트 하나씩 받고, 작업 목록 시트를 고쳐 ‘엑셀 불러오기’로 다시 올릴 수 있어요.</small></div></section>`;
 }
 
 /* ---------- task sheet ---------- */
 function openTask(pl, t, defaults = {}) {
-  const isNew = !t;
+  const isNew = !t, home = pl;
   t = Object.assign({ id: 't' + uid(), b: (pl.batches || [])[0] ? pl.batches[0].k : '', type: 'task', st: '拟', name: '', start: defaults.d || todayStr(), end: '', qty: '', note: '', mark: '' }, t ? JSON.parse(JSON.stringify(t)) : {}, isNew ? defaults.t || {} : {});
-  const bOpts = [['', '공통 (배치 없음)'], ...(pl.batches || []).map(b => [b.k, `${b.k} ${b.name || ''}`.trim()])];
+  const codes = [...new Set([...(pl.batches || []).map(b => b.k), ...(pl.tasks || []).map(x => x.b)].filter(Boolean))];
+  const pjOpts = S.plans.slice().sort(plOrder).map(p => [p.id, p.name || '이름 없음']);
   const body = `<form class="fgrid" id="pt-task" autocomplete="off">
+    ${S.plans.length > 1 ? F('프로젝트', sel('plan', pl.id, pjOpts), 'full') : ''}
     <div class="full">${radios('type', t.type, PL_TYPE)}</div>
-    ${F('배치·단계', sel('b', t.b, bOpts))}${F('상태', sel('st', t.st, PL_ST))}
-    <div class="full" id="tk-name-w">${F('공정 이름', inp('name', t.name, { list: 'dl-steps', ph: 'SMT / AOI, 组装烧录, 测试/品质 …' }), 'full')}</div>
+    ${F('배치·단계', inp('b', t.b, { list: 'dl-bk', ph: 'A · B+C' }), '', '합친 배치는 B+C처럼')}${F('상태', sel('st', t.st, PL_ST))}
+    <datalist id="dl-bk">${codes.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+    <div class="full" id="tk-name-w">${F('공정 이름', inp('name', t.name, { list: 'dl-steps', ph: 'SMT/AOI, 组装烧录, 测试/品质 …' }), 'full')}</div>
     ${F('시작일', inp('start', t.start, { type: 'date', req: 1 }))}${F('끝나는 날', inp('end', t.end, { type: 'date' }), '', '하루짜리면 비워 두세요')}
     ${F('수량', inp('qty', t.qty, { ph: '约3,000 · 15000' }), '', '验货·出货는 숫자만 쓰면 ‘套’가 붙어요')}${F('표시 (각주)', inp('mark', t.mark, { ph: '¹' }))}
     ${F('메모', inp('note', t.note), 'full')}
@@ -4242,47 +4284,50 @@ function openTask(pl, t, defaults = {}) {
       const form = $('#pt-task', panel);
       const sync = () => { const ty = ($('input[name=type]:checked', form) || {}).value; $('#tk-name-w', panel).hidden = ty === 'inspect' || ty === 'ship'; };
       form.addEventListener('change', sync); sync();
-      const read = () => { const v = readForm(form); const o = Object.assign(t, { type: v.type || 'task', b: v.b || '', st: v.st || '拟', name: v.name || '', start: v.start, end: v.end && v.end > v.start ? v.end : '', qty: v.qty || '', note: v.note || '', mark: v.mark || '' }); if (o.type === 'ship' || o.type === 'inspect') o.name = ''; return o; };
-      const saveWith = async (mut, msg) => {
-        const latest = JSON.parse(JSON.stringify(plById(pl.id) || pl)); latest.tasks = latest.tasks || [];
-        mut(latest.tasks); await put('plans', latest); toast(msg);
-      };
+      const read = () => { const v = readForm(form); const o = Object.assign(t, { type: v.type || 'task', b: String(v.b || '').toUpperCase().replace(/\s+/g, ''), st: v.st || '拟', name: v.name || '', start: v.start, end: v.end && v.end > v.start ? v.end : '', qty: v.qty || '', note: v.note || '', mark: v.mark || '' }); if (o.type === 'ship' || o.type === 'inspect') o.name = ''; if (/^[\d,]+$/.test(String(o.qty)) && isMile(o)) o.qty = Number(String(o.qty).replace(/,/g, '')); return [o, v.plan || home.id]; };
+      const saveIn = async (pid, mut) => { const latest = JSON.parse(JSON.stringify(plById(pid) || home)); latest.tasks = latest.tasks || []; mut(latest.tasks); await put('plans', latest); };
       sheetSave = async () => {
-        const o = read(); if (!isYmd(o.start)) { toast('시작일을 골라 주세요.', 'crit'); return false; }
+        const [o, pid] = read(); if (!isYmd(o.start)) { toast('시작일을 골라 주세요.', 'crit'); return false; }
         if (o.type === 'task' && !o.name) { toast('공정 이름을 적어 주세요.', 'crit'); return false; }
-        await saveWith(ts => { const i = ts.findIndex(x => x.id === o.id); if (i >= 0) ts[i] = o; else ts.push(o); }, isNew ? '작업을 추가했어요' : '작업을 고쳤어요');
+        if (!isNew && pid !== home.id) { await saveIn(home.id, ts => { const i = ts.findIndex(x => x.id === o.id); if (i >= 0) ts.splice(i, 1); }); }
+        await saveIn(pid, ts => { const i = ts.findIndex(x => x.id === o.id); if (i >= 0) ts[i] = o; else ts.push(o); });
+        toast(isNew ? '작업을 추가했어요' : '작업을 고쳤어요');
+        const ids = plSel().map(p => p.id); if (!ids.includes(pid)) plSetSel([...ids, pid]);
         S.planYm = o.start.slice(0, 7); S.planDay = o.start; return true;
       };
-      sheetDelete = async () => { await saveWith(ts => { const i = ts.findIndex(x => x.id === t.id); if (i >= 0) ts.splice(i, 1); }, '작업을 지웠어요'); };
+      sheetDelete = async () => { await saveIn(home.id, ts => { const i = ts.findIndex(x => x.id === t.id); if (i >= 0) ts.splice(i, 1); }); toast('작업을 지웠어요'); };
       const cp = $('#tk-copy', panel); if (cp) cp.addEventListener('click', async () => {
-        const o = read(); let nd = addDays(o.start, 1); if (parseYmd(nd).getDay() === 0) nd = addDays(nd, 1);
+        const [o, pid] = read(); const p2 = plById(pid) || home; let nd = addDays(o.start, 1); for (let k = 0; k < 6 && plRest(p2).includes((parseYmd(nd).getDay() + 6) % 7); k++) nd = addDays(nd, 1);
         const span = tEnd(o) !== o.start ? Math.round((parseYmd(tEnd(o)) - parseYmd(o.start)) / 864e5) : 0;
         const c = Object.assign({}, o, { id: 't' + uid(), start: nd, end: span ? addDays(nd, span) : '' });
-        try { await saveWith(ts => ts.push(c), `${fmtD(nd, true)}에 복사했어요`); S.planYm = nd.slice(0, 7); S.planDay = nd; closeSheet(); openTask(plById(pl.id) || pl, c); } catch (e) { }
+        try { await saveIn(pid, ts => ts.push(c)); toast(`${fmtD(nd, true)}에 복사했어요`); S.planYm = nd.slice(0, 7); S.planDay = nd; closeSheet(); openTask(plById(pid) || p2, c); } catch (e) { }
       });
       const dn = $('#tk-done', panel); if (dn) dn.addEventListener('click', async () => {
-        const o = read(); o.st = o.st === 'done' ? '排' : 'done';
-        try { await saveWith(ts => { const i = ts.findIndex(x => x.id === o.id); if (i >= 0) ts[i] = o; }, o.st === 'done' ? '완료로 표시했어요' : '완료를 취소했어요'); closeSheet(); } catch (e) { }
+        const [o] = read(); o.st = o.st === 'done' ? '排' : 'done';
+        try { await saveIn(home.id, ts => { const i = ts.findIndex(x => x.id === o.id); if (i >= 0) ts[i] = o; }); toast(o.st === 'done' ? '완료로 표시했어요' : '완료를 취소했어요'); closeSheet(); } catch (e) { }
       });
     }
   });
 }
 
 /* ---------- plan settings ---------- */
-const batRow = b => `<div class="bat-row"><label>코드<input class="in mono" data-bt="k" value="${esc(b.k || '')}" maxlength="4" placeholder="A"></label><label>이름<input class="in" data-bt="name" value="${esc(b.name || '')}" placeholder="在制批 · EVT"></label><label>수량<input class="in mono" data-bt="qty" inputmode="numeric" value="${esc(b.qty ?? '')}" placeholder="15000"></label><button type="button" class="icon-btn" data-bt-del aria-label="배치 지우기">${svg('x')}</button></div>`;
+const batRow = b => `<div class="bat-row"><label>코드<input class="in mono" data-bt="k" value="${esc(b.k || '')}" maxlength="6" placeholder="A"></label><label>이름<input class="in" data-bt="name" value="${esc(b.name || '')}" placeholder="在制批 · EVT"></label><label>수량<input class="in mono" data-bt="qty" inputmode="numeric" value="${esc(b.qty ?? '')}" placeholder="15000"></label><button type="button" class="icon-btn" data-bt-del aria-label="배치 지우기">${svg('x')}</button><label class="bat-note">메모<input class="in" data-bt="note" value="${esc(b.note || '')}" placeholder="11/13 出货 · 与 C 合并"></label></div>`;
 function openPlanEd(pl) {
   const isNew = !pl;
-  pl = Object.assign({ kind: 'prod', title: '生产日历', unit: '套', status: 'active', batches: [{ k: 'A', name: '', qty: '' }], tasks: [], notes: [], legend: PL_LEGEND }, pl ? JSON.parse(JSON.stringify(pl)) : {});
+  pl = Object.assign({ kind: 'prod', title: '生产日历', unit: '套', status: 'active', restDays: [6], batches: [{ k: 'A', name: '', qty: '' }], tasks: [], notes: [], legend: PL_LEGEND }, pl ? JSON.parse(JSON.stringify(pl)) : {});
+  const rest = plRest(pl);
   const body = `<form class="fgrid" id="pl-form" autocomplete="off">
     <div class="full">${radios('kind', pl.kind || 'prod', PL_KIND)}</div>
     ${F('제품·프로젝트 이름', inp('name', pl.name, { req: 1, ph: 'FH8333 + SC235HAI' }), 'full')}
-    ${F('제목 (엑셀·이미지 머리글)', inp('title', pl.title, { ph: '生产日历 · 开发日程' }))}${F('단위', inp('unit', pl.unit, { ph: '套 · PCS' }))}
+    ${F('짧은 이름 (여러 프로젝트를 함께 볼 때)', inp('short', pl.short, { ph: pjShort(Object.assign({}, pl, { short: '' })) }))}${F('제목 (사진·엑셀 머리글)', inp('title', pl.title, { ph: '生产日历 · 开发日程' }))}
     ${F('공장·협력사', inp('partnerName', pl.partnerName, { list: 'dl-partners' }))}${F('고객', inp('customer', pl.customer, { list: 'dl-partners' }))}
-    ${F('관련 PO', inp('poNo', pl.poNo, { mono: 1 }))}${F('상태', sel('status', pl.status || 'active', [['active', '진행 중'], ['done', '끝남']]))}
+    ${F('관련 PO', inp('poNo', pl.poNo, { mono: 1 }))}${F('단위', inp('unit', pl.unit, { ph: '套 · PCS' }))}
+    ${F('상태', sel('status', pl.status || 'active', [['active', '진행 중'], ['done', '끝남']]))}
+    <div class="f full"><span>쉬는 날 (달력에 休 표시, 일정 옮길 때 건너뛰어요)</span><div class="wd-checks">${PL_WD_KO.split('').map((w, i) => `<label class="check"><input type="checkbox" name="rest${i}" ${rest.includes(i) ? 'checked' : ''}>${w}</label>`).join('')}</div></div>
     <div class="fsec full">배치·단계 · 달력에 A·B·C처럼 색으로 구분돼요</div>
-    <div class="full" style="display:flex;flex-direction:column;gap:8px"><div id="bat-list" style="display:flex;flex-direction:column;gap:8px">${(pl.batches || []).map(batRow).join('')}</div><div><button type="button" class="btn btn-s" id="bat-add">${svg('plus')}배치 추가</button></div></div>
-    ${F('범례 문구 (엑셀·이미지에 들어가요)', ta('legend', pl.legend, 2), 'full')}
-  </form>`;
+    <div class="full" style="display:flex;flex-direction:column;gap:8px"><div id="bat-list" style="display:flex;flex-direction:column;gap:10px">${(pl.batches || []).map(batRow).join('')}</div><div><button type="button" class="btn btn-s" id="bat-add">${svg('plus')}배치 추가</button></div></div>
+    ${F('범례 문구 (사진·엑셀에 들어가요)', ta('legend', pl.legend, 2), 'full')}
+  </form>${isNew ? '' : '<div class="actions"><button type="button" class="btn btn-s" id="pl-dup">이 일정 복제해서 새 프로젝트</button></div>'}`;
   openSheet(isNew ? '새 일정' : '일정 설정', body, footStd(!isNew), {
     mount: panel => {
       const form = $('#pl-form', panel), list = $('#bat-list', panel);
@@ -4290,19 +4335,32 @@ function openPlanEd(pl) {
       list.addEventListener('click', e => { if (e.target.closest('[data-bt-del]')) e.target.closest('.bat-row').remove(); });
       form.addEventListener('change', e => { if (e.target.name === 'kind' && !form.elements.title.dataset.touched) form.elements.title.value = e.target.value === 'dev' ? '开发日程' : '生产日历'; });
       form.elements.title.addEventListener('input', e => { e.target.dataset.touched = '1'; });
-      sheetSave = async () => {
-        const v = readForm(form); if (!v.name) { toast('이름을 적어 주세요.', 'crit'); return false; }
+      const collect = () => {
+        const v = readForm(form);
         const batches = $$('.bat-row', list).map(r => { const o = {}; $$('[data-bt]', r).forEach(i => { o[i.dataset.bt] = i.value.trim(); }); o.k = o.k.toUpperCase(); if (/^[\d,]+$/.test(o.qty)) o.qty = Number(o.qty.replace(/,/g, '')); return o; }).filter(b => b.k);
-        const latest = isNew ? pl : JSON.parse(JSON.stringify(plById(pl.id) || pl));
-        const id = await put('plans', Object.assign(latest, { kind: v.kind || 'prod', name: v.name, title: v.title, unit: v.unit || '套', partnerName: v.partnerName, customer: v.customer, poNo: v.poNo, status: v.status, legend: v.legend, batches }));
-        S.planId = id; toast(isNew ? '일정을 만들었어요. 작업을 추가해 보세요' : '일정 설정을 저장했어요'); if (S.route !== 'plan') go('plan'); return true;
+        const restDays = [0, 1, 2, 3, 4, 5, 6].filter(i => v['rest' + i]);
+        return { kind: v.kind || 'prod', name: v.name, short: v.short, title: v.title, unit: v.unit || '套', partnerName: v.partnerName, customer: v.customer, poNo: v.poNo, status: v.status, legend: v.legend, batches, restDays };
       };
-      sheetDelete = async () => { await remove('plans', pl.id); S.planId = null; toast('일정을 지웠어요'); };
+      sheetSave = async () => {
+        const v = collect(); if (!v.name) { toast('이름을 적어 주세요.', 'crit'); return false; }
+        const latest = isNew ? pl : JSON.parse(JSON.stringify(plById(pl.id) || pl));
+        const id = await put('plans', Object.assign(latest, v));
+        S.planId = id; const ids = plSel().map(p => p.id); if (!ids.includes(id)) plSetSel([...ids, id]);
+        toast(isNew ? '일정을 만들었어요. 작업을 추가해 보세요' : '일정 설정을 저장했어요'); if (S.route !== 'plan') go('plan'); return true;
+      };
+      sheetDelete = async () => { await remove('plans', pl.id); plSetSel((plSelIds() || []).filter(x => x !== pl.id)); S.planId = null; toast('일정을 지웠어요'); };
+      const dp = $('#pl-dup', panel); if (dp) dp.addEventListener('click', async () => {
+        if (writeBlocked()) return;
+        const src = JSON.parse(JSON.stringify(plById(pl.id) || pl)); const c = Object.assign({}, src, collect());
+        delete c.id; delete c.createdAt; delete c.updatedAt; c.name = `${c.name} (복사)`; c.short = ''; c.status = 'active';
+        c.tasks = (src.tasks || []).map(t => Object.assign({}, t, { id: 't' + uid(), st: t.st === 'done' ? '拟' : t.st })); c.notes = (src.notes || []).slice();
+        try { const id = await put('plans', c); plSetSel([id]); S.planId = id; closeSheet(); toast('복제했어요. 이름을 바꾸고 ‘일정 미루기’로 날짜를 옮기세요'); openPlanEd(plById(id) || Object.assign(c, { id })); } catch (e) { }
+      });
     }
   });
 }
 function openPlNote(pl, ym) {
-  const body = F(`${ymLabel(ym)} 메모 · 각주`, ta('note', plNote(pl, ym), 5, '¹ 追加批11/25验货时，如仍有未验尾数，待清尾后补验放行。'), 'full');
+  const body = F(`${pl.name || ''} · ${ymLabel(ym)} 메모 · 각주`, ta('note', plNote(pl, ym), 6, '1. A：测试11/6–11/11 …\n2. B+C：…'), 'full', '한 줄에 하나씩. 사진·PDF·엑셀 달력 아래에 그대로 들어가요');
   openSheet('달 메모', `<form id="pn-form">${body}</form>`, footStd(false), {
     mount: panel => {
       sheetSave = async () => {
@@ -4314,11 +4372,12 @@ function openPlNote(pl, ym) {
   });
 }
 function openPlShift(pl) {
-  const bOpts = [['*', '전체'], ...(pl.batches || []).map(b => [b.k, `${b.k} ${b.name || ''}`.trim()])];
+  const bOpts = [['*', '전체'], ...[...new Set([...(pl.batches || []).map(b => b.k), ...(pl.tasks || []).map(t => t.b)].filter(Boolean))].map(k => [k, `${k} ${((pl.batches || []).find(b => b.k === k) || {}).name || ''}`.trim()])];
+  const rest = plRest(pl);
   const body = `<div class="banner info"><span>공장 일정이 밀리거나 당겨질 때 써요. 기준일부터 시작하는 작업과 验货·出货를 한꺼번에 옮겨요. 끝난(완료) 작업은 그대로 둬요.</span></div>
     <form class="fgrid" id="sh-form">${F('배치', sel('b', '*', bOpts))}${F('기준일', inp('from', todayStr(), { type: 'date' }))}${F('며칠', inp('n', 1, { type: 'number', step: '1' }), '', '앞당기려면 -2처럼 적어요')}
-    <label class="check full"><input type="checkbox" name="skipSun" checked>일요일에 걸리면 월요일로</label></form><div class="row-s" id="sh-prev"></div>`;
-  openSheet('일정 미루기', body, footStd(false, '옮기기'), {
+    ${rest.length ? `<label class="check full"><input type="checkbox" name="skipRest" checked>쉬는 날(${rest.map(i => PL_WD_KO[i]).join('·')})에 걸리면 건너뛰기</label>` : ''}</form><div class="row-s" id="sh-prev"></div>`;
+  openSheet(`일정 미루기 · ${pl.name || ''}`, body, footStd(false, '옮기기'), {
     mount: panel => {
       const form = $('#sh-form', panel);
       const pick = v => (pl.tasks || []).filter(t => t.st !== 'done' && (v.b === '*' || t.b === v.b) && t.start >= v.from);
@@ -4327,7 +4386,7 @@ function openPlShift(pl) {
       sheetSave = async () => {
         const v = readForm(form); const n = Math.round(num(v.n)); if (!n) { toast('며칠 옮길지 적어 주세요.', 'crit'); return false; }
         const latest = JSON.parse(JSON.stringify(plById(pl.id) || pl)); const ids = new Set(pick(v).map(t => t.id));
-        const mv = s => { let d = addDays(s, n); if (v.skipSun && parseYmd(d).getDay() === 0) d = addDays(d, n > 0 ? 1 : -1); return d; };
+        const mv = s => { let d = addDays(s, n); for (let k = 0; k < 6 && v.skipRest && rest.includes((parseYmd(d).getDay() + 6) % 7); k++) d = addDays(d, n > 0 ? 1 : -1); return d; };
         latest.tasks.forEach(t => { if (!ids.has(t.id)) return; const span = tEnd(t) !== t.start ? Math.round((parseYmd(tEnd(t)) - parseYmd(t.start)) / 864e5) : 0; t.start = mv(t.start); t.end = span ? addDays(t.start, span) : ''; });
         await put('plans', latest); toast(`${ids.size}개 작업을 옮겼어요`); return true;
       };
@@ -4335,59 +4394,181 @@ function openPlShift(pl) {
   });
 }
 
+/* ---------- share: pick projects and months → photo / PDF / Excel ---------- */
+function openPlShare() {
+  const all = S.plans.slice().sort(plOrder), selIds = plSel().map(p => p.id), ym = S.planYm || curYm();
+  let to = ym; for (let i = 1; i <= 2; i++) { const m = addMonths(ym, i); if (plSel().some(pl => plHasIn(pl, m))) to = m; }
+  const defTitle = ids => { const ps = all.filter(p => ids.includes(p.id)); return ps.length === 1 ? `${ps[0].name || ''}　${ps[0].title || ''}`.trim() : '生产 · 开发日历'; };
+  const body = `<form class="fgrid" id="ps-form" autocomplete="off">
+    <div class="f full"><span>보낼 프로젝트</span><div class="pj-checks">${all.map(p => `<label class="check"><input type="checkbox" name="pj" value="${esc(p.id)}" ${selIds.includes(p.id) ? 'checked' : ''}><i class="pjdot" style="background:${pjCol(p)}"></i><span style="min-width:0">${esc(p.name || '')} <small class="muted">${esc(p.title || '')}${p.status === 'done' ? ' · 끝' : ''}</small></span></label>`).join('')}</div></div>
+    ${F('시작 달', inp('from', ym, { type: 'month' }))}${F('끝 달', inp('to', to, { type: 'month' }))}
+    ${F('제목', inp('title', defTitle(selIds)), 'full')}
+    <div class="full">${radios('fmt', 'png', [['png', '사진'], ['pdf', 'PDF'], ['xlsx', '엑셀']])}</div>
+    <small class="muted full" id="ps-hint"></small>
+  </form>`;
+  openSheet('일정 공유하기', body, footStd(false, '만들기'), {
+    mount: panel => {
+      const form = $('#ps-form', panel); let touched = false;
+      const ids = () => $$('input[name=pj]:checked', form).map(i => i.value);
+      const hint = () => { const v = readForm(form), n = ids().length, ms = monthsBetween(v.from, v.to).length; $('#ps-hint', panel).textContent = !n ? '프로젝트를 하나 이상 고르세요.' : v.fmt === 'xlsx' && n > 1 ? '엑셀은 프로젝트 하나씩 받아요. 하나만 고르세요.' : `${n}개 프로젝트 · ${ms || 0}개월${v.fmt === 'png' ? ' · 사진 한 장(달마다 이어 붙임)' : v.fmt === 'pdf' ? ' · 달마다 한 쪽 (A4 가로)' : ' · 달력 시트 + 작업 목록 시트'}`; };
+      form.elements.title.addEventListener('input', () => { touched = true; });
+      form.addEventListener('change', e => { if (e.target.name === 'pj' && !touched) form.elements.title.value = defTitle(ids()); hint(); }); hint();
+      sheetSave = async () => {
+        const v = readForm(form), pick = ids(); const pls = all.filter(p => pick.includes(p.id)); const months = monthsBetween(v.from, v.to);
+        if (!pls.length) { toast('프로젝트를 하나 이상 고르세요.', 'crit'); return false; }
+        if (!months.length) { toast('기간을 확인해 주세요. (최대 12개월)', 'crit'); return false; }
+        if (v.fmt === 'xlsx' && pls.length > 1) { toast('엑셀은 프로젝트 하나씩 받아요.', 'crit'); return false; }
+        const btn = $('[data-act=sheet-save]', panel); if (btn) { btn.disabled = true; btn.textContent = '만드는 중…'; }
+        try {
+          if (v.fmt === 'xlsx') await plXlsx(pls[0], months);
+          else { const cvs = plCanvases(pls, months, v.title || defTitle(pick)); const base = `${safeName(pls.length === 1 ? pls[0].name || '일정' : '생산개발일정')}_${months[0]}${months.length > 1 ? '~' + months[months.length - 1] : ''}`; if (v.fmt === 'pdf') await saveFile(`${base}.pdf`, await canvasPdf(cvs)); else await saveFile(`${base}.png`, await canvasStack(cvs)); }
+        } catch (e) { toast('파일을 만들지 못했어요.', 'crit'); if (btn) { btn.disabled = false; btn.textContent = '만들기'; } return false; }
+        return true;
+      };
+    }
+  });
+}
+
+/* ---------- picture of the calendar (canvas, nothing to download) ---------- */
+function plCanvases(pls, months, title) {
+  const W = 1800, P = 14, CW = (W - P * 2) / 7, LH = 22;
+  const FF = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  const fnt = (sz, b) => `${b ? 700 : 400} ${sz}px ${FF}`;
+  const multi = pls.length > 1, rest = plRest(pls[0]), upd = plUpdated(pls);
+  const scratch = document.createElement('canvas').getContext('2d');
+  const wrap = (g, text, w, font) => { g.font = font; const out = []; let cur = ''; for (const ch of String(text)) { if (g.measureText(cur + ch).width > w && cur) { out.push(cur); cur = ch.trim() ? ch : ''; } else cur += ch; } if (cur) out.push(cur); return out.length ? out : ['']; };
+  const legendParts = txt => String(txt || '').split(/　+/).filter(Boolean).map(s => { const m = s.match(/^(\S{1,3})\s+(.+)$/); return m && !/[，。]/.test(m[1]) ? [m[1], m[2]] : ['', s]; });
+  const draw = (g, ym, drawing) => {
+    let y = P; const [yy, mm] = ym.split('-');
+    const R = (x, yv, w, h, c) => { if (drawing) { g.fillStyle = c; g.fillRect(x, yv, w, h); } };
+    const T = (s, x, yv, font, c, align = 'left') => { g.font = font; const w = g.measureText(s).width; if (drawing) { g.fillStyle = c; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, yv); } return w; };
+    const has = pls.some(pl => plHasIn(pl, ym));
+    R(P, y, W - P * 2, 66, '#173A52'); T(`${yy}年 ${+mm}月`, P + 18, y + 34, fnt(32, 1), '#FFFFFF'); T(title, P + CW * 1.4, y + 34, fnt(32, 1), '#FFFFFF'); if (upd) T(`更新 ${upd}`, W - P - 18, y + 34, fnt(16), '#9FB3C4', 'right'); y += 66;
+    const sq = shipIn(pls, ym); R(P, y, W - P * 2, 48, '#DDF1EC'); const w0 = T('本月计划出货', P + 18, y + 24, fnt(21, 1), '#14532D'); T(sq || '暂无', P + 18 + w0 + 22, y + 24, fnt(23, 1), '#14532D'); y += 48;
+    if (!has) {
+      const note = pls.map(pl => plNote(pl, ym)).filter(Boolean).join('\n') || `${+mm}月暂无排产计划。`;
+      const ls = note.split('\n').flatMap(l => wrap(g, l, W - P * 2 - 36, fnt(17))); R(P, y, W - P * 2, ls.length * 26 + 20, '#EEF6F3'); ls.forEach((l, k) => T(l, P + 18, y + 10 + 13 + k * 26, fnt(17), '#435669')); y += ls.length * 26 + 20;
+    } else if (!multi) {
+      const bs = pls[0].batches || [];
+      if (bs.length) { const bw = (W - P * 2) / Math.max(3, bs.length); bs.forEach((b, i) => { const x = P + i * bw; R(x, y, bw, 48, bSoft(pls[0], b.k)); let xx = x + 18; xx += T(b.k, xx, y + 24, fnt(19, 1), '#0F2236') + 18; xx += T(b.name || '', xx, y + 24, fnt(19, 1), '#0F2236') + 14; xx += T(qtyStr(b.qty, plUnit(pls[0])), xx, y + 24, fnt(19, 1), '#0F2236') + 14; if (b.note) T(b.note, xx, y + 24, fnt(15), '#6A7C8E'); }); if (bs.length < 3) R(P + bs.length * bw, y, W - P * 2 - bs.length * bw, 48, '#F1F4F7'); y += 48; }
+    } else {
+      pls.forEach(pl => { R(P, y, W - P * 2, 42, '#F4F7F9'); R(P + 18, y + 13, 16, 16, pjCol(pl)); let xx = P + 44; xx += T(`${pl.name || ''}`, xx, y + 21, fnt(19, 1), '#0F2236') + 16; xx += T(pl.title || '', xx, y + 21, fnt(16), '#6A7C8E') + 18; const s1 = plShipIn(pl, ym); if (s1) xx += T(`本月出货 ${s1.toLocaleString('en-US')}${plUnit(pl)}`, xx, y + 21, fnt(16, 1), '#1E7A55') + 18; T((pl.batches || []).map(b => `${b.k} ${qtyStr(b.qty, plUnit(pl))}${b.note ? ' (' + b.note + ')' : ''}`).join('　'), xx, y + 21, fnt(15), '#6A7C8E'); y += 42; });
+    }
+    R(P, y, W - P * 2, 42, '#FFFFFF'); { let xx = P + 18; const lg = pls[0].legend || PL_LEGEND; for (const [k, rest2] of legendParts(lg)) { if (k) xx += T(k, xx, y + 21, fnt(16, 1), '#0F2236') + 8; xx += T(rest2, xx, y + 21, fnt(16), '#6A7C8E') + 26; } } y += 42;
+    PL_WD_ZH.forEach((w, i) => { R(P + i * CW, y, CW, 40, rest.includes(i) ? '#55708A' : '#2D4A60'); T(w + (rest.includes(i) ? '（休）' : ''), P + i * CW + CW / 2, y + 20, fnt(18, 1), '#FFFFFF', 'center'); }); y += 40;
+    for (const wk of plGrid(ym)) {
+      const info = wk.map(d => d ? dayItems(pls, d) : null);
+      const maxM = Math.max(0, ...info.map(x => x ? x.miles.length : 0));
+      const lineSets = info.map(x => {
+        if (!x || !x.tasks.length) return [];
+        g.font = fnt(14, 1); const pW = multi ? Math.max(...x.tasks.map(({ pl }) => g.measureText(pjShort(pl)).width)) + 8 : 0;
+        g.font = fnt(15, 1); const bW = Math.max(...x.tasks.map(({ t }) => g.measureText(t.b || '').width)); const sX = pW + (bW ? bW + 9 : 0);
+        const sW = Math.max(...x.tasks.map(({ t }) => g.measureText(stWord(t.st)).width)); const tX = sX + (sW ? sW + 9 : 0);
+        return x.tasks.map(({ pl, t }) => ({ pre: [multi ? [pjShort(pl), fnt(14, 1), pjCol(pl), 0] : null, [t.b || '', fnt(15, 1), '#0F2236', pW], [stWord(t.st), fnt(15, t.st !== '拟'), t.st === '拟' ? '#8A99A8' : '#1E7A55', sX]].filter(Boolean), tX, body: wrap(g, tBody(t), CW - 16 - tX, fnt(15)), col: t.st === 'done' ? '#8A99A8' : t.st === '拟' ? '#435669' : '#0F2236' }));
+      });
+      const nl = Math.max(1, ...lineSets.map(ls => ls.reduce((a, l) => a + l.body.length, 0)));
+      const h = 38 + maxM * 36 + nl * LH + 16;
+      wk.forEach((d, i) => {
+        const x = P + i * CW;
+        R(x, y, CW, h, d ? (rest.includes(i) ? '#F7F9FA' : '#FFFFFF') : '#EEF2F5');
+        if (!d) return;
+        R(x, y, CW, 36, '#E7EDF2'); T(String(+d.slice(8)), x + 10, y + 19, fnt(21, 1), '#0F2236');
+        info[i].miles.forEach(({ pl, t }, k) => { const c = t.type === 'ship' ? ['#1E7A55', '#FFFFFF'] : t.type === 'inspect' ? ['#F8D9A0', '#6B4100'] : ['#DCE7F5', '#2463A5']; R(x, y + 38 + k * 36 + 1, CW, 33, c[0]); T(`${multi ? pjShort(pl) + ' · ' : ''}${tText(pl, t)}`, x + CW / 2, y + 38 + k * 36 + 18, fnt(17, 1), c[1], 'center'); });
+        let ly = y + 38 + maxM * 36 + 6 + LH / 2;
+        for (const l of lineSets[i]) { l.pre.forEach(([s, f, c, px]) => { if (s) T(s, x + 8 + px, ly, f, c); }); l.body.forEach((b, k) => { T(b, x + 8 + l.tX, ly + k * LH, fnt(15), l.col); }); ly += l.body.length * LH; }
+      });
+      if (drawing) { g.strokeStyle = '#C9D3DC'; g.lineWidth = 1; for (let i = 0; i <= 7; i++) { g.beginPath(); g.moveTo(Math.round(P + i * CW) + .5, y); g.lineTo(Math.round(P + i * CW) + .5, y + h); g.stroke(); } g.beginPath(); g.moveTo(P, y + h - .5); g.lineTo(W - P, y + h - .5); g.stroke(); }
+      y += h;
+    }
+    if (has) {
+      const lines = pls.flatMap(pl => { const n = plNote(pl, ym); return n ? n.split('\n').filter(Boolean).map(l => multi ? `[${pjShort(pl)}] ${l}` : l) : []; });
+      if (lines.length) { const ls = lines.flatMap(l => wrap(g, l, W - P * 2 - 40, fnt(16))); R(P, y, W - P * 2, ls.length * 25 + 24, '#FFFFFF'); ls.forEach((l, k) => T(l, P + 24, y + 12 + 12 + k * 25, fnt(16), '#435669')); y += ls.length * 25 + 24; }
+    }
+    return y + P;
+  };
+  return months.map(ym => {
+    const H = draw(scratch, ym, false);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = Math.ceil(H); const g = cv.getContext('2d');
+    g.fillStyle = '#E9EEF3'; g.fillRect(0, 0, W, cv.height); draw(g, ym, true); return cv;
+  });
+}
+async function canvasStack(cvs) {
+  const W = Math.max(...cvs.map(c => c.width)), H = cvs.reduce((a, c) => a + c.height, 0);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d'); g.fillStyle = '#E9EEF3'; g.fillRect(0, 0, W, H);
+  let y = 0; for (const c of cvs) { g.drawImage(c, 0, y); y += c.height; }
+  const blob = await new Promise(r => cv.toBlob(r, 'image/png')); if (!blob) throw new Error('png'); return blob;
+}
+/* a small PDF: one JPEG page per month, A4 (landscape when wide) */
+async function canvasPdf(cvs) {
+  const pages = [];
+  for (const c of cvs) { const b = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)); if (!b) throw new Error('jpg'); pages.push({ data: new Uint8Array(await b.arrayBuffer()), w: c.width, h: c.height }); }
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const push = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+  const obj = (n, dict, stream) => { offs[n] = len; push(`${n} 0 obj\n${dict}\n`); if (stream) { push('stream\n'); push(stream); push('\nendstream\n'); } push('endobj\n'); };
+  push('%PDF-1.4\n'); push(new Uint8Array([0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));
+  const N = pages.length; obj(1, '<< /Type /Catalog /Pages 2 0 R >>'); obj(2, `<< /Type /Pages /Kids [${pages.map((_, i) => `${3 + i * 3} 0 R`).join(' ')}] /Count ${N} >>`);
+  pages.forEach((p, i) => {
+    const pn = 3 + i * 3, land = p.w >= p.h, PW = land ? 842 : 595, PH = land ? 595 : 842, M = 20;
+    const s = Math.min((PW - 2 * M) / p.w, (PH - 2 * M) / p.h), w = p.w * s, h = p.h * s, x = (PW - w) / 2, y = PH - M - h;
+    const cs = `q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im${i} Do Q`;
+    obj(pn, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im${i} ${pn + 2} 0 R >> >> /Contents ${pn + 1} 0 R >>`);
+    obj(pn + 1, `<< /Length ${cs.length} >>`, cs);
+    obj(pn + 2, `<< /Type /XObject /Subtype /Image /Width ${p.w} /Height ${p.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.data.length} >>`, p.data);
+  });
+  const total = 3 + N * 3, xref = len;
+  let x = `xref\n0 ${total}\n0000000000 65535 f \n`; for (let n = 1; n < total; n++) x += `${String(offs[n]).padStart(10, '0')} 00000 n \n`;
+  push(x); push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(parts, { type: 'application/pdf' });
+}
+
 /* ---------- Excel out: one calendar sheet per month + the task list ---------- */
-async function plXlsx(pl, btn) {
-  if (btn) btn.disabled = true;
-  try {
-    const unit = plUnit(pl), title = `${pl.name || ''}　${pl.title || ''}`.trim();
+async function plXlsx(pl, months) {
+  months = months && months.length ? months : plMonths(pl);
+  {
+    const unit = plUnit(pl), title = `${pl.name || ''}　${pl.title || ''}`.trim(), rest = plRest(pl), upd = plUpdated([pl]);
     const bd = { border: true, bc: '#C9D3DC' };
     const sheets = [];
-    for (const ym of plMonths(pl)) {
-      const rows = [], merges = [], heights = {};
-      const [y, m] = ym.split('-');
-      rows.push([{ v: `${y}年 ${+m}月`, s: { b: 1, sz: 16, color: '#FFFFFF', fill: '#173A52', v: 'center' } }, { s: { fill: '#173A52' } }, { v: title, s: { b: 1, sz: 16, color: '#FFFFFF', fill: '#173A52', v: 'center' } }, ...Array(4).fill({ s: { fill: '#173A52' } })]);
-      merges.push('A1:B1', 'C1:G1'); heights[0] = 32;
+    for (const ym of months) {
+      const rows = [], merges = [], heights = {}; const [y, m] = ym.split('-'); const has = plHasIn(pl, ym);
+      rows.push([{ v: `${y}年 ${+m}月`, s: { b: 1, sz: 16, color: '#FFFFFF', fill: '#173A52', v: 'center' } }, { s: { fill: '#173A52' } }, { v: title, s: { b: 1, sz: 16, color: '#FFFFFF', fill: '#173A52', v: 'center' } }, ...Array(3).fill({ s: { fill: '#173A52' } }), { v: upd ? `更新 ${upd}` : '', s: { sz: 9, color: '#9FB3C4', fill: '#173A52', v: 'center', h: 'right' } }]);
+      merges.push('A1:B1', 'C1:F1'); heights[0] = 32;
       const sq = plShipIn(pl, ym);
-      rows.push([{ v: `本月计划出货　${sq ? sq.toLocaleString('en-US') + ' ' + unit : '—'}`, s: { b: 1, sz: 12, color: '#14532D', fill: '#DDF1EC', v: 'center' } }, ...Array(6).fill({ s: { fill: '#DDF1EC' } })]); merges.push('A2:G2'); heights[1] = 24;
-      const bs = (pl.batches || []).slice(0, 3); const brow = Array(7).fill(null);
-      if ((pl.batches || []).length > 3) { brow[0] = { v: pl.batches.map(b => `${b.k} ${b.name || ''} ${qtyStr(b.qty, unit)}`).join('　　'), s: { b: 1, sz: 11, fill: '#EEF2F5', v: 'center' } }; merges.push('A3:G3'); }
-      else bs.forEach((b, i) => { const c0 = i * 2, c1 = i === bs.length - 1 ? 6 : c0 + 1; brow[c0] = { v: `${b.k}　${b.name || ''}　${qtyStr(b.qty, unit)}`, s: { b: 1, sz: 11, fill: bSoft(pl, b.k), v: 'center' } }; for (let c = c0 + 1; c <= c1; c++) brow[c] = { s: { fill: bSoft(pl, b.k) } }; if (c1 > c0) merges.push(`${XW.col(c0)}3:${XW.col(c1)}3`); });
-      rows.push(brow); heights[2] = 22;
+      rows.push([{ v: `本月计划出货　${sq ? sq.toLocaleString('en-US') + ' ' + unit : '暂无'}`, s: { b: 1, sz: 12, color: '#14532D', fill: '#DDF1EC', v: 'center' } }, ...Array(6).fill({ s: { fill: '#DDF1EC' } })]); merges.push('A2:G2'); heights[1] = 24;
+      if (!has) { rows.push([{ v: plNote(pl, ym) || `${+m}月暂无排产计划。`, s: { sz: 10, color: '#435669', fill: '#EEF6F3', v: 'center', wrap: 1 } }, ...Array(6).fill({ s: { fill: '#EEF6F3' } })]); merges.push('A3:G3'); heights[2] = 24; }
+      else {
+        const bs = (pl.batches || []).slice(0, 3); const brow = Array(7).fill(null);
+        if ((pl.batches || []).length > 3) { brow[0] = { v: pl.batches.map(b => `${b.k} ${b.name || ''} ${qtyStr(b.qty, unit)}${b.note ? ' ' + b.note : ''}`).join('　　'), s: { b: 1, sz: 11, fill: '#EEF2F5', v: 'center' } }; merges.push('A3:G3'); }
+        else bs.forEach((b, i) => { const c0 = i * 2, c1 = i === bs.length - 1 ? 6 : c0 + 1; brow[c0] = { v: `${b.k}　${b.name || ''}　${qtyStr(b.qty, unit)}${b.note ? '　' + b.note : ''}`, s: { b: 1, sz: 10, fill: bSoft(pl, b.k), v: 'center', wrap: 1 } }; for (let c = c0 + 1; c <= c1; c++) brow[c] = { s: { fill: bSoft(pl, b.k) } }; if (c1 > c0) merges.push(`${XW.col(c0)}3:${XW.col(c1)}3`); });
+        rows.push(brow); heights[2] = 26;
+      }
       rows.push([{ v: pl.legend || PL_LEGEND, s: { sz: 9, color: '#435669', v: 'center' } }]); merges.push('A4:G4'); heights[3] = 20;
-      rows.push(PL_WD_ZH.map((w, i) => ({ v: w, s: Object.assign({ b: 1, sz: 11, color: '#FFFFFF', fill: i >= 5 ? '#4A6478' : '#2D4A60', h: 'center', v: 'center' }, bd) }))); heights[4] = 22;
+      rows.push(PL_WD_ZH.map((w, i) => ({ v: w + (rest.includes(i) ? '（休）' : ''), s: Object.assign({ b: 1, sz: 11, color: '#FFFFFF', fill: rest.includes(i) ? '#55708A' : '#2D4A60', h: 'center', v: 'center' }, bd) }))); heights[4] = 22;
       for (const wk of plGrid(ym)) {
-        const info = wk.map(d => d ? plDay(pl, d) : null);
-        const r0 = rows.length;
+        const info = wk.map(d => d ? plDay(pl, d) : null); const r0 = rows.length;
         rows.push(wk.map(d => ({ v: d ? +d.slice(8) : '', s: Object.assign({ b: 1, sz: 12, fill: d ? '#E9EEF3' : '#F1F4F7', v: 'center', h: 'left' }, bd) }))); heights[r0] = 20;
         const maxM = Math.max(0, ...info.map(x => x ? x.miles.length : 0));
-        for (let k = 0; k < maxM; k++) {
-          rows.push(info.map((x, i) => { const t = x && x.miles[k]; if (!t) return { s: Object.assign({ fill: wk[i] ? '#FFFFFF' : '#F1F4F7' }, bd) }; const sh = t.type === 'ship' ? { color: '#FFFFFF', fill: '#1E7A55' } : t.type === 'inspect' ? { color: '#6B4100', fill: '#F8D9A0' } : { color: '#2463A5', fill: '#E3EDF8' }; return { v: tText(pl, t), s: Object.assign({ b: 1, sz: 10, h: 'center', v: 'center' }, sh, bd) }; }));
-          heights[rows.length - 1] = 18;
-        }
-        const lines = info.map(x => x ? x.tasks.map(t => tText(pl, t)) : []);
-        const nl = Math.max(1, ...lines.map(l => l.length));
-        rows.push(lines.map((l, i) => ({ v: l.join('\n'), s: Object.assign({ sz: 9, wrap: 1, v: 'top', fill: wk[i] ? '#FFFFFF' : '#F1F4F7' }, bd) }))); heights[rows.length - 1] = Math.max(30, nl * 13 + 6);
+        for (let k = 0; k < maxM; k++) { rows.push(info.map((x, i) => { const t = x && x.miles[k]; if (!t) return { s: Object.assign({ fill: wk[i] ? '#FFFFFF' : '#F1F4F7' }, bd) }; const sh = t.type === 'ship' ? { color: '#FFFFFF', fill: '#1E7A55' } : t.type === 'inspect' ? { color: '#6B4100', fill: '#F8D9A0' } : { color: '#2463A5', fill: '#E3EDF8' }; return { v: tText(pl, t), s: Object.assign({ b: 1, sz: 10, h: 'center', v: 'center' }, sh, bd) }; })); heights[rows.length - 1] = 18; }
+        const lines = info.map(x => x ? x.tasks.map(t => tText(pl, t)) : []); const nl = Math.max(1, ...lines.map(l => l.length));
+        rows.push(lines.map((l, i) => ({ v: l.join('\n'), s: Object.assign({ sz: 9, wrap: 1, v: 'top', fill: wk[i] ? (rest.includes(i) ? '#F7F9FA' : '#FFFFFF') : '#F1F4F7' }, bd) }))); heights[rows.length - 1] = Math.max(30, nl * 13 + 6);
       }
-      const note = plNote(pl, ym);
-      if (note) note.split('\n').filter(Boolean).forEach(line => { rows.push([{ v: line, s: { sz: 9, color: '#435669' } }]); merges.push(`A${rows.length}:G${rows.length}`); });
+      const note = has ? plNote(pl, ym) : '';
+      if (note) note.split('\n').filter(Boolean).forEach(line => { rows.push([{ v: line, s: { sz: 9, color: '#435669', wrap: 1, v: 'top' } }]); merges.push(`A${rows.length}:G${rows.length}`); heights[rows.length - 1] = line.length > 110 ? 26 : 14; });
       sheets.push({ name: `${y}年${+m}月`, cols: Array(7).fill(25), rows, merges, heights, landscape: true, grid: false });
     }
     const hd = { b: 1, color: '#FFFFFF', fill: '#2D4A60', border: true, h: 'center' };
     const list = [['批次', '类型', '状态', '工序/内容', '开始日期', '结束日期', '数量', '标注', '备注'].map(v => ({ v, s: hd }))];
-    for (const t of plSorted(pl)) list.push([t.b || '', t.type === 'task' ? '工序' : mileWord(t) === '验货' ? '验货' : mileWord(t) === '出货' ? '出货' : '节点', t.st === 'done' ? '完成' : (t.st || ''), t.type === 'task' || t.type === 'mile' ? t.name || '' : '', t.start, tEnd(t) !== t.start ? tEnd(t) : '', t.qty === '' || t.qty == null ? '' : (/^[\d,]+$/.test(String(t.qty)) ? Number(String(t.qty).replace(/,/g, '')) : String(t.qty)), t.mark || '', t.note || ''].map(v => ({ v, s: { border: true } })));
-    const info = [['项目', pl.name || ''], ['标题', pl.title || ''], ['单位', unit], ['工厂', pl.partnerName || ''], ['客户', pl.customer || ''], ['PO', pl.poNo || ''], ...(pl.batches || []).map(b => [`批次 ${b.k}`, `${b.name || ''}|${b.qty ?? ''}`]), ...(pl.notes || []).map(n => [`备注 ${n.ym}`, n.text])];
+    for (const t of plSorted(pl)) list.push([t.b || '', t.type === 'task' ? '工序' : t.type === 'inspect' ? '验货' : t.type === 'ship' ? '出货' : '节点', t.st === 'done' ? '完成' : (t.st || ''), t.type === 'task' || t.type === 'mile' ? t.name || '' : '', t.start, tEnd(t) !== t.start ? tEnd(t) : '', t.qty === '' || t.qty == null ? '' : (/^[\d,]+$/.test(String(t.qty)) ? Number(String(t.qty).replace(/,/g, '')) : String(t.qty)), t.mark || '', t.note || ''].map(v => ({ v, s: { border: true } })));
+    const info = [['项目', pl.name || ''], ['简称', pl.short || ''], ['标题', pl.title || ''], ['单位', unit], ['工厂', pl.partnerName || ''], ['客户', pl.customer || ''], ['PO', pl.poNo || ''], ['休息日', rest.map(i => PL_WD_ZH[i]).join(',')], ['图例', pl.legend || ''], ...(pl.batches || []).map(b => [`批次 ${b.k}`, `${b.name || ''}|${b.qty ?? ''}|${b.note || ''}`]), ...(pl.notes || []).map(n => [`备注 ${n.ym}`, n.text])];
     sheets.push({ name: '作业清单', cols: [8, 8, 8, 24, 12, 12, 10, 6, 30], rows: list, freeze: 'A2' });
-    sheets.push({ name: '项目信息', cols: [14, 60], rows: info.map(([a, b]) => [{ v: a, s: { b: 1, border: true, fill: '#EEF2F5' } }, { v: b, s: { border: true, wrap: 1 } }]) });
-    const blob = await xlsxBlob(sheets);
-    await saveFile(`${safeName(pl.name || '일정')}_${safeName(pl.title || '日程')}_${todayStr()}.xlsx`, blob);
-  } catch (e) { toast('엑셀을 만들지 못했어요. 인터넷 연결을 확인해 주세요.', 'crit'); }
-  finally { if (btn) btn.disabled = false; }
+    sheets.push({ name: '项目信息', cols: [14, 70], rows: info.map(([a, b]) => [{ v: a, s: { b: 1, border: true, fill: '#EEF2F5' } }, { v: b, s: { border: true, wrap: 1 } }]) });
+    await saveFile(`${safeName(pl.name || '일정')}_${safeName(pl.title || '日程')}_${todayStr()}.xlsx`, await xlsxBlob(sheets));
+  }
 }
 /* read back the task list (the sheet this app writes, or any sheet with 批次/开始 headers) */
 async function plImport(file) {
   let books; try { books = await xlsxRead(await file.arrayBuffer()); } catch (e) { toast('엑셀 파일을 읽지 못했어요. xlsx 파일인지 확인해 주세요.', 'crit'); return; }
   const H = { b: /^(批次|배치|batch|단계)/i, type: /^(类型|종류|type)/i, st: /^(状态|상태|status)/i, name: /^(工序|공정|内容|작업|task)/i, start: /^(开始|시작|start)/i, end: /^(结束|끝|end)/i, qty: /^(数量|수량|qty)/i, mark: /^(标注|표시)/i, note: /^(备注|메모|note)/i };
-  let tasks = null, meta = {};
+  let tasks = null; const meta = {};
   for (const sh of books) {
     const hi = sh.rows.findIndex(r => r.some(c => H.start.test(String(c).trim())) && r.some(c => H.name.test(String(c).trim()) || H.b.test(String(c).trim())));
     if (hi >= 0 && !tasks) {
@@ -4407,8 +4588,9 @@ async function plImport(file) {
   const pl = plCur();
   const name = meta['项目'] || (pl ? pl.name : String(file.name || '').replace(/\.xlsx$/i, '').split('_')[0]);
   const target = S.plans.find(p => p.name === name) || null;
-  const batches = Object.keys(meta).filter(k => /^批次 /.test(k)).map(k => { const [n, q] = meta[k].split('|'); return { k: k.slice(3).trim(), name: n || '', qty: /^\d+$/.test(q || '') ? Number(q) : (q || '') }; });
+  const batches = Object.keys(meta).filter(k => /^批次 /.test(k)).map(k => { const [n, q, note] = meta[k].split('|'); return { k: k.slice(3).trim(), name: n || '', qty: /^\d+$/.test(q || '') ? Number(q) : (q || ''), note: note || '' }; });
   const notes = Object.keys(meta).filter(k => /^备注 \d{4}-\d{2}$/.test(k)).map(k => ({ ym: k.slice(3), text: meta[k] }));
+  const restDays = meta['休息日'] !== undefined ? PL_WD_ZH.map((w, i) => meta['休息日'].includes(w) ? i : -1).filter(i => i >= 0) : null;
   const body = `<div class="banner info"><span>작업 ${tasks.length}개를 읽었어요 (${fmtDF(tasks.reduce((a, t) => t.start < a ? t.start : a, '9999'))} ~ ${fmtDF(tasks.reduce((a, t) => tEnd(t) > a ? tEnd(t) : a, '0000'))}).</span></div>
     <div class="f"><span>어디에 넣을까요?</span>${radios('pi-mode', target ? 'replace' : 'new', [...(target ? [['replace', `‘${target.name}’ 일정을 이 내용으로 바꾸기`]] : []), ['new', '새 일정으로 만들기']])}</div>`;
   openSheet('일정 엑셀 불러오기', body, footStd(false, '불러오기'), {
@@ -4416,65 +4598,13 @@ async function plImport(file) {
       sheetSave = async () => {
         const mode = ($('input[name=pi-mode]:checked', panel) || {}).value || 'new';
         let rec;
-        if (mode === 'replace' && target) { rec = JSON.parse(JSON.stringify(target)); rec.tasks = tasks; if (batches.length) rec.batches = batches; if (notes.length) rec.notes = notes; }
-        else rec = { kind: /开发|dev/i.test(meta['标题'] || '') ? 'dev' : 'prod', name: name || '새 일정', title: meta['标题'] || '生产日历', unit: meta['单位'] || '套', partnerName: meta['工厂'] || '', customer: meta['客户'] || '', poNo: meta['PO'] || '', status: 'active', legend: PL_LEGEND, batches: batches.length ? batches : [...new Set(tasks.map(t => t.b).filter(Boolean))].map(k => ({ k, name: '', qty: '' })), tasks, notes };
-        const id = await put('plans', rec); S.planId = id; S.planYm = tasks[0].start.slice(0, 7); S.planDay = ''; toast('일정을 불러왔어요'); if (S.route !== 'plan') go('plan'); return true;
+        if (mode === 'replace' && target) { rec = JSON.parse(JSON.stringify(target)); rec.tasks = tasks; if (batches.length) rec.batches = batches; if (notes.length) rec.notes = notes; if (restDays) rec.restDays = restDays; if (meta['图例']) rec.legend = meta['图例']; }
+        else rec = { kind: /开发|dev/i.test(meta['标题'] || '') ? 'dev' : 'prod', name: mode === 'new' && target ? `${name} (엑셀)` : (name || '새 일정'), short: meta['简称'] || '', title: meta['标题'] || '生产日历', unit: meta['单位'] || '套', partnerName: meta['工厂'] || '', customer: meta['客户'] || '', poNo: meta['PO'] || '', status: 'active', legend: meta['图例'] || PL_LEGEND, restDays: restDays || [6], batches: batches.length ? batches : [...new Set(tasks.map(t => t.b).filter(b => b && !/[+&]/.test(b)))].map(k => ({ k, name: '', qty: '' })), tasks, notes };
+        const id = await put('plans', rec); S.planId = id; const ids = plSel().map(p => p.id); if (!ids.includes(id)) plSetSel([...ids, id]);
+        S.planYm = tasks[0].start.slice(0, 7); S.planDay = ''; toast('일정을 불러왔어요'); if (S.route !== 'plan') go('plan'); return true;
       };
     }
   });
-}
-
-/* ---------- picture out (canvas, no download needed): good for WeChat ---------- */
-async function plPng(pl, ym, btn) {
-  if (btn) btn.disabled = true;
-  try {
-    const months = [ym]; for (let i = 1; i <= 2; i++) { const m = addMonths(ym, i); if ((pl.tasks || []).some(t => t.start.startsWith(m) || tEnd(t).startsWith(m))) months.push(m); else break; }
-    const W = 1800, P = 14, CW = (W - P * 2) / 7, LH = 22;
-    const FF = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
-    const fnt = (sz, b) => `${b ? 700 : 400} ${sz}px ${FF}`;
-    const cv = document.createElement('canvas'); const g = cv.getContext('2d');
-    const wrap = (text, w, font) => { g.font = font; const out = []; let cur = ''; for (const ch of String(text)) { if (g.measureText(cur + ch).width > w && cur) { out.push(cur); cur = ch.trim() ? ch : ''; } else cur += ch; } if (cur) out.push(cur); return out; };
-    const unit = plUnit(pl), title = `${pl.name || ''}　${pl.title || ''}`.trim();
-    const month = (ym, y0, draw) => {
-      let y = y0; const [yy, mm] = ym.split('-');
-      const R = (x, yv, w, h, c) => { if (draw) { g.fillStyle = c; g.fillRect(x, yv, w, h); } };
-      const T = (s, x, yv, font, c, align = 'left') => { if (draw) { g.font = font; g.fillStyle = c; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, yv); } };
-      R(P, y, W - P * 2, 66, '#173A52'); T(`${yy}年 ${+mm}月`, P + 4, y + 34, fnt(32, 1), '#FFFFFF'); T(title, P + CW * 2 + 4, y + 34, fnt(32, 1), '#FFFFFF'); y += 66;
-      const sq = plShipIn(pl, ym); R(P, y, W - P * 2, 46, '#DDF1EC'); T(`本月计划出货　${sq ? sq.toLocaleString('en-US') + ' ' + unit : '—'}`, P + 4, y + 23, fnt(22, 1), '#14532D'); y += 46;
-      const bs = pl.batches || [];
-      if (bs.length) { const bw = (W - P * 2) / Math.max(3, bs.length); bs.forEach((b, i) => { R(P + i * bw, y, bw, 46, bSoft(pl, b.k)); T(`${b.k}　${b.name || ''}　${qtyStr(b.qty, unit)}`, P + i * bw + 6, y + 23, fnt(19, 1), '#0F2236'); }); if (bs.length < 3) R(P + bs.length * bw, y, W - P * 2 - bs.length * bw, 46, '#F1F4F7'); y += 46; }
-      R(P, y, W - P * 2, 42, '#FFFFFF'); T(pl.legend || PL_LEGEND, P + 4, y + 21, fnt(16), '#435669'); y += 42;
-      PL_WD_ZH.forEach((w, i) => { R(P + i * CW, y, CW, 40, i >= 5 ? '#4A6478' : '#2D4A60'); T(w, P + i * CW + CW / 2, y + 20, fnt(18, 1), '#FFFFFF', 'center'); }); y += 40;
-      for (const wk of plGrid(ym)) {
-        const info = wk.map(d => d ? plDay(pl, d) : null);
-        const maxM = Math.max(0, ...info.map(x => x ? x.miles.length : 0));
-        const lines = info.map(x => x ? x.tasks.flatMap(t => wrap(tText(pl, t), CW - 10, fnt(16))) : []);
-        const nl = Math.max(1, ...lines.map(l => l.length));
-        const h = 38 + maxM * 36 + nl * LH + 16;
-        wk.forEach((d, i) => {
-          const x = P + i * CW;
-          R(x, y, CW, h, d ? '#FFFFFF' : '#EEF2F5');
-          if (!d) return;
-          R(x, y, CW, 38, '#E7EDF2'); T(String(+d.slice(8)), x + 6, y + 20, fnt(21, 1), '#0F2236');
-          info[i].miles.forEach((t, k) => { const c = t.type === 'ship' ? ['#1E7A55', '#FFFFFF'] : t.type === 'inspect' ? ['#F8D9A0', '#6B4100'] : ['#DCE7F5', '#2463A5']; R(x, y + 38 + k * 36 + 2, CW, 32, c[0]); T(tText(pl, t), x + CW / 2, y + 38 + k * 36 + 18, fnt(17, 1), c[1], 'center'); });
-          let ly = y + 38 + maxM * 36 + 6 + LH / 2; for (const t of info[i].tasks) { const col = t.st === 'done' ? '#8A99A8' : t.st === '拟' ? '#435669' : '#0F2236'; for (const ln of wrap(tText(pl, t), CW - 10, fnt(16))) { T(ln, x + 5, ly, fnt(16), col); ly += LH; } }
-        });
-        if (draw) { g.strokeStyle = '#C9D3DC'; g.lineWidth = 1; for (let i = 0; i <= 7; i++) { g.beginPath(); g.moveTo(Math.round(P + i * CW) + .5, y); g.lineTo(Math.round(P + i * CW) + .5, y + h); g.stroke(); } g.beginPath(); g.moveTo(P, y + h - .5); g.lineTo(W - P, y + h - .5); g.stroke(); }
-        y += h;
-      }
-      const note = plNote(pl, ym);
-      if (note) { const ls = note.split('\n').flatMap(l => wrap(l, W - P * 2 - 8, fnt(16))); R(P, y, W - P * 2, ls.length * 24 + 16, '#FFFFFF'); ls.forEach((l, k) => T(l, P + 4, y + 8 + 12 + k * 24, fnt(16), '#435669')); y += ls.length * 24 + 16; }
-      return y;
-    };
-    let H = P; for (const m of months) H = month(m, H, false) + 20; H += P - 20;
-    cv.width = W; cv.height = Math.ceil(H);
-    g.fillStyle = '#E9EEF3'; g.fillRect(0, 0, W, H);
-    let y = P; for (const m of months) y = month(m, y, true) + 20;
-    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
-    if (!blob) throw new Error('png');
-    await saveFile(`${safeName(pl.name || '일정')}_${safeName(pl.title || '日程')}_${months[0]}${months.length > 1 ? '~' + months[months.length - 1].slice(5) : ''}.png`, blob);
-  } catch (e) { toast('이미지를 만들지 못했어요.', 'crit'); }
-  finally { if (btn) btn.disabled = false; }
 }
 /* inspection / shipment targets for the home list and alerts */
 function plMilestones(days, back = 3) {
@@ -4704,17 +4834,17 @@ function prFillItem(input) {
 
 /* ---------- actions for schedule and price pages ---------- */
 Object.assign(ACT, {
-  'pl-new': () => openPlanEd(null), 'pl-edit': () => { const pl = plCur(); if (pl) openPlanEd(pl); },
-  'pl-pick': el => { S.planId = el.dataset.id; S.planDay = ''; render(); },
+  'pl-new': () => openPlanEd(null), 'pl-edit': el => { const pl = plById(el.dataset.id) || plCur(); if (pl) openPlanEd(pl); },
+  'pl-tog': el => { const id = el.dataset.id; let ids = plSel().map(p => p.id); ids = ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id]; if (!ids.length) { toast('프로젝트를 하나 이상은 보여 줘야 해요'); return; } plSetSel(ids); S.planId = ids[0]; S.planDay = ''; render(); },
+  'pl-all': () => { plSetSel(S.plans.map(p => p.id)); S.planDay = ''; render(); },
+  'pl-share': () => openPlShare(),
   'pl-view': el => { S.planView = el.dataset.v; render(); },
   'pl-day': el => { S.planDay = el.dataset.d; render(); if (window.innerWidth < 760) requestAnimationFrame(() => { const p = $('#pl-dayp'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }); },
   'pl-add': el => { const pl = plCur(); if (pl) openTask(pl, null, { d: el.dataset.d || S.planDay || todayStr() }); },
-  'pl-task': el => { const pl = plCur(); const t = pl && (pl.tasks || []).find(x => x.id === el.dataset.id); if (t) openTask(pl, t); },
-  'pl-note': () => { const pl = plCur(); if (pl) openPlNote(pl, S.planYm); },
-  'pl-shift': () => { const pl = plCur(); if (pl) openPlShift(pl); },
-  'pl-xlsx': el => { const pl = plCur(); if (pl) plXlsx(pl, el); },
-  'pl-png': el => { const pl = plCur(); if (pl) plPng(pl, S.planYm, el); },
-  'pl-open': el => { S.planId = el.dataset.id; if (el.dataset.d) { S.planYm = el.dataset.d.slice(0, 7); S.planDay = el.dataset.d; } closeSheet(); go('plan'); },
+  'pl-task': el => { const pl = plById(el.dataset.pl) || plCur(); const t = pl && (pl.tasks || []).find(x => x.id === el.dataset.id); if (t) openTask(pl, t); },
+  'pl-note': el => { const pl = plById(el.dataset.id) || plCur(); if (pl) openPlNote(pl, S.planYm); },
+  'pl-shift': el => { const pl = plById(el.dataset.id) || plCur(); if (pl) openPlShift(pl); },
+  'pl-open': el => { const ids = plSel().map(p => p.id); if (!ids.includes(el.dataset.id)) plSetSel([...ids, el.dataset.id]); S.planId = el.dataset.id; if (el.dataset.d) { S.planYm = el.dataset.d.slice(0, 7); S.planDay = el.dataset.d; } closeSheet(); go('plan'); },
   'pr-new': () => openProduct(null), 'pr-edit': el => { const p = S.products.find(x => x.id === el.dataset.id); if (p) openProduct(p); },
   'pr-f': el => { S.prF = S.prF === el.dataset.v && (el.dataset.v === 'warn' || el.dataset.v === 'up') ? 'all' : el.dataset.v; render(); },
   'pr-xlsx': el => prXlsx(el), 'pr-warn': () => openPrWarn()
