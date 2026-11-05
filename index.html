@@ -157,7 +157,8 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .acct{font-size:19px;font-weight:600;letter-spacing:.02em;color:var(--ink);overflow-wrap:anywhere}
 .bank-card .actions{margin-top:6px}
 .bank-ed{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;background:var(--surface-2);display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.bank-ed .it-grid{width:100%}
+.bank-ed .it-grid{width:100%;grid-template-columns:minmax(0,.7fr) minmax(0,1.6fr) minmax(0,1.6fr)}
+@media (max-width:620px){.bank-ed .it-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-flow:row dense}.bank-ed .it-grid .w{grid-column:1/-1}}
 .pt-info{padding:0 16px 16px}
 .pt-info dd{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .pt-info dd .btn{min-height:28px;padding:0 8px;font-size:12px;flex:none}
@@ -627,7 +628,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.05-8';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.05-9';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -1974,8 +1975,20 @@ function partnerData(pt) {
 }
 
 /* bank details printed on invoices, contracts, business cards */
+const BANK_LBL = '(?:HOLDER\\s*NAME|ACCOUNT\\s*HOLDER|BENEFICIARY\\s*BANK|BENEFICIARY(?:\\s*NAME)?|ACCOUNT\\s*NAME|A\\/C\\s*NAME|BANK\\s*NAME|BANK\\s*ADDRESS|A\\/C\\s*NO\\.?(?:\\s*\\([A-Z]{3}\\))?|ACCOUNT\\s*(?:NO\\.?|NUMBER)(?:\\s*\\([A-Z]{3}\\))?|ACCT\\.?\\s*NO\\.?|IBAN|SWIFT(?:\\s*\\/?\\s*BIC)?(?:\\s*CODE)?|收款人(?:名称|户名)?|收款单位|账户名称|户\\s*名|开户名称?|开户(?:银)?行(?:名称)?|银行名称|收款银行|银行地址|银行账号|收款账号|账\\s*号|帐\\s*号|银行卡号|卡\\s*号|예금주|은행\\s*명|계좌\\s*번호)';
+function normBankText(t) {
+  const only = new RegExp('^' + BANK_LBL + '\\s*(?:\\/[^:：\\n]{0,24})?\\s*[:：]?$', 'i'), any = new RegExp(BANK_LBL, 'i'), split = new RegExp('\\s+(?=' + BANK_LBL + '\\s*[:：])', 'gi');
+  const lines = String(t || '').replace(/\r/g, '').split('\n').flatMap(l => l.replace(/[ \t　]+/g, ' ').trim().split(split)).map(l => l.trim()).filter(Boolean);
+  const out = [], q = [];
+  for (const l of lines) {
+    if (only.test(l)) { q.push(l.replace(/\s*[:：]\s*$/, '')); continue; }
+    if (q.length && !any.test(l) && (/^[:：]/.test(l) || !/[:：]/.test(l))) { const lab = q.shift(); const v = l.replace(/^[:：]\s*/, ''); if (v) out.push(`${lab}: ${v}`); continue; }
+    q.length = 0; out.push(l);
+  }
+  return out.join('\n');
+}
 function parseBanks(text) {
-  const lines = String(text || '').replace(/\r/g, '').split('\n').map(s => s.replace(/[ \t　]+/g, ' ').trim()).filter(Boolean);
+  const lines = normBankText(text).split('\n').map(s => s.trim()).filter(Boolean);
   const out = []; let cur = {};
   const val = (l, re) => { const m = l.match(re); return m ? String(m[m.length - 1]).replace(/^[\s:：]+/, '').trim() : ''; };
   const push = () => { if (cur.account) out.push(cur); cur = {}; };
@@ -1984,8 +1997,8 @@ function parseBanks(text) {
     if (combo) { push(); cur = { bankName: combo[1].trim(), account: combo[2].replace(/\s/g, '') }; push(); continue; }
     const acc = l.match(/(?:A\/C\s*(?:No\.?|Number)?|ACCOUNT\s*(?:No\.?|NUMBER)|ACCT\.?\s*No\.?|账\s*号|帐\s*号|卡\s*号|收款账号|계좌\s*(?:번호)?)\s*(?:\(([A-Z]{3})\))?\s*[:：.]?\s*([\d][\d \-]{5,34}\d)/i);
     if (acc) { if (cur.account) push(); cur.account = acc[2].replace(/\s/g, ''); const c = (acc[1] || '').toUpperCase(); if (c) cur.currency = c === 'RMB' ? 'CNY' : c; continue; }
-    if (/(?:BENEFICIARY\s*(?:NAME)?|ACCOUNT\s*NAME|A\/C\s*NAME|HOLDER(?:\s*NAME)?|收款人(?:名称|户名)?|户\s*名|开户名称?|예금주)\s*[:：]\s*\S/i.test(l) && !/BANK/i.test(l.split(/[:：]/)[0])) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.holder) cur.holder = v.slice(0, 80); continue; }
-    if (/(?:BENEFICIARY\s*BANK|BANK\s*NAME|开户(?:银)?行(?:名称)?|收款(?:银)?行|은행\s*(?:명)?)\s*[:：]\s*\S/i.test(l)) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.bankName) cur.bankName = v.slice(0, 80); continue; }
+    if (/(?:BENEFICIARY\s*(?:NAME)?|ACCOUNT\s*NAME|ACCOUNT\s*HOLDER|A\/C\s*NAME|HOLDER(?:\s*NAME)?|收款人(?:名称|户名)?|收款单位|账户名称|户\s*名|开户名称?|예금주)\s*[:：]\s*\S/i.test(l) && !/BANK/i.test(l.split(/[:：]/)[0])) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.holder) cur.holder = v.slice(0, 80); continue; }
+    if (/(?:BENEFICIARY\s*BANK|BANK\s*NAME|^BANK\b[^:：]{0,14}|开户(?:银)?行(?:名称)?|银行名称|收款(?:银)?行|은행\s*(?:명)?)\s*[:：]\s*\S/i.test(l) && !/ADDRESS|地址/i.test(l.split(/[:：]/)[0])) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.bankName) cur.bankName = v.slice(0, 80); continue; }
     if (/SWIFT/i.test(l)) { const v = (l.match(/SWIFT(?:\s*\/?\s*BIC)?(?:\s*CODE)?\s*[:：]?\s*([A-Z0-9]{8,11})\b/i) || [])[1]; if (v) cur.swift = v.toUpperCase(); continue; }
     if (/(?:BANK\s*ADDRESS|银行地址)\s*[:：]\s*\S/i.test(l)) { cur.bankAddress = val(l, /[:：]\s*(.+)$/).slice(0, 120); continue; }
     if (/(美元|USD)\s*(账户|帐户|ACCOUNT)/i.test(l)) cur.currency = 'USD'; else if (/(人民币|RMB|CNY)\s*(账户|帐户|ACCOUNT)/i.test(l)) cur.currency = 'CNY';
@@ -2000,22 +2013,29 @@ function parsePartnerText(text) {
   const lines = t.split('\n').map(s => s.replace(/[ \t　]+/g, ' ').trim()).filter(Boolean);
   const g = re => { const m = t.match(re); return m ? String(m[1]).trim() : ''; };
   const o = {};
-  o.email = (t.match(/[\w.+-]+@[\w-]+\.[\w.]+/) || [''])[0];
-  o.tel = g(/(?:TEL|电话|手机|MOBILE|PHONE|H\.?P\.?|전화|휴대폰)\s*[:：.]?\s*(\+?\d[\d \-()]{6,}\d)/i) || (t.match(/\+\d{2}[\d \-]{8,}\d|(?<!\d)1[3-9]\d{9}(?!\d)/) || [''])[0];
+  const ourTel = [S.co.tel, S.co.telKr, S.co.fax].map(x => digits(x || '')).filter(x => x.length >= 7), ourMail = String(S.co.email || '').toLowerCase();
+  const notOurTel = x => { const d = digits(x); return d.length >= 7 && !ourTel.some(o => o.endsWith(d.slice(-9)) || d.endsWith(o.slice(-9))); };
+  o.email = ([...t.matchAll(/[\w.+-]+@[\w-]+\.[\w.]+/g)].map(m => m[0]).find(x => x.toLowerCase() !== ourMail)) || '';
+  o.tel = ([...t.matchAll(/(?:TEL|电话|手机|MOBILE|PHONE|H\.?P\.?|전화|휴대폰)\s*[:：.]?\s*(\+?\d[\d \-()]{6,}\d)/gi)].map(m => m[1].trim()).find(notOurTel)) || ([...t.matchAll(/\+\d{2}[\d \-]{8,}\d|(?<!\d)1[3-9]\d{9}(?!\d)/g)].map(m => m[0]).find(notOurTel)) || '';
   o.wechat = g(/(?:微信|WECHAT|위챗)\s*(?:号|ID)?\s*[:：]?\s*([A-Za-z][\w\-]{4,29})/i);
   const ourTax = String(S.co.bizNo || '').toUpperCase();
   o.taxId = ([...t.matchAll(/(?:统一社会信用代码|纳税人识别号|税\s*号|USCC|TAX\s*ID|VAT\s*NO\.?|사업자\s*(?:등록)?\s*번호)\s*(?:\/[^:：\n]*)?\s*[:：]?\s*([A-Z0-9][A-Z0-9\-]{8,20})/gi)].map(m => m[1].toUpperCase()).find(x => x !== ourTax)) || '';
   o.contact = g(/(?:联系人|CONTACT(?:\s*PERSON)?|ATTN\.?|담당자?)\s*[:：.]?\s*([^\n,，|:：]{2,30})/i);
-  o.address = g(/(?:地\s*址|ADDRESS|ADD\.|주\s*소)\s*[:：]\s*([^\n]{6,140})/i).replace(/\s*(TEL|电话|FAX|传真)\b.*$/i, '');
+  o.address = (([...t.matchAll(/(^|[^A-Za-z银行\/ ]\s*|\n)(?:地\s*址|ADDRESS|ADD\.|주\s*소)\s*[:：]\s*([^\n]{6,140})/gi)].map(m => m[2]).find(a => !/^\s*$/.test(a))) || '').replace(/\s*(TEL|电话|FAX|传真)\b.*$/i, '').replace(/\s*\|.*$/, '').trim();
+  const cutCo = x => { x = String(x || '').trim(); const m = x.match(/^(.*?(?:LIMITED|LTD\.?|CO\.,?\s*LTD\.?|CORPORATION|CORP\.?|INC\.?|LLC|GMBH|有限责任公司|有限公司|股份公司|株式会社|주식회사))(?=\s|$|[,，|])/i); return m && /[:：|]|\b(PO|DATE|NO|TEL|FAX|DATED)\b|日期|编号|电话/i.test(x.slice(m[1].length)) ? m[1].trim() : x; };
   const nm = ([...t.matchAll(/(?:公司名称|单位名称|名\s*称|COMPANY(?:\s*NAME)?|상\s*호|회사명)\s*[:：]\s*([^\n]{3,80})/gi)].map(m => m[1].trim()).find(x => !isOurs(x))) || '';
   const nameLine = lines.findIndex(l => COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址)/i.test(l));
-  o.name = (nm && !isOurs(nm) ? nm : '') || (nameLine >= 0 ? lines[nameLine] : '').replace(/^(TO|FROM|致)\s*[:：]?\s*/i, '');
-  if (!o.address && nameLine >= 0) { const nx = lines[nameLine + 1] || ''; if (/\d/.test(nx) && !/(识别号|信用代码|税\s*号|TEL|电话|FAX|传真|E-?MAIL|@|账号|帐号|开户|A\/C|ACCOUNT)/i.test(nx) && /(ROAD|RD\b|R\/D|STREET|ST\.|AVE|AVENUE|BLOCK|ROOM|RM\b|FLOOR|\bF\b|BUILDING|B\/D|DISTRICT|路|号|區|区|市|大厦|大廈|栋|楼|동|로|길)/i.test(nx) && nx.length <= 140) o.address = nx; }
-  for (const k of ['tel', 'email', 'address']) { const ours = String(S.co[k] || '').replace(/\s/g, '').toLowerCase(); if (o[k] && ours && (o[k].replace(/\s/g, '').toLowerCase() === ours)) o[k] = ''; }
+  o.name = cutCo((nm && !isOurs(nm) ? nm : '') || (nameLine >= 0 ? lines[nameLine] : '').replace(/^(TO|FROM|致|BUYER|SELLER|买方|卖方)\s*(?:\/\s*\S+\s*)?[:：]?\s*/i, ''));
+  const hanOf = x => /[一-鿿]/.test(x || '');
+  const alt = lines.find((l, k) => k !== nameLine && COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址|HOLDER|户名|^TO\b|^致)/i.test(l) && hanOf(l) !== hanOf(o.name));
+  if (alt && o.name) o.nameAlt = cutCo(alt.replace(/^(名\s*称|公司名称)\s*[:：]\s*/, ''));
+  if (!o.address && nameLine >= 0) for (const nx of lines.slice(nameLine + 1, nameLine + 3).filter(x => !COMPANY_RE.test(x)).slice(0, 1)) { if (/\d/.test(nx) && !/(识别号|信用代码|税\s*号|TEL|电话|FAX|传真|E-?MAIL|@|账号|帐号|开户|A\/C|ACCOUNT)/i.test(nx) && /(ROAD|RD\b|R\/D|STREET|ST\.|AVE|AVENUE|BLOCK|ROOM|RM\b|FLOOR|\bF\b|BUILDING|B\/D|DISTRICT|路|号|區|区|市|大厦|大廈|栋|楼|동|로|길)/i.test(nx) && nx.length <= 140) o.address = nx; }
+  if (o.address && (Array.isArray(S.co.banks) ? S.co.banks : []).some(b => b.bankAddress && b.bankAddress.replace(/\s/g, '').slice(0, 14).toLowerCase() === o.address.replace(/\s/g, '').slice(0, 14).toLowerCase())) o.address = '';
   if (o.address && [S.co.addressZh, S.co.addressEn, S.co.regAddressZh].some(a => a && a.replace(/\s/g, '').slice(0, 12) === o.address.replace(/\s/g, '').slice(0, 12))) o.address = '';
-  const blob = (o.address || '') + ' ' + lines.slice(Math.max(0, nameLine), Math.max(0, nameLine) + 3).join(' ');
+  const blob = (o.address || '') + ' ' + lines.slice(Math.max(0, nameLine), Math.max(0, nameLine) + (o.address ? 3 : 6)).filter(l => !isOurs(l)).join(' ');
   o.country = /HONG ?KONG|香港|九龍|九龙/i.test(blob) ? 'Hong Kong' : /KOREA|대한민국|한국|SEOUL|서울|韩国/i.test(blob) ? 'Korea' : /CHINA|中国|广东|深圳|上海|浙江|江苏|东莞|广州/i.test(blob) ? 'China' : /JAPAN|日本/i.test(blob) ? 'Japan' : /U\.?S\.?A|UNITED STATES/i.test(blob) ? 'USA' : '';
   o.banks = parseBanks(t);
+  if (o.name && !isOurs(o.name)) o.kindGuess = /(LOGISTICS|FORWARD|SHIPPING|FREIGHT|EXPRESS|货运|货代|物流|国际运输|报关|船务|물류|포워딩|통관)/i.test(o.name + ' ' + (o.nameAlt || '')) ? 'forwarder' : (BILL_TITLE.test(t) && o.banks.length) || /(SELLER|SUPPLIER|供方|卖方|供应商)/i.test(lines.slice(Math.max(0, nameLine - 2), nameLine + 1).join(' ').split(o.name)[0]) ? 'supplier' : /(BUYER|买方|需方|购买方)/i.test(lines.slice(Math.max(0, nameLine - 2), nameLine + 1).join(' ').split(o.name)[0]) ? 'buyer' : '';
   Object.keys(o).forEach(k => { if (o[k] === '' || (Array.isArray(o[k]) && !o[k].length)) delete o[k]; });
   return o;
 }
@@ -2023,6 +2043,7 @@ function parsePartnerText(text) {
 function mergePartnerInfo(pt, info) {
   const u = JSON.parse(JSON.stringify(pt)); const added = [];
   for (const [k, lab] of [['address', '주소'], ['contact', '담당자'], ['tel', '전화'], ['email', '이메일'], ['wechat', '위챗'], ['taxId', '세금번호'], ['country', '국가']]) if (info[k] && !u[k]) { u[k] = info[k]; added.push(lab); }
+  if (info.nameAlt && info.nameAlt !== u.name && !String(u.alias || '').includes(info.nameAlt)) { u.alias = [u.alias, info.nameAlt].filter(Boolean).join(', '); added.push('다른 이름'); }
   const have = new Set((u.banks || []).map(b => digits(b.account)));
   const nb = (info.banks || []).filter(b => !have.has(digits(b.account)));
   if (nb.length) { u.banks = (u.banks || []).concat(nb.map(b => Object.assign({}, b, { holder: b.holder || u.name || '' }))); added.push(`계좌 ${nb.length}개`); }
@@ -2066,14 +2087,14 @@ function viewPartners() {
   const bal = (D, side) => { const m = sumCur(D.open.filter(x => x.side === side)); return curMap(m).join(' · '); };
   return `
   <div class="page-head"><div><div class="eyebrow">Partners<i></i>${S.partners.length}</div><h1>거래처</h1></div>
-    <div class="actions"><button class="btn" data-act="pt-paste">붙여넣어 추가</button><button class="btn btn-p" data-act="new-partner">${svg('plus')}거래처 추가</button></div></div>
+    <div class="actions"><button class="btn" data-act="pt-paste">${svg('upload')}서류로 추가</button><button class="btn btn-p" data-act="new-partner">${svg('plus')}거래처 추가</button></div></div>
   <div class="filters"><div class="seg" role="group" aria-label="구분">${segBtn('all', '전체')}${segBtn('buyer', '고객')}${segBtn('supplier', '공급사')}${segBtn('forwarder', '물류')}${segBtn('etc', '기타')}</div>
     <input id="pt-q" class="search" type="search" placeholder="이름, 담당자, 전화, 메모 검색" value="${esc(S.ptQ || '')}" aria-label="거래처 검색"></div>
   <section class="panel">${rows.length ? `<div class="list">${rows.map(({ pt, D }) => { const ar = bal(D, 'ar'), ap = bal(D, 'ap'); return `<button class="row" data-act="open-partner" data-id="${esc(pt.id)}">
       <div style="min-width:0"><div class="row-t"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(pt.name)}</span><span class="chip">${PT_SHORT[pt.kind] || '기타'}</span>${(pt.banks || []).some(b => b.account) ? '<span class="chip c-steel">계좌</span>' : ''}</div>
       <div class="row-s">${esc([pt.contact, pt.tel, pt.country].filter(Boolean).join(' · ') || '연락처 없음')}${D.last ? ` · 최근 ${fmtD(D.last)}` : ''}</div></div>
       <div class="row-r">${ar ? `<span class="amt amt-in">받을 ${esc(ar)}</span>` : ''}${ap ? `<span class="amt" style="color:var(--s-out)">줄 ${esc(ap)}</span>` : ''}${!ar && !ap ? `<span class="row-s">${D.pos.length + D.txns.length}건</span>` : ''}</div></button>`; }).join('')}</div>`
-      : `<div class="empty">${S.partners.length ? '조건에 맞는 거래처가 없어요.' : '아직 거래처가 없어요. 청구서·PO를 올리면 거래처가 저절로 만들어지고, 명함이나 계좌 안내를 붙여넣어도 돼요.'}<button class="btn btn-s" data-act="pt-paste">붙여넣어 추가</button></div>`}</section>`;
+      : `<div class="empty">${S.partners.length ? '조건에 맞는 거래처가 없어요.' : '아직 거래처가 없어요. 청구서·PO를 올리면 거래처가 저절로 만들어지고, 인보이스·계약서 PDF나 명함·계좌 안내 글자로도 추가할 수 있어요.'}<button class="btn btn-s" data-act="pt-paste">서류로 추가</button></div>`}</section>`;
 }
 
 /* one partner: contacts, bank accounts, balances, history */
@@ -2124,11 +2145,11 @@ function bankEdRow(b) {
   b = b || {};
   return `<div class="bank-ed"><div class="it-grid">
     <label>통화<select class="in" data-bk="currency">${['', 'CNY', 'USD', 'HKD', 'KRW', 'EUR', 'JPY'].map(c => `<option value="${c}" ${c === (b.currency || '') ? 'selected' : ''}>${c || '—'}</option>`).join('')}</select></label>
-    <label>은행 (开户行)<input class="in" data-bk="bankName" value="${esc(b.bankName || '')}"></label>
-    <label>계좌번호 (账号)<input class="in mono" data-bk="account" inputmode="numeric" value="${esc(b.account || '')}"></label>
-    <label>예금주 (收款人)<input class="in" data-bk="holder" value="${esc(b.holder || '')}"></label>
+    <label class="w">은행 (开户行)<input class="in" data-bk="bankName" value="${esc(b.bankName || '')}"></label>
+    <label class="w">계좌번호 (账号)<input class="in mono" data-bk="account" inputmode="numeric" value="${esc(b.account || '')}"></label>
+    <label class="w">예금주 (收款人)<input class="in" data-bk="holder" value="${esc(b.holder || '')}"></label>
     <label>SWIFT<input class="in mono" data-bk="swift" value="${esc(b.swift || '')}"></label>
-    <label>은행 주소<input class="in" data-bk="bankAddress" value="${esc(b.bankAddress || '')}"></label></div>
+    <label class="w">은행 주소<input class="in" data-bk="bankAddress" value="${esc(b.bankAddress || '')}"></label></div>
     <button type="button" class="btn btn-s btn-q btn-danger" data-bk-del>이 계좌 지우기</button></div>`;
 }
 function openPartner(p, opts = {}) {
@@ -2136,7 +2157,7 @@ function openPartner(p, opts = {}) {
   p = Object.assign({ kind: 'buyer', banks: [] }, p ? JSON.parse(JSON.stringify(p)) : {});
   const body = `${opts.banner ? `<div class="banner info"><span>${esc(opts.banner)}</span></div>` : ''}
     <div class="f"><span>붙여넣어 채우기</span><textarea class="in" id="pt-paste" rows="3" placeholder="명함, 위챗 메시지, 인보이스 머리글, 계좌 안내를 붙여넣으면 이름·연락처·계좌를 찾아 빈칸을 채워요">${esc(opts.paste || '')}</textarea>
-      <div class="actions"><button type="button" class="btn btn-s" id="pt-fill">빈칸 채우기</button><small class="muted" id="pt-fill-msg"></small></div></div>
+      <div class="actions"><button type="button" class="btn btn-s" id="pt-fill">빈칸 채우기</button><label class="btn btn-s">${svg('upload')}PDF에서 읽기<input type="file" class="sr" id="pt-file" accept="application/pdf,.pdf"></label><small class="muted" id="pt-fill-msg"></small></div></div>
     <form class="fgrid" id="pt-form" autocomplete="off">
     ${F('거래처 이름', inp('name', p.name, { req: 1 }), 'full')}
     ${F('구분', sel('kind', p.kind || 'buyer', PT_KIND))}${F('국가', inp('country', p.country, { ph: 'China' }))}
@@ -2155,15 +2176,19 @@ function openPartner(p, opts = {}) {
       const readBanks = () => $$('.bank-ed', list).map(r => { const o = {}; $$('[data-bk]', r).forEach(i => { o[i.dataset.bk] = i.value.trim(); }); return o; }).filter(b => b.account || b.bankName);
       $('#bank-add', panel).addEventListener('click', () => { list.insertAdjacentHTML('beforeend', bankEdRow({ currency: S.co.baseCur === 'CNY' ? 'CNY' : '' })); });
       list.addEventListener('click', e => { if (e.target.closest('[data-bk-del]')) e.target.closest('.bank-ed').remove(); });
+      let kindTouched = !!(p.kind && opts.kindSet); form.elements.kind.addEventListener('change', () => { kindTouched = true; });
       const fill = () => {
         const info = parsePartnerText($('#pt-paste', panel).value); const got = [];
         for (const k of ['name', 'contact', 'tel', 'email', 'wechat', 'taxId', 'country', 'address']) { const el = form.elements[k]; if (info[k] && el && !el.value.trim()) { el.value = info[k]; got.push({ name: '이름', contact: '담당자', tel: '전화', email: '이메일', wechat: '위챗', taxId: '세금번호', country: '국가', address: '주소' }[k]); } }
+        if (isNew && info.kindGuess && !kindTouched && form.elements.kind.value !== info.kindGuess) { form.elements.kind.value = info.kindGuess; got.push('구분'); }
+        { const al = form.elements.alias, nm = form.elements.name.value.trim(); if (info.nameAlt && al && info.nameAlt !== nm && !al.value.includes(info.nameAlt)) { al.value = [al.value.trim(), info.nameAlt].filter(Boolean).join(', '); got.push('다른 이름'); } }
         const have = new Set(readBanks().map(b => digits(b.account)));
         const nb = (info.banks || []).filter(b => !have.has(digits(b.account)));
         nb.forEach(b => list.insertAdjacentHTML('beforeend', bankEdRow(b))); if (nb.length) got.push(`계좌 ${nb.length}개`);
         $('#pt-fill-msg', panel).textContent = got.length ? `채웠어요: ${got.join(', ')}` : '새로 채울 내용을 찾지 못했어요';
       };
       $('#pt-fill', panel).addEventListener('click', fill);
+      $('#pt-file', panel).addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; const t = await docText(f, $('#pt-fill-msg', panel)); if (t) { $('#pt-paste', panel).value = t; fill(); } });
       if (opts.paste) fill();
       if (opts.focus === 'banks') setTimeout(() => { const el = $('#pt-banks', panel); if (el) el.scrollIntoView({ block: 'start' }); if (!(p.banks || []).length) $('#bank-add', panel).click(); }, 80);
       sheetSave = async () => {
@@ -2177,15 +2202,26 @@ function openPartner(p, opts = {}) {
     }
   });
 }
+/* text out of a PDF the user picked */
+async function docText(f, msgEl) {
+  const say = t => { if (msgEl) msgEl.textContent = t; };
+  if (!(/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name))) { say('사진은 사진 앱에서 글자를 길게 눌러 모두 선택 → 복사한 뒤 위 칸에 붙여넣어 주세요.'); return ''; }
+  say('PDF 읽는 중…');
+  try { const r = await readPdf(f, 0); if (!r.text.trim()) { say('이 PDF에는 글자가 없어요(스캔본). 사진처럼 글자를 복사해 붙여넣어 주세요.'); return ''; } say('PDF에서 읽었어요.'); return r.text; }
+  catch (e) { say('PDF를 읽지 못했어요.'); return ''; }
+}
 function openPtPaste() {
-  const body = `<div class="f"><span>붙여넣기</span><textarea class="in" id="pp-text" rows="6" placeholder="명함 사진의 글자, 위챗으로 받은 회사 정보·계좌 안내, 인보이스 머리글 등을 붙여넣으세요"></textarea>
+  const body = `<div class="f"><span>서류 PDF</span><div class="actions"><label class="btn btn-p">${svg('upload')}인보이스·계약서 PDF 고르기<input type="file" class="sr" id="pp-file" accept="application/pdf,.pdf"></label></div>
+    <small id="pp-msg">회사 이름(중문·영문), 주소, 전화, 세금번호, 계좌(开户行·账号·收款人)를 찾아 채워요. 인터넷 없이 앱이 직접 읽어요.</small></div>
+    <div class="f"><span>또는 글자 붙여넣기</span><textarea class="in" id="pp-text" rows="5" placeholder="명함 사진의 글자, 위챗으로 받은 회사 정보·계좌 안내, 인보이스에서 복사한 글자"></textarea>
     <small>아이폰은 사진의 글자를 길게 눌러 <b>모두 선택 → 복사</b>하면 돼요.</small></div>`;
   const foot = `<span class="sp"></span><button type="button" class="btn" data-act="sheet-close">닫기</button><button type="button" class="btn btn-p" id="pp-go">읽기</button>`;
-  openSheet('붙여넣어 거래처 추가', body, foot, {
+  openSheet('서류로 거래처 추가', body, foot, {
     mount: panel => {
+      $('#pp-file', panel).addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; const t = await docText(f, $('#pp-msg', panel)); if (t) { $('#pp-text', panel).value = t; $('#pp-go', panel).click(); } });
       $('#pp-go', panel).addEventListener('click', () => {
         const t = $('#pp-text', panel).value; if (!t.trim()) { toast('붙여넣어 주세요.', 'crit'); return; }
-        const info = parsePartnerText(t); const ex = info.name && (partnerByName(info.name) || matchPartner(info.name));
+        const info = parsePartnerText(t); const ex = (info.name && (partnerByName(info.name) || matchPartner(info.name))) || (info.nameAlt && (partnerByName(info.nameAlt) || matchPartner(info.nameAlt))) || null;
         closeSheet();
         if (ex) openPartner(ex, { paste: t, banner: `이미 있는 거래처 ‘${ex.name}’에 빈칸만 채워요.` });
         else openPartner(null, { paste: t });
@@ -2193,6 +2229,123 @@ function openPtPaste() {
     }
   });
 }
+/* ================= PDF text without any download: reads the file's own text, Chinese (UCS-2 / ToUnicode) included, laid out line by line ================= */
+async function inflateBytes(u8) {
+  if (typeof DecompressionStream === 'undefined') throw new Error('nodecomp');
+  const ds = new DecompressionStream('deflate'); const w = ds.writable.getWriter(); const r = ds.readable.getReader();
+  w.write(u8).catch(() => { }); w.close().catch(() => { });
+  const parts = []; let n = 0;
+  try { for (;;) { const { value, done } = await r.read(); if (done) break; parts.push(value); n += value.length; } } catch (e) { if (!n) throw e; }
+  const out = new Uint8Array(n); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return out;
+}
+const u8str = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return s; };
+const strU8 = s => { const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i) & 255; return u; };
+async function pdfTextLite(buf) {
+  const bin = u8str(new Uint8Array(buf));
+  const objs = new Map();
+  const re = /(\d+)\s+\d+\s+obj\b/g; let m;
+  while ((m = re.exec(bin))) { const end = bin.indexOf('endobj', re.lastIndex); if (end < 0) break; objs.set(+m[1], bin.slice(re.lastIndex, end)); re.lastIndex = end + 6; }
+  const streamOf = async body => {
+    const si = body.indexOf('stream'); if (si < 0) return null;
+    const dict = body.slice(0, si); let st = si + 6; if (body[st] === '\r') st++; if (body[st] === '\n') st++;
+    let en = body.lastIndexOf('endstream'); if (en < st) en = body.length; let data = body.slice(st, en).replace(/\r?\n$/, '');
+    if (/\/Subtype\s*\/Image/.test(dict)) return { dict, text: '' };
+    let u8 = strU8(data);
+    if (/\/FlateDecode/.test(dict)) { try { u8 = await inflateBytes(u8); } catch (e) { return { dict, text: '' }; } }
+    else if (/\/Filter/.test(dict)) return { dict, text: '' };
+    return { dict, text: u8str(u8) };
+  };
+  // object streams (PDF 1.5+) hide font dictionaries inside
+  for (const [num, body] of [...objs]) {
+    if (!/\/Type\s*\/ObjStm/.test(body.slice(0, 400))) continue;
+    const s = await streamOf(body); if (!s || !s.text) continue;
+    const first = +((s.dict.match(/\/First\s+(\d+)/) || [])[1] || 0); const head = s.text.slice(0, first).trim().split(/\s+/).map(Number);
+    for (let i = 0; i + 1 < head.length; i += 2) { const a = first + head[i + 1], b = i + 3 < head.length ? first + head[i + 3] : s.text.length; if (!objs.has(head[i])) objs.set(head[i], s.text.slice(a, b)); }
+  }
+  // fonts: name → how to turn its bytes into text
+  const fontInfo = new Map(), nameToObj = new Map();
+  for (const [num, body] of objs) {
+    const sIdx = body.indexOf('stream'); const head = sIdx >= 0 ? body.slice(0, sIdx) : body;
+    if (/\/BaseFont\s*\//.test(head) && /\/Subtype\s*\/(Type0|TrueType|Type1|Type3|MMType1)\b/.test(head)) {
+      const enc = (head.match(/\/Encoding\s*\/([\w-]+)/) || [])[1] || '';
+      fontInfo.set(num, { ucs2: /UCS2|UTF16/i.test(enc), two: /Type0/.test(head), tu: +((head.match(/\/ToUnicode\s+(\d+)\s+\d+\s+R/) || [])[1] || 0), map: null });
+    }
+    for (const fm of head.matchAll(/\/Font\s*<<([\s\S]*?)>>/g)) for (const r of fm[1].matchAll(/\/([^\s\/<>\[\]]+)\s+(\d+)\s+\d+\s+R/g)) if (!nameToObj.has(r[1])) nameToObj.set(r[1], +r[2]);
+    for (const fr of head.matchAll(/\/Font\s+(\d+)\s+\d+\s+R/g)) { const fb = objs.get(+fr[1]) || ''; for (const r of fb.matchAll(/\/([^\s\/<>\[\]]+)\s+(\d+)\s+\d+\s+R/g)) if (!nameToObj.has(r[1])) nameToObj.set(r[1], +r[2]); }
+    for (const rr of head.matchAll(/\/Resources\s+(\d+)\s+\d+\s+R/g)) { const rb = objs.get(+rr[1]) || ''; for (const fm of rb.matchAll(/\/Font\s*<<([\s\S]*?)>>/g)) for (const r of fm[1].matchAll(/\/([^\s\/<>\[\]]+)\s+(\d+)\s+\d+\s+R/g)) if (!nameToObj.has(r[1])) nameToObj.set(r[1], +r[2]); }
+  }
+  const hexStr = h => { h = h.replace(/[^0-9a-f]/gi, ''); let s = ''; for (let i = 0; i + 3 < h.length + 2; i += 4) { const c = parseInt(h.slice(i, i + 4).padEnd(4, '0'), 16); if (!isNaN(c)) s += String.fromCharCode(c); } return s; };
+  for (const f of fontInfo.values()) {
+    if (!f.tu || !objs.has(f.tu)) continue;
+    const s = await streamOf(objs.get(f.tu)); if (!s || !s.text) continue;
+    const map = new Map(); let bytes = 1;
+    for (const blk of s.text.matchAll(/beginbfchar([\s\S]*?)endbfchar/g)) for (const p of blk[1].matchAll(/<([0-9a-fA-F]+)>\s*<([0-9a-fA-F]+)>/g)) { map.set(parseInt(p[1], 16), hexStr(p[2])); if (p[1].length > 2) bytes = 2; }
+    for (const blk of s.text.matchAll(/beginbfrange([\s\S]*?)endbfrange/g)) {
+      for (const p of blk[1].matchAll(/<([0-9a-fA-F]+)>\s*<([0-9a-fA-F]+)>\s*(<([0-9a-fA-F]+)>|\[([^\]]*)\])/g)) {
+        const lo = parseInt(p[1], 16), hi = parseInt(p[2], 16); if (p[1].length > 2) bytes = 2; if (hi - lo > 20000) continue;
+        if (p[4]) { const base = hexStr(p[4]); const last = base.charCodeAt(base.length - 1); for (let c = lo; c <= hi; c++) map.set(c, base.slice(0, -1) + String.fromCharCode(last + c - lo)); }
+        else { const arr = [...p[5].matchAll(/<([0-9a-fA-F]+)>/g)].map(x => hexStr(x[1])); for (let c = lo; c <= hi && c - lo < arr.length; c++) map.set(c, arr[c - lo]); }
+      }
+    }
+    f.map = map; f.bytes = f.two ? 2 : bytes;
+  }
+  const decode = (raw, fname) => {
+    const f = fontInfo.get(nameToObj.get(fname));
+    if (f && f.ucs2) { let s = ''; for (let i = 0; i + 1 < raw.length; i += 2) s += String.fromCharCode((raw.charCodeAt(i) << 8) | raw.charCodeAt(i + 1)); return s; }
+    if (f && f.map) { let s = ''; const b = f.bytes || 1; for (let i = 0; i + b - 1 < raw.length; i += b) { const c = b === 2 ? (raw.charCodeAt(i) << 8) | raw.charCodeAt(i + 1) : raw.charCodeAt(i); s += f.map.has(c) ? f.map.get(c) : ''; } return s; }
+    if (f && f.two) return '';
+    return raw;
+  };
+  // content streams → runs with positions → lines
+  const runs = [];
+  for (const body of objs.values()) {
+    if (body.indexOf('stream') < 0) continue;
+    const dictHead = body.slice(0, body.indexOf('stream'));
+    if (/\/Type\s*\/(XRef|ObjStm|Metadata)/.test(dictHead) || /\/Subtype\s*\/(Image|XML)/.test(dictHead) || /\/Length1|\/Length2|\/Subtype\s*\/(Type1C|CIDFontType0C|OpenType)/.test(dictHead)) continue;
+    const s = await streamOf(body); if (!s || !s.text || !/\bBT\b/.test(s.text) || !/T[jJ]/.test(s.text)) continue;
+    const t = s.text; let i = 0; const st = []; let font = '', tm = [1, 0, 0, 1, 0, 0], lm = [1, 0, 0, 1, 0, 0], ctm = [1, 0, 0, 1, 0, 0], lead = 0; const cstack = [];
+    const pos = () => ({ x: ctm[0] * tm[4] + ctm[2] * tm[5] + ctm[4], y: ctm[1] * tm[4] + ctm[3] * tm[5] + ctm[5] });
+    const emit = str => { if (!str) return; const p = pos(); runs.push({ x: p.x, y: p.y, s: str, size: Math.abs(tm[3] * ctm[3]) || 10 }); };
+    const lit = () => { let depth = 1, out = ''; i++; while (i < t.length && depth) { const c = t[i]; if (c === '\\') { const n = t[i + 1]; if (/[0-7]/.test(n)) { let o = ''; let k = i + 1; while (k < i + 4 && /[0-7]/.test(t[k])) o += t[k++]; out += String.fromCharCode(parseInt(o, 8) & 255); i = k; continue; } out += ({ n: '\n', r: '\r', t: '\t', b: '\b', f: '\f' })[n] ?? (n === '\r' || n === '\n' ? '' : n); i += 2; continue; } if (c === '(') depth++; else if (c === ')') { depth--; if (!depth) { i++; break; } } out += c; i++; } return { str: out }; };
+    while (i < t.length) {
+      const c = t[i];
+      if (c === '(') { st.push(lit()); continue; }
+      if (c === '<' && t[i + 1] !== '<') { const e = t.indexOf('>', i); const h = t.slice(i + 1, e).replace(/\s/g, ''); let out = ''; for (let k = 0; k < h.length; k += 2) out += String.fromCharCode(parseInt((h.slice(k, k + 2) + '0').slice(0, 2), 16)); st.push({ str: out }); i = e + 1; continue; }
+      if (c === '[') { st.push({ arrStart: true }); i++; continue; }
+      if (c === ']') { const arr = []; while (st.length && !st[st.length - 1].arrStart) arr.unshift(st.pop()); st.pop(); st.push({ arr }); i++; continue; }
+      if (c === '/') { const mm = /^\/[^\s\/\[\]()<>{}%]*/.exec(t.slice(i, i + 128)); st.push({ name: mm[0].slice(1) }); i += mm[0].length; continue; }
+      if (c === '%') { const e = t.indexOf('\n', i); i = e < 0 ? t.length : e; continue; }
+      if (/[\d.+-]/.test(c)) { const mm = /^[+-]?(\d+\.?\d*|\.\d+)/.exec(t.slice(i, i + 32)); if (mm) { st.push(+mm[0]); i += mm[0].length; continue; } }
+      if (/[A-Za-z'"*]/.test(c)) {
+        const mm = /^[A-Za-z'"*]+[0-9]?/.exec(t.slice(i, i + 8)); const op = mm[0]; i += op.length;
+        const nums = st.filter(x => typeof x === 'number');
+        if (op === 'BI') { const e = t.indexOf('EI', i); i = e < 0 ? t.length : e + 2; }
+        else if (op === 'q') cstack.push(ctm.slice());
+        else if (op === 'Q') ctm = cstack.pop() || [1, 0, 0, 1, 0, 0];
+        else if (op === 'cm' && nums.length >= 6) { const [a, b, cc, d, e, f] = nums.slice(-6); const m0 = ctm; ctm = [a * m0[0] + b * m0[2], a * m0[1] + b * m0[3], cc * m0[0] + d * m0[2], cc * m0[1] + d * m0[3], e * m0[0] + f * m0[2] + m0[4], e * m0[1] + f * m0[3] + m0[5]]; }
+        else if (op === 'BT') { tm = [1, 0, 0, 1, 0, 0]; lm = tm.slice(); }
+        else if (op === 'Tf') { const nm = st.find(x => x && x.name); if (nm) font = nm.name; }
+        else if (op === 'TL' && nums.length) lead = nums[nums.length - 1];
+        else if (op === 'Tm' && nums.length >= 6) { tm = nums.slice(-6); lm = tm.slice(); }
+        else if ((op === 'Td' || op === 'TD') && nums.length >= 2) { const [tx, ty] = nums.slice(-2); if (op === 'TD') lead = -ty; lm = [lm[0], lm[1], lm[2], lm[3], lm[4] + tx * lm[0] + ty * lm[2], lm[5] + tx * lm[1] + ty * lm[3]]; tm = lm.slice(); }
+        else if (op === 'T*') { lm = [lm[0], lm[1], lm[2], lm[3], lm[4] - lead * lm[2], lm[5] - lead * lm[3]]; tm = lm.slice(); }
+        else if (op === 'Tj' || op === "'" || op === '"') { if (op !== 'Tj') { lm = [lm[0], lm[1], lm[2], lm[3], lm[4] - lead * lm[2], lm[5] - lead * lm[3]]; tm = lm.slice(); } const sv = st.filter(x => x && x.str !== undefined).pop(); if (sv) emit(decode(sv.str, font)); }
+        else if (op === 'TJ') { const a = st.filter(x => x && x.arr).pop(); if (a) emit(a.arr.map(x => x.str !== undefined ? decode(x.str, font) : (typeof x === 'number' && x < -180 ? ' ' : '')).join('')); }
+        st.length = 0; continue;
+      }
+      i++;
+    }
+  }
+  // group runs into lines by their height on the page, left to right
+  const clean = s => s.replace(/[\u0000-\u0008\u000b-\u001f\uFFFD]/g, '').replace(/\s+/g, ' ');
+  const rs = runs.map(r => Object.assign(r, { s: clean(r.s) })).filter(r => r.s.trim());
+  rs.sort((a, b) => (b.y - a.y) || (a.x - b.x));
+  const lines = []; let cur = null;
+  for (const r of rs) { const tol = Math.max(2, r.size * 0.45); if (cur && Math.abs(cur.y - r.y) <= tol) cur.items.push(r); else { cur = { y: r.y, items: [r] }; lines.push(cur); } }
+  return lines.map(l => l.items.sort((a, b) => a.x - b.x).map(x => x.s.trim()).join(' ').replace(/\s+([:：])/g, ' $1').trim()).filter(Boolean).join('\n');
+}
+const textScore = s => { s = String(s || ''); const cjk = (s.match(/[一-鿿가-힣]/g) || []).length; const al = (s.match(/[A-Za-z0-9]/g) || []).length; return { cjk, al, bad: (s.match(/[\uFFFD]/g) || []).length }; };
+
 const fileHref = id => fileSrc(id);
 
 /* ================= documents ================= */
@@ -2588,8 +2741,9 @@ function parseBillText(text) {
   for (const re of pick) {
     for (let i = 0; i < lines.length && !total; i++) {
       if (!re.test(lines[i]) || /SUB\s*-?\s*TOTAL|小计/i.test(lines[i]) || (/大写/.test(lines[i]) && !/小写/.test(lines[i]))) continue;
-      let v = amt(lines[i]); if (!v && lines[i + 1] && !/[A-Za-z一-龥]{3,}/.test(lines[i + 1])) v = amt(lines[i + 1]);
-      if (v > 0) { total = v; totalLine = lines[i] + ' ' + (lines[i + 1] || ''); }
+      let v = amt(lines[i]), pre = ''; if (!v && lines[i + 1] && !/[A-Za-z一-龥]{3,}/.test(lines[i + 1])) v = amt(lines[i + 1]);
+      if (!v && i > 0 && /[\d,]+\.\d{2}\s*$/.test(lines[i - 1]) && !/TOTAL|合计|总计|小计/i.test(lines[i - 1])) { v = amt(lines[i - 1]); pre = lines[i - 1] + ' '; }
+      if (v > 0) { total = v; totalLine = pre + lines[i] + ' ' + (lines[i + 1] || ''); }
     }
     if (total) break;
   }
@@ -2608,6 +2762,9 @@ function parseBillText(text) {
   if (named.length >= 2) { if (!billTo) billTo = named[0]; if (!issuer) issuer = named[1]; }
   if (!issuer) { const top = lines.slice(0, 12).find(l => COMPANY_RE.test(l) && !toRe.test(l) && !(billTo && l.includes(billTo)) && l.length <= 80 && !/(BANK|银行)/i.test(l)); if (top) issuer = top.replace(/^(FROM|发自)\s*[:：]?\s*/i, '').trim(); }
   const usIssuer = isOurs(issuer), usTo = isOurs(billTo);
+  const hanOf = x => /[一-鿿]/.test(x || '');
+  const issuerAlt = issuer ? (lines.slice(0, 12).find(l => l !== issuer && COMPANY_RE.test(l) && !toRe.test(l) && !(billTo && l.includes(billTo)) && l.length <= 80 && !isOurs(l) && !/(BANK|银行)/i.test(l) && hanOf(l) !== hanOf(issuer)) || '').trim() : '';
+  const charges = []; { const hi = lines.findIndex(l => /^(DESCRIPTION|项目|品名|费用名称|费用项目|ITEM|CHARGE)/i.test(l) && /(AMOUNT|金额)/i.test(l)); for (let k = hi + 1; hi >= 0 && k < lines.length && charges.length < 20; k++) { const l = lines[k]; if (/TOTAL|合计|总计|REMARK|备注/i.test(l)) break; const mm = l.match(/^([A-Za-z一-鿿][^\d]{1,60}?)\s+[\d*].*?([\d,]+\.\d{2})\s*$/); if (mm) charges.push({ desc: mm[1].trim(), amt: parseNum(mm[2]) }); } }
   const ti = lines.findIndex(l => BILL_TITLE.test(l)); const head = lines.slice(0, ti > 2 ? ti : 8).join('\n');
   const dir = usIssuer && !usTo ? 'export' : 'import';
   const partnerName = dir === 'export' ? billTo : issuer;
@@ -2643,9 +2800,9 @@ function parseBillText(text) {
   return {
     kind: 'bill', dir, no, partnerName: (partnerName || '').slice(0, 80), billTo, issuer, toOther: dir === 'import' && !!billTo && !usTo, title: title.toUpperCase(),
     poDate: date, payDue, payTerms: termsM ? termsM[1].trim() : '', currency, total, category,
-    items: [{ desc: `${descWord}${no ? ' · ' + no : ''}`, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: total }],
+    items: charges.length > 1 && Math.abs(sumBy(charges, c => c.amt) - total) <= Math.max(0.05, total * 0.005) ? charges.map(c => ({ desc: c.desc, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: c.amt })) : [{ desc: `${descWord}${no ? ' · ' + no : ''}${charges.length ? ' (' + charges.map(c => c.desc).slice(0, 4).join(', ') + ')' : ''}`, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: total }], issuerAlt,
     refPo: po ? po.no : (ship && ship.blNo) || refs[0] || '', poLink: po ? po.id : '', shipId: ship ? ship.id : '', supBank: bankLines.join('\n'), memo, status: 'open', source: 'ocr',
-    ptInfo: dir === 'import' ? Object.assign((() => { const o = parsePartnerText(head); delete o.name; delete o.banks; return o; })(), { banks: parseBanks(all) }) : {}
+    ptInfo: dir === 'import' ? Object.assign((() => { const o = parsePartnerText(head); delete o.name; delete o.banks; delete o.nameAlt; return o; })(), { banks: parseBanks(all) }, issuerAlt ? { nameAlt: issuerAlt } : {}) : {}
   };
 }
 
@@ -3413,7 +3570,7 @@ function localRead(text, note, kind) {
 /* PDF → page images + text (pdf.js runs on the main thread: the worker script is loaded first so pdf.js uses it in place) */
 const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 const PDFJS_W = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-async function readPdf(file, maxPages) {
+async function readPdfJs(file, maxPages) {
   await loadScript(PDFJS_W); await loadScript(PDFJS);
   const lib = window.pdfjsLib; if (!lib) throw new Error('load');
   lib.GlobalWorkerOptions.workerSrc = PDFJS_W;
@@ -3431,6 +3588,17 @@ async function readPdf(file, maxPages) {
     }
   }
   return { images, text: text.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').trim(), pages: pdf.numPages };
+}
+const liteLooksRight = s => { s = String(s || ''); if (s.replace(/\s/g, '').length < 30) return false; const nb = s.replace(/\s/g, ''); const ok = (nb.match(/[A-Za-z0-9.,:;\/()\-+$%#@&'"*·|<>\[\]_=?!~^`{}\\一-鿿가-힣　-〿＀-￯ -ÿ‐-‧№]/g) || []).length / nb.length; const words = (s.match(/\b(the|and|of|to|no|date|total|amount|price|qty|quantity|invoice|order|company|tel|bank|account|description|unit|name)\b/gi) || []).length; return ok >= 0.92 && (words >= 2 || textScore(s).cjk >= 6); };
+async function readPdf(file, maxPages) {
+  let lite = '';
+  try { lite = await pdfTextLite(await file.arrayBuffer()); } catch (e) { }
+  if (liteLooksRight(lite) && !maxPages) return { images: [], text: lite, pages: 1, src: 'lite' };
+  let pj = null; try { pj = await readPdfJs(file, maxPages); } catch (e) { }
+  if (!pj) { if (lite) return { images: [], text: lite, pages: 1, src: 'lite' }; throw new Error('pdf'); }
+  // pdf.js without its Chinese tables drops CJK; the built-in reader keeps it and keeps rows together
+  if (liteLooksRight(lite) && (textScore(lite).cjk >= textScore(pj.text).cjk || textScore(pj.text).bad > 0)) pj.text = lite;
+  return pj;
 }
 
 /* turn Claude's reading into a checklist of things to save */
@@ -3466,8 +3634,8 @@ function buildPlan(r) {
     }
     P.attachTo = 'pos';
   } else if (r.kind === 'bill' && r.bill) {
-    const b = r.bill; const data = JSON.parse(JSON.stringify(b)); ['total', 'billTo', 'issuer', 'toOther', 'title', 'poLink', 'ptInfo'].forEach(k => delete data[k]);
-    const exP = (data.partnerName && (partnerByName(data.partnerName) || matchPartner(data.partnerName))) || null;
+    const b = r.bill; const data = JSON.parse(JSON.stringify(b)); ['total', 'billTo', 'issuer', 'toOther', 'title', 'poLink', 'ptInfo', 'issuerAlt'].forEach(k => delete data[k]);
+    const exP = (data.partnerName && (partnerByName(data.partnerName) || matchPartner(data.partnerName))) || (b.issuerAlt && (partnerByName(b.issuerAlt) || matchPartner(b.issuerAlt))) || null;
     if (exP) data.partnerName = exP.name;
     if (data.partnerName) P.partner = { existing: exP, on: !exP, data: { name: data.partnerName, kind: data.dir === 'export' ? 'buyer' : data.category === 'logistics' ? 'forwarder' : 'supplier', address: '', contact: '', tel: '', email: '', country: '', alias: '' } };
     const ex = data.no ? S.pos.find(x => isBill(x) && (x.no || '').trim().toLowerCase() === data.no.trim().toLowerCase()) : null;
@@ -3615,7 +3783,7 @@ function openSmart(opts = {}) {
         for (const f of files) {
           if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) {
             busy(`PDF 읽는 중 · ${f.name}`);
-            try { const r = await readPdf(f, 3); pdfImgs.push(...r.images); pdfText += `\n${r.text}`; } catch (e) { pdfFail = true; }
+            try { const r = await readPdf(f, SAMPLE ? 3 : 0); pdfImgs.push(...r.images); pdfText += `\n${r.text}`; } catch (e) { pdfFail = true; }
           } else photos.push(f);
         }
         st.innerHTML = '';
