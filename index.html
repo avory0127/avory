@@ -112,7 +112,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .hero .btn-ghost{background:transparent;border-color:rgba(255,255,255,.34);color:#FFFFFF}
 .hero .btn-ghost:hover{border-color:rgba(255,255,255,.7)}
 .hero .btn{min-height:46px;padding:0 16px;border-radius:11px;font-size:15px}
-.hero-art{position:absolute;right:-6px;top:12px;width:min(42%,220px);height:auto;color:#D6E9F2;opacity:.14;pointer-events:none}
+.hero-mark{position:absolute;right:-3%;top:clamp(78px,16%,120px);width:min(58%,320px);height:auto;filter:brightness(0) invert(1);opacity:.07;clip-path:inset(0 0 33% 0);pointer-events:none;user-select:none}
 .ledger{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 18px;padding:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
 .ledger>b{font-size:15px;margin-right:2px}
 .ledger span{font-size:14px;color:var(--ink-3);white-space:nowrap}
@@ -609,7 +609,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.05-6';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.05-7';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -1141,14 +1141,7 @@ const ddChip = (d, warnAt = 7) => d === null ? '' : `<span class="chip ${d < 0 ?
 const hasSample = () => [S.partners, S.pos, S.ships, S.txns, S.docs].some(a => a.some(x => x.sample));
 
 /* ---------- home ---------- */
-const HERO_ART = `<svg class="hero-art" viewBox="0 0 230 170" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M18 34h12M24 28v12M196 18h10M201 13v10"/>
-  <ellipse cx="66" cy="92" rx="24" ry="38"/><ellipse cx="66" cy="92" rx="18" ry="29"/><ellipse cx="66" cy="92" rx="12" ry="19"/><ellipse cx="66" cy="92" rx="6" ry="9"/>
-  <path d="M66 54 L118 44 M66 130 L118 126"/><path d="M84 51c8 12 8 70 0 82M100 48c8 13 8 76 0 81"/>
-  <ellipse cx="118" cy="85" rx="20" ry="41"/><path d="M118 44 L150 40 M118 126 L150 124"/><ellipse cx="150" cy="82" rx="12" ry="42"/>
-  <path d="M150 40 l44 -10 v76 l-44 10z M194 30 l16 7 v76 l-16 -7"/><path d="M160 52h24M160 96h24"/><circle cx="172" cy="74" r="7"/>
-  <path d="M40 150H206M40 145v10M206 145v10M118 145v10"/></g>
-  <text x="40" y="166" fill="currentColor" font-family="IBM Plex Mono,monospace" font-size="7" letter-spacing="2">OPTICAL ASSEMBLY</text></svg>`;
+const heroMark = () => S.co.logo ? `<img class="hero-mark" src="${esc(S.co.logo)}" alt="" aria-hidden="true">` : '';
 /* the next two weeks in one list: money due, ships, tax */
 function upcomingEvents(days) {
   const ev = [];
@@ -1191,7 +1184,7 @@ function viewHome(alerts) {
       <button data-act="go" data-to="arap" data-side="ap"><span>줄 돈</span><b class="mono">${esc(Object.keys(pay).length ? curMap(pay).join(' · ') : '없음')}</b></button>
       <button data-act="go" data-to="report"><span>이번 달 남은 돈</span><b class="mono" ${m.net < 0 ? 'style="color:#FFB4A8"' : ''}>${m.net > 0 ? '+' : ''}${money(m.net)}</b></button>
     </div>
-    ${HERO_ART}</section>
+    ${heroMark()}</section>
   <div class="qa-grid">
     ${qa('smart', 'upload', '청구서·서류 올리기', 'data-kind="auto"')}${qa('paste-sms', 'chat', '은행 문자 넣기')}${qa('go', 'users', '거래처', 'data-to="partners"')}
     ${qa('go', 'docs', '서류 만들기', 'data-to="docs"')}${qa('new-po', 'po', 'PO 등록')}${qa('new-ship', 'ship', '출하 등록')}
