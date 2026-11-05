@@ -162,6 +162,24 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .pt-info dd{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .pt-info dd .btn{min-height:28px;padding:0 8px;font-size:12px;flex:none}
 
+
+/* ---------- alert sheet · classify ---------- */
+.al-head{display:flex;align-items:center;gap:10px;font-size:17px}
+.al-head .sev{flex:none}
+.al-sub{font-size:13px;color:var(--ink-3);margin-top:-6px}
+.sheet-b>*{flex-shrink:0}
+.cls-list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+.cls-row{padding:12px 14px;border-top:1px solid var(--line-2);display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.cls-row:first-child{border-top:0}
+.cls-row.cls-done{background:var(--good-soft)}
+.cls-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.cls-chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip-btn{border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;line-height:1.2}
+.chip-btn:hover{border-color:var(--ink-3)}
+.chip-btn.sug{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.chip-btn.ghost{border-style:dashed;color:var(--ink-3)}
+.chip-btn[disabled]{opacity:.5}
+
 /* ---------- page parts ---------- */
 .page-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
 .page-head h1{font-size:24px;font-weight:700;letter-spacing:-.01em}
@@ -609,7 +627,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.05-7';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.05-8';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -799,28 +817,36 @@ const SH_DEPARTED = new Set(['departed', 'arrived', 'cleared', 'delivered']);
 const SH_ARRIVED = new Set(['arrived', 'cleared', 'delivered']);
 const PO_SHIPPED = new Set(['shipped', 'arrived', 'done']);
 
-function computeAlerts() {
-  const A = []; const N = Math.max(0, num(S.co.alertDays) || 3);
-  const push = (sev, title, sub, d, act, id) => A.push({ sev, title, sub, d, act, id });
+/* ================= alerts: open one, act on it, or put it away ================= */
+function alertHidden(key) { const o = (S.co.alertOff || {})[key]; if (!o) return false; return o === 'done' || o > todayStr(); }
+async function setAlertOff(key, until) {
+  const cur = Object.assign({}, S.co.alertOff || {}); const old = addDays(todayStr(), -120);
+  for (const [k, v] of Object.entries(cur)) { const d = (k.match(/\|(\d{4}-\d{2}-\d{2})$/) || [])[1]; if ((v !== 'done' && v < todayStr()) || (d && d < old)) delete cur[k]; }
+  if (until === null) delete cur[key]; else cur[key] = until;
+  await saveCo({ alertOff: cur });
+}
+function computeAlerts(opts = {}) {
+  const A = []; const N = Math.max(0, num(S.co.alertDays) || 3); const H = Math.max(N, opts.horizon || 0);
+  const push = (sev, title, sub, d, kind, ref, date) => { const key = `${kind}|${encodeURIComponent(ref || '')}|${date || ''}`; if (!opts.hidden && alertHidden(key)) return; A.push({ sev, title, sub, d, kind, ref, date, key }); };
   for (const s of S.ships) {
     if (['delivered', 'cancel'].includes(s.status)) continue;
     const dep = SH_DEPARTED.has(s.status), arr = SH_ARRIVED.has(s.status);
     const who = [s.ref, s.poNo || (poById(s.poId) || {}).no, routeText(s)].filter(Boolean).join(' · ');
-    if (s.docCutoff && !dep) { const d = dday(s.docCutoff); if (d >= 0 && d <= N) push('warn', `서류 마감 ${dlabel(d)}`, who, d, 'edit-ship', s.id); }
-    if (s.cargoReady && s.status === 'booked') { const d = dday(s.cargoReady); if (d !== null && d <= N) push(d < 0 ? 'crit' : 'warn', d < 0 ? '화물 준비일 지남 · 상태 확인' : `화물 준비 ${dlabel(d)}`, who, d, 'edit-ship', s.id); }
-    if (s.etd && !dep) { const d = dday(s.etd); if (d < 0) push('crit', '출항 예정일 지남 · 선적 여부 확인', who, d, 'edit-ship', s.id); else if (d <= N) push('warn', `출항 ${dlabel(d)}`, who, d, 'edit-ship', s.id); }
-    if (s.eta && dep && !arr) { const d = dday(s.eta); if (d < 0) push('crit', '도착 예정일 지남 · 도착 확인', who, d, 'edit-ship', s.id); else if (d <= N) push('info', `도착 ${dlabel(d)}`, who, d, 'edit-ship', s.id); }
-    if (s.status === 'arrived' && poDir(s) === 'import') push('info', '도착 · 통관 진행 확인', who, 0, 'edit-ship', s.id);
+    if (s.docCutoff && !dep) { const d = dday(s.docCutoff); if (d >= 0 && d <= H) push('warn', `서류 마감 ${dlabel(d)}`, who, d, 'ship-doc', s.id, s.docCutoff); }
+    if (s.cargoReady && s.status === 'booked') { const d = dday(s.cargoReady); if (d !== null && d <= H) push(d < 0 ? 'crit' : 'warn', d < 0 ? '화물 준비일 지남 · 상태 확인' : `화물 준비 ${dlabel(d)}`, who, d, 'ship-cargo', s.id, s.cargoReady); }
+    if (s.etd && !dep) { const d = dday(s.etd); if (d < 0) push('crit', '출항 예정일 지남 · 선적 여부 확인', who, d, 'ship-etd', s.id, s.etd); else if (d <= H) push('warn', `출항 ${dlabel(d)}`, who, d, 'ship-etd', s.id, s.etd); }
+    if (s.eta && dep && !arr) { const d = dday(s.eta); if (d < 0) push('crit', '도착 예정일 지남 · 도착 확인', who, d, 'ship-eta', s.id, s.eta); else if (d <= H) push('info', `도착 ${dlabel(d)}`, who, d, 'ship-eta', s.id, s.eta); }
+    if (s.status === 'arrived' && poDir(s) === 'import') push('info', '도착 · 통관 진행 확인', who, 0, 'ship-clear', s.id, s.eta || '');
   }
   for (const p of S.pos) {
     if (p.status === 'cancel') continue;
     const who = `${isBill(p) ? '청구서 ' : ''}${p.no || (isBill(p) ? '' : 'PO')} · ${p.partnerName || ''}`;
-    if (!isBill(p) && isActivePo(p) && p.dueDate && !PO_SHIPPED.has(p.status)) { const d = dday(p.dueDate); if (d < 0) push('crit', `납기 ${-d}일 지남`, who, d, 'edit-po', p.id); else if (d <= 7) push('warn', `납기 ${dlabel(d)}`, who, d, 'edit-po', p.id); }
+    if (!isBill(p) && isActivePo(p) && p.dueDate && !PO_SHIPPED.has(p.status)) { const d = dday(p.dueDate); if (d < 0) push('crit', `납기 ${-d}일 지남`, who, d, 'po-due', p.id, p.dueDate); else if (d <= Math.max(7, H)) push('warn', `납기 ${dlabel(d)}`, who, d, 'po-due', p.id, p.dueDate); }
     const bal = poBal(p); const due = dueOf(p);
     if (due && bal > 0.005) {
       const d = dday(due.date); const w = (p.dir === 'import' ? '지급' : '입금') + (due.dflt ? '(기본 기한)' : due.est ? '(추정)' : '');
-      if (d < 0) push('crit', `${w} 기한 지남 · ${money(bal, p.currency)} 남음`, who, d, 'edit-po', p.id);
-      else if (d <= N) push('warn', `${w} 기한 ${dlabel(d)} · ${money(bal, p.currency)}`, who, d, 'edit-po', p.id);
+      if (d < 0) push('crit', `${w} 기한 지남 · ${money(bal, p.currency)} 남음`, who, d, 'pay', p.id, due.date);
+      else if (d <= H) push('warn', `${w} 기한 ${dlabel(d)} · ${money(bal, p.currency)}`, who, d, 'pay', p.id, due.date);
     }
   }
   for (const f of (S.co.fixed || [])) {
@@ -828,18 +854,141 @@ function computeAlerts() {
     for (const ym of [curYm(), addMonths(curYm(), 1)]) {
       const last = new Date(+ym.slice(0, 4), +ym.slice(5, 7), 0).getDate();
       const date = `${ym}-${pad2(Math.min(num(f.day), last))}`; const d = dday(date);
-      if (d > N || d < -20) continue;
-      const paid = S.txns.some(t => t.dir === 'out' && (t.date || '').startsWith(ym) && ((f.category && t.category === f.category && (!num(f.amount) || Math.abs(num(t.amount) - num(f.amount)) <= Math.max(1, num(f.amount) * 0.02))) || (t.counterparty || '').includes(f.name) || (t.memo || '').includes(f.name)));
-      if (paid) continue;
-      push(d < 0 ? 'crit' : 'warn', d < 0 ? `${f.name} 납부 확인 · ${-d}일 지남` : `${f.name} 납부 ${dlabel(d)}`, `${fmtD(date, true)}${num(f.amount) ? ' · ' + money(num(f.amount), f.currency || BASE()) : ''} · 고정 지출`, d, 'go-money', '');
+      if (d > H || d < -20) continue;
+      if (fixedPaid(f, ym)) continue;
+      push(d < 0 ? 'crit' : 'warn', d < 0 ? `${f.name} 납부 확인 · ${-d}일 지남` : `${f.name} 납부 ${dlabel(d)}`, `${fmtD(date, true)}${num(f.amount) ? ' · ' + money(num(f.amount), f.currency || BASE()) : ''} · 고정 지출`, d, 'fixed', f.name, date);
     }
   }
-  for (const e of taxEvents()) { const d = dday(e.date); if (d <= 10) push(d <= 3 ? 'warn' : 'info', `${e.title} ${dlabel(d)}`, `${fmtD(e.date, true)} · ${e.sub}`, d, 'noop', ''); else break; }
-  const unc = S.txns.filter(t => !t.category && (t.date || '') >= addDays(todayStr(), -60)).length;
-  if (unc) push('info', `분류 안 된 입출금 ${unc}건`, '항목을 정해 두면 월간 리포트가 정확해져요', 99, 'go-money', '');
+  for (const e of taxEvents()) { const d = dday(e.date); if (d <= Math.max(10, H)) push(d <= 3 ? 'warn' : 'info', `${e.title} ${dlabel(d)}`, `${fmtD(e.date, true)} · ${e.sub}`, d, 'tax', e.title, e.date); else break; }
+  const unc = S.txns.filter(t => !t.category).length;
+  if (unc) push('info', `분류 안 된 입출금 ${unc}건`, '눌러서 바로 분류하면 월간 리포트가 정확해져요', 99, 'unc', '', '');
   const rank = { crit: 0, warn: 1, info: 2 };
   return A.sort((a, b) => rank[a.sev] - rank[b.sev] || a.d - b.d);
 }
+const fixedPaid = (f, ym) => S.txns.some(t => t.dir === 'out' && (t.date || '').startsWith(ym) && ((f.category && t.category === f.category && (!num(f.amount) || Math.abs(num(t.amount) - num(f.amount)) <= Math.max(1, num(f.amount) * 0.02))) || (t.counterparty || '').includes(f.name) || (t.memo || '').includes(f.name)));
+
+function openAlert(key) {
+  const parts = String(key || '').split('|'); const kind = parts[0], ref = decodeURIComponent(parts[1] || ''), date = parts[2] || '';
+  if (kind === 'unc') { openClassify(); return; }
+  const a = computeAlerts({ hidden: true, horizon: 120 }).find(x => x.key === key);
+  const off = (S.co.alertOff || {})[key];
+  const kv = rows => `<dl class="kv2">${rows.filter(r => r[1] !== '' && r[1] != null).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
+  const B = (label, attrs, cls = '') => `<button type="button" class="btn ${cls}" ${attrs}>${label}</button>`;
+  let info = '', main = '', extra = '', dateEd = null, doneLabel = '이 알림 끄기';
+  const p = (kind === 'pay' || kind === 'po-due') ? poById(ref) : null;
+  const s = kind.startsWith('ship-') ? S.ships.find(x => x.id === ref) : null;
+  if (kind === 'pay' && p) {
+    const ap = p.dir === 'import', cur = p.currency || 'USD', due = dueOf(p);
+    info = kv([[ap ? '줄 곳' : '받을 곳', esc(p.partnerName || '')], [isBill(p) ? '청구서' : 'PO', `<span class="mono">${esc(p.no || '')}</span>`], ['남은 금액', `<b class="mono">${money(poBal(p), cur)}</b>`], ['기한', due ? `${fmtDF(due.date)}${dueTag(due)}` : '']]);
+    main = B('결제 기록', `data-act="pay" data-id="${esc(p.id)}"`, 'btn-p') + (ap ? B('이체 정보 복사', `data-act="copy-pay" data-id="${esc(p.id)}"`) : '') + B(isBill(p) ? '청구서 보기' : 'PO 보기', `data-act="edit-po" data-id="${esc(p.id)}"`);
+    extra = B('통장 기록 없이 완납 처리', 'data-aact="settle"', 'btn-q');
+    dateEd = { label: ap ? '지급 기한 바꾸기' : '입금 기한 바꾸기', col: 'pos', rec: p, field: 'payDue', value: due ? due.date : '' };
+    doneLabel = '이 기한 알림 끄기';
+  } else if (kind === 'po-due' && p) {
+    info = kv([['거래처', esc(p.partnerName || '')], ['PO', `<span class="mono">${esc(p.no || '')}</span>`], ['납기', fmtDF(p.dueDate)], ['상태', esc(L(PO_ST, p.status || 'open'))]]);
+    main = B('출하 등록', `data-act="new-ship" data-po="${esc(p.id)}"`, 'btn-p') + B('선적 끝났어요', 'data-aact="po-shipped"') + B('PO 보기', `data-act="edit-po" data-id="${esc(p.id)}"`);
+    dateEd = { label: '납기 바꾸기', col: 'pos', rec: p, field: 'dueDate', value: p.dueDate || '' };
+  } else if (s) {
+    info = kv([['출하', `<span class="mono">${esc(s.ref || '')}</span>`], ['구간', esc(routeText(s))], ['선박', esc(s.vessel || '')], ['ETD', s.etd ? fmtDF(s.etd) : ''], ['ETA', s.eta ? fmtDF(s.eta) : ''], ['상태', esc(L(SH_ST, s.status || 'booked'))]]);
+    const st = (v, l, cls = '') => B(l, `data-aact="ship-status" data-v="${v}"`, cls);
+    if (kind === 'ship-etd') { main = st('departed', '출항했어요', 'btn-p'); dateEd = { label: '출항일 바꾸기', col: 'ships', rec: s, field: 'etd', value: s.etd || '' }; }
+    else if (kind === 'ship-eta') { main = st('arrived', '도착했어요', 'btn-p'); dateEd = { label: '도착일 바꾸기', col: 'ships', rec: s, field: 'eta', value: s.eta || '' }; }
+    else if (kind === 'ship-cargo') { main = st('ready', '화물 준비됐어요', 'btn-p'); dateEd = { label: '화물 준비일 바꾸기', col: 'ships', rec: s, field: 'cargoReady', value: s.cargoReady || '' }; }
+    else if (kind === 'ship-doc') { dateEd = { label: '서류 마감일 바꾸기', col: 'ships', rec: s, field: 'docCutoff', value: s.docCutoff || '' }; doneLabel = '서류 냈어요 · 알림 끄기'; }
+    else if (kind === 'ship-clear') main = st('cleared', '통관 끝났어요', 'btn-p') + st('delivered', '입고까지 끝났어요');
+    main += B('출하 보기', `data-act="edit-ship" data-id="${esc(s.id)}"`);
+  } else if (kind === 'fixed') {
+    const f = (S.co.fixed || []).find(x => x.name === ref) || { name: ref };
+    info = kv([['항목', esc(f.name)], ['금액', num(f.amount) ? `<b class="mono">${money(num(f.amount), f.currency || BASE())}</b>` : '정해진 금액 없음'], ['납부일', fmtDF(date)]]);
+    const cands = S.txns.filter(t => t.dir === 'out' && !EXCL.has(t.category) && (t.date || '') >= addDays(date, -20) && (t.date || '') <= addDays(date, 25))
+      .sort((x, y) => Math.abs(num(x.amount) - num(f.amount)) - Math.abs(num(y.amount) - num(f.amount)) || (y.date || '').localeCompare(x.date || '')).slice(0, 6);
+    main = B('출금 직접 기록', 'data-aact="fixed-new"', 'btn-p') + B('고정 지출 설정', 'data-act="go" data-to="company" data-tab="app"');
+    extra = cands.length ? `<div class="rel"><div class="rel-h"><span>이미 나간 출금 중에 있나요?</span></div>${cands.map(t => `<div class="prow"><div style="min-width:0"><div class="row-t">${esc(t.counterparty || t.memo || '출금')}${t.category ? `<span class="chip">${esc(CAT_LABEL[t.category] || '')}</span>` : ''}</div><div class="row-s">${fmtDF(t.date)} · ${esc(t.bank || '')}</div></div><div class="row-r"><span class="amt">${money(num(t.amount), t.currency || BASE())}</span></div><div class="acts"><button type="button" class="btn btn-s" data-aact="fixed-link" data-tid="${esc(t.id)}">이 출금이 ${esc(f.name)}예요</button></div></div>`).join('')}</div>` : '';
+    doneLabel = '이번 달은 냈어요 · 알림 끄기';
+  } else if (kind === 'tax') {
+    const e = taxEvents().find(x => x.title === ref && x.date === date);
+    info = kv([['일정', esc(ref)], ['기한', fmtDF(date)], ['내용', esc(e ? e.sub : '')]]);
+    doneLabel = '신고 끝났어요';
+  } else {
+    info = '<div class="banner"><span>이 알림의 대상이 지워졌거나 바뀌었어요.</span></div>';
+  }
+  const dateHTML = dateEd ? `<div class="f"><span>${dateEd.label}</span><div style="display:flex;gap:8px"><input class="in" type="date" id="al-date" value="${esc(dateEd.value)}"><button type="button" class="btn" data-aact="date-save">저장</button></div></div>` : '';
+  const body = `${a ? `<div class="al-head"><span class="sev ${a.sev}">${{ crit: '긴급', warn: '주의', info: '안내' }[a.sev]}</span><b>${esc(a.title)}</b></div><div class="al-sub">${esc(a.sub)}</div>` : ''}
+    ${off ? `<div class="banner info"><span>${off === 'done' ? '이 알림은 꺼져 있어요.' : `${fmtDF(off)}까지 미뤄 둔 알림이에요.`}</span><button type="button" class="btn btn-s" data-aact="unsnooze">다시 켜기</button></div>` : ''}
+    ${info}
+    ${main ? `<div class="actions">${main}</div>` : ''}
+    ${dateHTML}${extra}
+    <div class="f"><span>알림 정리</span><div class="actions"><button type="button" class="btn btn-s" data-aact="snooze" data-n="1">내일 다시</button><button type="button" class="btn btn-s" data-aact="snooze" data-n="3">3일 뒤</button><button type="button" class="btn btn-s" data-aact="snooze" data-n="7">다음 주</button><button type="button" class="btn btn-s ${kind === 'tax' || kind === 'fixed' ? 'btn-p' : ''}" data-aact="done">${doneLabel}</button></div></div>`;
+  const sheetTitle = { pay: p && p.dir === 'import' ? '줄 돈 확인' : '받을 돈 확인', 'po-due': '납기 확인', fixed: '고정 지출 확인', tax: '세무 일정' }[kind] || (kind.startsWith('ship-') ? '출하 확인' : '알림');
+  openSheet(sheetTitle, body, `<span class="sp"></span><button type="button" class="btn" data-act="sheet-close">닫기</button>`, {
+    mount: panel => {
+      panel.addEventListener('click', async e => {
+        const b = e.target.closest('[data-aact]'); if (!b) return;
+        const act = b.dataset.aact;
+        if (writeBlocked()) return;
+        try {
+          if (act === 'snooze') { const n = +b.dataset.n; await setAlertOff(key, addDays(todayStr(), n)); toast(n === 1 ? '내일 다시 알려 드려요' : `${n}일 뒤에 다시 알려 드려요`); closeSheet(); }
+          else if (act === 'done') { await setAlertOff(key, 'done'); toast('알림을 정리했어요'); closeSheet(); }
+          else if (act === 'unsnooze') { await setAlertOff(key, null); toast('알림을 다시 켰어요'); closeSheet(); }
+          else if (act === 'date-save' && dateEd) { const v = $('#al-date', panel).value; if (!v) { toast('날짜를 골라 주세요.', 'crit'); return; } const latest = (S[dateEd.col].find(x => x.id === dateEd.rec.id)) || dateEd.rec; await put(dateEd.col, Object.assign(JSON.parse(JSON.stringify(latest)), { [dateEd.field]: v })); toast('날짜를 바꿨어요'); closeSheet(); }
+          else if (act === 'settle' && p) {
+            if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.classList.remove('btn-q'); b.classList.add('btn-danger'); b.textContent = `${money(poBal(p), p.currency || 'USD')}을 완납으로 처리할까요? 한 번 더 누르세요`; return; }
+            const latest = poById(p.id) || p; const bal = poBal(latest);
+            await put('pos', Object.assign(JSON.parse(JSON.stringify(latest)), { paidExtra: Math.round((num(latest.paidExtra) + bal) * 100) / 100, status: isBill(latest) ? 'done' : latest.status, memo: [latest.memo, `${todayStr()} 통장 기록 없이 완납 처리 ${fmtNum(bal, latest.currency || 'USD')}`].filter(Boolean).join(' · ') }));
+            toast('완납으로 처리했어요'); closeSheet();
+          }
+          else if (act === 'po-shipped' && p) { const latest = poById(p.id) || p; await put('pos', Object.assign(JSON.parse(JSON.stringify(latest)), { status: 'shipped' })); toast('선적 완료로 바꿨어요'); closeSheet(); }
+          else if (act === 'ship-status' && s) {
+            const v = b.dataset.v, latest = S.ships.find(x => x.id === s.id) || s, u = Object.assign(JSON.parse(JSON.stringify(latest)), { status: v });
+            if (v === 'departed' && (!u.etd || dday(u.etd) > 0)) u.etd = todayStr();
+            if (v === 'arrived' && (!u.eta || dday(u.eta) > 0)) u.eta = todayStr();
+            await put('ships', u); toast(`‘${L(SH_ST, v)}’로 바꿨어요`); closeSheet();
+          }
+          else if (act === 'fixed-link') {
+            const f = (S.co.fixed || []).find(x => x.name === ref) || { name: ref };
+            const t = S.txns.find(x => x.id === b.dataset.tid); if (!t) return;
+            const row = JSON.parse(JSON.stringify(t)); row.category = f.category || row.category || 'rent'; if (!String(row.memo || '').includes(f.name)) row.memo = [row.memo, f.name].filter(Boolean).join(' · ');
+            await put('txns', row); toast(`${f.name} 납부로 기록했어요`); closeSheet();
+          }
+          else if (act === 'fixed-new') {
+            const f = (S.co.fixed || []).find(x => x.name === ref) || { name: ref };
+            closeSheet(); openTxn({ dir: 'out', date: dday(date) <= 0 ? todayStr() : date, amount: num(f.amount) || '', currency: f.currency || BASE(), counterparty: f.name, category: f.category || 'rent', memo: f.name, source: 'manual' });
+          }
+        } catch (err) { }
+      });
+    }
+  });
+}
+
+/* sort out unclassified money in one place: one tap per line */
+function openClassify() {
+  const list = () => S.txns.filter(t => !t.category).sort(byDT).reverse();
+  const rowHTML = t => {
+    const cats = t.dir === 'in' ? CATS.in : CATS.out, g = guessCategory(Object.assign({}, t, { category: '' }));
+    const order = g ? [cats.find(c => c[0] === g), ...cats.filter(c => c[0] !== g)].filter(Boolean) : cats;
+    return `<div class="cls-row" data-tid="${esc(t.id)}"><div class="cls-top"><div style="min-width:0"><div class="row-t">${esc(t.counterparty || t.memo || (t.dir === 'in' ? '입금' : '출금'))}</div><div class="row-s">${fmtDF(t.date)}${t.time ? ' ' + esc(t.time) : ''} · ${esc(t.bank || '')}${t.memo && t.counterparty ? ' · ' + esc(t.memo) : ''}</div></div><span class="amt ${t.dir === 'in' ? 'amt-in' : ''}">${t.dir === 'in' ? '+' : '−'}${money(num(t.amount), t.currency || BASE())}</span></div>
+      <div class="cls-chips">${order.map(([k, l]) => `<button type="button" class="chip-btn ${k === g ? 'sug' : ''}" data-cat="${k}">${k === g ? '추천 · ' : ''}${esc(l)}</button>`).join('')}<button type="button" class="chip-btn ghost" data-open="${esc(t.id)}">자세히 · PO 연결</button></div></div>`;
+  };
+  const items = list();
+  const body = `<div class="muted" id="cls-n" style="font-size:13px">${items.length ? `${items.length}건 남았어요. 항목을 누르면 바로 저장돼요. 파란 칸은 앱이 추천하는 항목이에요.` : ''}</div>
+    <div id="cls-list" class="cls-list">${items.length ? items.map(rowHTML).join('') : '<div class="empty">분류 안 된 입출금이 없어요.</div>'}</div>`;
+  openSheet('입출금 분류', body, `<span class="sp"></span><button type="button" class="btn btn-p" data-act="sheet-close">완료</button>`, {
+    mount: panel => {
+      panel.addEventListener('click', async e => {
+        const o = e.target.closest('[data-open]'); if (o) { const t = S.txns.find(x => x.id === o.dataset.open); if (t) { closeSheet(); openTxn(t); } return; }
+        const c = e.target.closest('[data-cat]'); if (!c) return;
+        const row = c.closest('.cls-row'); const t = S.txns.find(x => x.id === row.dataset.tid); if (!t) return;
+        $$('.chip-btn', row).forEach(x => { x.disabled = true; });
+        try {
+          await put('txns', Object.assign(JSON.parse(JSON.stringify(t)), { category: c.dataset.cat }));
+          row.classList.add('cls-done'); row.innerHTML = `<div class="row-s">${esc(t.counterparty || '')} → <b>${esc(CAT_LABEL[c.dataset.cat] || '')}</b> 저장했어요</div>`;
+          const left = S.txns.filter(x => !x.category).length; $('#cls-n', panel).textContent = left ? `${left}건 남았어요.` : '모두 분류했어요.';
+        } catch (err) { $$('.chip-btn', row).forEach(x => { x.disabled = false; }); }
+      });
+    }
+  });
+}
+
 function taxEvents() {
   const co = S.co, y = new Date().getFullYear(), ev = [];
   if (co.taxRegion === 'none') return [];
@@ -1145,15 +1294,16 @@ const heroMark = () => S.co.logo ? `<img class="hero-mark" src="${esc(S.co.logo)
 /* the next two weeks in one list: money due, ships, tax */
 function upcomingEvents(days) {
   const ev = [];
-  for (const x of arapItems()) if (x.due && x.d !== null && x.d <= days) ev.push({ date: x.due.date, d: x.d, tag: x.side === 'ap' ? ['지급', 'c-out'] : ['입금', 'c-steel'], title: `${x.p.partnerName || ''}`, sub: `${isBill(x.p) ? '청구서' : 'PO'} ${x.p.no || ''}${x.due.dflt ? ' · 기한 기본값' : x.due.est ? ' · 기한 추정' : ''}`, amt: money(x.bal, x.cur), act: 'edit-po', id: x.p.id });
+  const K = (kind, ref, date) => `${kind}|${encodeURIComponent(ref || '')}|${date || ''}`;
+  for (const x of arapItems()) if (x.due && x.d !== null && x.d <= days) ev.push({ date: x.due.date, d: x.d, tag: x.side === 'ap' ? ['지급', 'c-out'] : ['입금', 'c-steel'], title: `${x.p.partnerName || ''}`, sub: `${isBill(x.p) ? '청구서' : 'PO'} ${x.p.no || ''}${x.due.dflt ? ' · 기한 기본값' : x.due.est ? ' · 기한 추정' : ''}`, amt: money(x.bal, x.cur), key: K('pay', x.p.id, x.due.date) });
   for (const s of S.ships) {
     if (['delivered', 'cancel'].includes(s.status)) continue;
     const dep = SH_DEPARTED.has(s.status), date = dep ? s.eta : s.etd; if (!date) continue;
     const d = dday(date); if (d > days || d < -7) continue;
-    ev.push({ date, d, tag: [dep ? '도착' : '출항', ''], title: routeText(s), sub: [s.ref, s.vessel].filter(Boolean).join(' · '), amt: '', act: 'edit-ship', id: s.id });
+    ev.push({ date, d, tag: [dep ? '도착' : '출항', ''], title: routeText(s), sub: [s.ref, s.vessel].filter(Boolean).join(' · '), amt: '', key: K(dep ? 'ship-eta' : 'ship-etd', s.id, date) });
   }
-  for (const e of taxEvents()) { const d = dday(e.date); if (d > days) break; ev.push({ date: e.date, d, tag: ['세무', 'c-warn'], title: e.title, sub: e.sub, amt: '', act: 'noop', id: '' }); }
-  return ev.sort((a, b) => a.date.localeCompare(b.date));
+  for (const e of taxEvents()) { const d = dday(e.date); if (d > days) break; ev.push({ date: e.date, d, tag: ['세무', 'c-warn'], title: e.title, sub: e.sub, amt: '', key: K('tax', e.title, e.date) }); }
+  return ev.filter(e => (S.co.alertOff || {})[e.key] !== 'done').sort((a, b) => a.date.localeCompare(b.date));
 }
 function viewHome(alerts) {
   const t = todayStr(), co = S.co, m = monthAgg(curYm());
@@ -1192,11 +1342,11 @@ function viewHome(alerts) {
   ${hasSample() ? `<div class="banner info"><span>지금 보이는 기록 중 <b>예시</b> 표시가 있는 건 둘러보기용이에요.</span><button class="btn btn-s" data-act="clear-samples">예시 모두 지우기</button></div>` : ''}
   ${showStart ? `<section class="panel"><div class="panel-h"><h2>시작하기</h2><span class="sub">한 번만 해 두면 돼요</span></div><div class="steps">${steps.map((s, i) => `<button class="step ${s[0] ? 'done' : ''}" data-act="${s[3]}" ${s[4] ? `data-to="${s[4]}"` : ''}><span class="n">STEP ${i + 1}</span><b>${s[1]}</b><p>${s[2]}</p></button>`).join('')}</div></section>` : ''}
   <section class="panel"><div class="panel-h"><h2>확인할 일</h2><span class="count">${alerts.length}건</span></div>
-    ${alerts.length ? `<div class="list">${alerts.slice(0, 10).map(a => `<button class="alert" data-act="${a.act}" data-id="${esc(a.id)}"><span class="sev ${a.sev}">${{ crit: '긴급', warn: '주의', info: '안내' }[a.sev]}</span><span><b>${esc(a.title)}</b><div class="row-s">${esc(a.sub)}</div></span></button>`).join('')}</div>`
+    ${alerts.length ? `<div class="list">${alerts.slice(0, 10).map(a => `<button class="alert" data-act="alert" data-key="${esc(a.key)}"><span class="sev ${a.sev}">${{ crit: '긴급', warn: '주의', info: '안내' }[a.sev]}</span><span><b>${esc(a.title)}</b><div class="row-s">${esc(a.sub)}</div></span></button>`).join('')}</div>`
       : `<div class="empty">${ready ? '지금 챙길 일이 없어요. 결제 기한·출항일·세무 일정이 다가오면 여기에 떠요.' : '불러오는 중…'}</div>`}
   </section>
   <section class="panel"><div class="panel-h"><h2>앞으로 2주</h2><button class="btn btn-s btn-q" data-act="ics-all">캘린더로 받기</button></div>
-    ${ev.length ? `<div class="list">${ev.map(e => `<button class="row sched" data-act="${e.act}" data-id="${esc(e.id)}"><span class="sd mono"><b>${fmtD(e.date)}</b><small>${e.d === 0 ? '오늘' : e.d < 0 ? `${-e.d}일 지남` : `D-${e.d}`}</small></span><div style="min-width:0"><div class="row-t"><span class="chip ${e.tag[1]}">${e.tag[0]}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.title)}</span></div><div class="row-s">${esc(e.sub)}</div></div><span class="amt">${esc(e.amt)}</span></button>`).join('')}</div>`
+    ${ev.length ? `<div class="list">${ev.map(e => `<button class="row sched" data-act="alert" data-key="${esc(e.key)}"><span class="sd mono"><b>${fmtD(e.date)}</b><small>${e.d === 0 ? '오늘' : e.d < 0 ? `${-e.d}일 지남` : `D-${e.d}`}</small></span><div style="min-width:0"><div class="row-t"><span class="chip ${e.tag[1]}">${e.tag[0]}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.title)}</span></div><div class="row-s">${esc(e.sub)}</div></div><span class="amt">${esc(e.amt)}</span></button>`).join('')}</div>`
       : '<div class="empty">2주 안에 잡힌 일정이 없어요.</div>'}</section>
   <section class="panel quick"><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:8px">
     <label for="quick-in" style="font-size:12px;font-weight:600;color:var(--ink-2)">빠른 입력 · 은행 문자, 청구서·주문 글자를 붙여넣으면 알아서 정리해요</label>
@@ -1275,7 +1425,7 @@ function viewMoney() {
   return `
   <div class="page-head"><div><div class="eyebrow">Bank Transactions</div><h1>입출금 내역</h1></div>
     <div class="actions"><button class="btn" data-act="import-file">엑셀·CSV 불러오기</button><button class="btn" data-act="ocr" data-kind="bank">캡처로 입력</button><button class="btn" data-act="new-txn">직접 입력</button><button class="btn btn-p" data-act="paste-sms">문자 붙여넣기</button></div></div>
-  <div class="filters">${moneySeg('money')}${monthNav('month', ym)}${m.unc ? `<span class="chip c-warn">미분류 ${m.unc}건</span>` : ''}${m.xfer ? `<span class="chip">내부 이체·정정 ${m.xfer}건은 합계에서 빠져요</span>` : ''}</div>
+  <div class="filters">${moneySeg('money')}${monthNav('month', ym)}${m.unc ? `<button class="chip c-warn" data-act="classify" style="border:0">미분류 ${m.unc}건 · 분류하기</button>` : ''}${m.xfer ? `<span class="chip">내부 이체·정정 ${m.xfer}건은 합계에서 빠져요</span>` : ''}</div>
   <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
     <div class="tile"><div class="k">들어온 돈</div><div class="v" style="color:var(--s-in)">${money(m.inK)}</div><div class="s">${BASE()} 환산</div></div>
     <div class="tile"><div class="k">나간 돈</div><div class="v">${money(m.outK)}</div><div class="s">${BASE()} 환산</div></div>
@@ -1333,7 +1483,7 @@ function viewReport() {
   return `
   <div class="page-head"><div><div class="eyebrow">Monthly Report</div><h1>월간 리포트</h1></div>
     <div class="actions"><button class="btn" data-act="export-csv">입출금 CSV</button><button class="btn btn-p" data-act="export-report">PDF로 저장</button></div></div>
-  <div class="filters">${moneySeg('report')}${monthNav('rmonth', ym)}${m.unc ? `<button class="chip c-warn" data-act="go-money" style="border:0">미분류 ${m.unc}건 · 분류하기</button>` : ''}</div>
+  <div class="filters">${moneySeg('report')}${monthNav('rmonth', ym)}${m.unc ? `<button class="chip c-warn" data-act="classify" style="border:0">미분류 ${m.unc}건 · 분류하기</button>` : ''}</div>
   <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))">
     <div class="tile"><div class="k">들어온 돈 (${BASE()} 환산)</div><div class="v" style="color:var(--s-in)">${money(m.inK)}</div></div>
     <div class="tile"><div class="k">나간 돈 (${BASE()} 환산)</div><div class="v">${money(m.outK)}</div></div>
@@ -3587,8 +3737,9 @@ function toast(msg, kind = '') { const el = document.createElement('div'); el.cl
 /* ================= events ================= */
 function go(route) { if (!ROUTES.has(route)) route = 'home'; S.route = route; if (location.hash.slice(1) !== route) { try { history.replaceState(null, '', '#' + route); } catch (e) { location.hash = route; } } render(); window.scrollTo(0, 0); }
 const ACT = {
-  'go': el => { if (el.dataset.tab) S.coTab = el.dataset.tab; if (el.dataset.side) S.arapF = el.dataset.side; go(el.dataset.to); },
+  'go': el => { if (el.closest('.sheet')) closeSheet(); if (el.dataset.tab) S.coTab = el.dataset.tab; if (el.dataset.side) S.arapF = el.dataset.side; go(el.dataset.to); },
   'go-money': () => go('money'), 'noop': () => { },
+  'alert': el => openAlert(el.dataset.key), 'classify': () => openClassify(),
   'new-po': () => openPo(null), 'edit-po': el => { const p = poById(el.dataset.id); if (p) openPo(p); },
   'new-ship': el => openShip(null, el.dataset.po), 'edit-ship': el => { const s = S.ships.find(x => x.id === el.dataset.id); if (s) openShip(s); },
   'new-txn': () => openTxn(null), 'edit-txn': el => { const t = S.txns.find(x => x.id === el.dataset.id); if (t) openTxn(t); },
