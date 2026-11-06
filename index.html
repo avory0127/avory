@@ -703,7 +703,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-3';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-4';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -1134,11 +1134,33 @@ function monthAgg(ym) {
   return { rows, inK, outK, net: r2(inK - outK), byCat, fx, noRate: [...noRate], unc: rows.filter(t => !t.category).length, xfer: rows.filter(t => EXCL.has(t.category)).length };
 }
 /* balance per account: last known balance carried forward by later transactions (transfers included, since they move real money) */
+/* one account however a message writes it: 777081462592, *2592 and 尾号2592 are the same account (same currency, same last 4 digits) */
+const acctTail = a => { const d = String(a || '').replace(/\D/g, ''); return d.length >= 4 ? d.slice(-4) : ''; };
+function acctKeyer(txns) {
+  const known = {};
+  for (const t of txns) { const tl = acctTail(t.account); if (!tl) continue; const k = `${t.currency || 'KRW'}|${tl}`; const o = known[k] = known[k] || { bank: '' }; if (!o.bank && t.bank) o.bank = t.bank; }
+  return t => {
+    const cur = t.currency || 'KRW', tl = acctTail(t.account);
+    if (tl) return `${cur}|${tl}`;
+    // no account number in the record: the only known account of that bank and currency
+    const same = Object.keys(known).filter(k => k.startsWith(cur + '|') && (!t.bank || !known[k].bank || known[k].bank === t.bank));
+    return same.length === 1 ? same[0] : `${cur}|${t.bank || ''}|`;
+  };
+}
+/* the fullest way an account has been written before (for a masked *2592 in a new message) */
+function fullAccount(account, currency, bank) {
+  const tl = acctTail(account); if (!tl || typeof S === 'undefined') return account;
+  const pool = [...(S.txns || []).filter(t => (t.currency || 'KRW') === (currency || 'KRW')).map(t => t.account), ...((S.co && S.co.banks) || []).filter(b => (b.currency || 'USD') === currency).map(b => b.account)];
+  const best = pool.filter(a => acctTail(a) === tl).sort((a, b) => String(b).replace(/\D/g, '').length - String(a).replace(/\D/g, '').length)[0];
+  return best && String(best).replace(/\D/g, '').length > String(account).replace(/\D/g, '').length ? String(best).replace(/\s/g, '') : account;
+}
 function accountBalances(upto) {
-  const acc = {};
+  const acc = {}; const keyOf = acctKeyer(S.txns);
   for (const t of S.txns.filter(t => !upto || (t.date || '') <= upto).sort(byDT)) {
-    const key = `${t.bank || ''}|${t.account || ''}|${t.currency || 'KRW'}`;
-    const a = acc[key] = acc[key] || { key, bank: t.bank || '', account: t.account || '', cur: t.currency || 'KRW', bal: null, last: null };
+    const key = keyOf(t);
+    const a = acc[key] = acc[key] || { key, bank: '', account: '', cur: t.currency || 'KRW', bal: null, last: null };
+    if (t.bank && !a.bank) a.bank = t.bank;
+    if (String(t.account || '').replace(/\D/g, '').length > String(a.account || '').replace(/\D/g, '').length) a.account = t.account;
     if (t.balance !== null && t.balance !== undefined && t.balance !== '') a.bal = num(t.balance);
     else if (a.bal !== null) a.bal = Math.round((a.bal + (t.dir === 'in' ? 1 : -1) * num(t.amount)) * 100) / 100;
     a.last = t;
@@ -1241,7 +1263,7 @@ function inferYear(m, d, now) {
 function parseBankSms(text, now) {
   now = now || new Date();
   const out = [];
-  for (const raw of splitSmsBlocks(text)) { const r = (/[\u4e00-\u9fff]/.test(raw) && !/[\uac00-\ud7a3]/.test(raw)) ? parseCnSms(raw, now) : parseOneSms(raw, now); if (r) out.push(r); }
+  for (const raw of splitSmsBlocks(text)) { const r = (/[\u4e00-\u9fff]/.test(raw) && !/[\uac00-\ud7a3]/.test(raw)) ? parseCnSms(raw, now) : parseOneSms(raw, now); if (r) { if (r.account) r.account = fullAccount(r.account, r.currency, r.bank); out.push(r); } }
   return out;
 }
 function parseOneSms(raw, now) {
