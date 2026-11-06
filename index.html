@@ -703,7 +703,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-2';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-3';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -1298,8 +1298,8 @@ function parseOneSms(raw, now) {
 }
 const ymdOf = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 const CN_BANKS = ['工商银行', '建设银行', '农业银行', '中国银行', '交通银行', '招商银行', '浦发银行', '中信银行', '光大银行', '民生银行', '兴业银行', '平安银行', '华夏银行', '广发银行', '邮储银行', '邮政储蓄', '宁波银行', '上海银行', '北京银行', '江苏银行', '杭州银行', '网商银行', '微众银行', '农商银行', '渤海银行', '浙商银行'];
-const CN_IN = /(收入|存入|转入|入账|收款(?!方)(?!人(?!民))|汇入|到账|来账|退款|代发|贷记(?!卡)|收到)/;
-const CN_OUT = /(支出|转出|扣款|消费|取款|付款(?!方)(?!人(?!民))|支付|汇出|代扣|扣费|借记(?!卡)|取现)/;
+const CN_IN = /(收入|存入|转入|入账|收款(?!方)(?!人(?!民))|汇入|到账|来账|退款|代发|贷记(?!卡)|收到|划入|结息|利息收入|冲正|退汇|返还)/;
+const CN_OUT = /(支出|支取|取出|转出|扣款|扣收|扣除|消费|取款|付款(?!方)(?!人(?!民))|支付|汇出|汇款(?!人)|代扣|扣费|借记(?!卡)|取现|提现|划出|缴费|缴纳|还款|手续费|服务费|年费)/;
 const CN_CUR = { 人民币: 'CNY', RMB: 'CNY', CNY: 'CNY', 美元: 'USD', USD: 'USD', 欧元: 'EUR', EUR: 'EUR', 港币: 'HKD', 港元: 'HKD', HKD: 'HKD', 日元: 'JPY', JPY: 'JPY', 韩元: 'KRW', KRW: 'KRW', 英镑: 'GBP', GBP: 'GBP' };
 function parseCnSms(raw, now) {
   const src = raw.replace(/\s+/g, ' ').trim();
@@ -1343,6 +1343,7 @@ function parseCnSms(raw, now) {
   if (!counterparty) for (const re of [/向\s*([^\s，,。；]{2,30}?)\s*(?:转账|付款|支付|汇款)/, /(?:^|[，,。\s])([^\s，,。；]{2,30}?)\s*(?:向您|给您)\s*(?:转账|付款|汇款)/, /来自\s*([^\s，,。；]{2,30}?)\s*的/]) { const x = body.match(re); if (x) { counterparty = x[1]; break; } }
   const mm = body.match(/(?:摘要|备注|附言|用途)[:：]?\s*([^，,。；;)）]{1,40})/); if (mm) memo = mm[1].trim();
   if (!memo) { const t = body.match(/\d{1,2}[:：时]\d{2}分?\s*([一-鿿]{2,8}?)(?:收入|支出|转入|转出|存入|消费|支付|入账|扣款)/); if (t) memo = t[1]; }
+  counterparty = counterparty.replace(/【[^】]*】|\[[^\]]*\]/g, '').replace(/^于/, '').trim();
   return { dir, amount, currency, balance, date, time, bank, account, counterparty: counterparty.slice(0, 40), memo, raw: raw.trim() };
 }
 /*PARSER-END*/
