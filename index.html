@@ -59,7 +59,7 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid transparent;background:transparent;display:grid;place-items:center;color:var(--ink-2);flex:none}
 .icon-btn:hover{background:var(--sunk)}
 .icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
   padding-bottom:env(safe-area-inset-bottom,0px);padding-left:max(4px,env(safe-area-inset-left,0px));padding-right:max(4px,env(safe-area-inset-right,0px))}
 .tab{border:0;background:none;padding:8px 2px 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--ink-3);font-weight:500;position:relative}
 .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -157,7 +157,8 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .acct{font-size:19px;font-weight:600;letter-spacing:.02em;color:var(--ink);overflow-wrap:anywhere}
 .bank-card .actions{margin-top:6px}
 .bank-ed{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px;background:var(--surface-2);display:flex;flex-direction:column;gap:6px;align-items:flex-start}
-.bank-ed .it-grid{width:100%}
+.bank-ed .it-grid{width:100%;grid-template-columns:minmax(0,.7fr) minmax(0,1.6fr) minmax(0,1.6fr)}
+@media (max-width:620px){.bank-ed .it-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-auto-flow:row dense}.bank-ed .it-grid .w{grid-column:1/-1}}
 .pt-info{padding:0 16px 16px}
 .pt-info dd{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .pt-info dd .btn{min-height:28px;padding:0 8px;font-size:12px;flex:none}
@@ -510,6 +511,76 @@ table.age td.hot{color:var(--crit);font-weight:600}
 .th-s{width:44px;height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;overflow:hidden;font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--ink-3);text-decoration:none;flex:none}
 .th-s img{width:100%;height:100%;object-fit:cover}
 .quick textarea{min-height:52px;resize:vertical}
+/* schedule calendar */
+.pl-calp{overflow:hidden}
+.pl-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.pl-wd{font-size:11px;font-weight:700;text-align:center;padding:7px 0;background:#2D4A60;color:#fff}
+.pl-wd.we{background:#4A6478}
+.pl-wd .zh{display:none}
+.pc-d{border:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;align-items:stretch;gap:2px;min-height:76px;padding:3px 3px 6px;text-align:left;min-width:0;overflow:hidden;font:inherit;color:inherit;cursor:pointer}
+.pc-d:nth-child(7n){border-right:0}
+.pc-d.out{background:var(--surface-2);cursor:default}
+.pc-d.we:not(.out){background:#FAFBFC}
+.pc-d .dn{font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--ink-2);line-height:18px;align-self:flex-start;padding:0 4px;border-radius:9px}
+.pc-d.today .dn{background:var(--accent);color:#fff}
+.pc-d.sel{box-shadow:inset 0 0 0 2px var(--accent)}
+.pc-m{display:block;font-style:normal;font-size:10px;font-weight:700;line-height:15px;border-radius:4px;padding:1px 2px;white-space:nowrap;overflow:hidden;text-overflow:clip;text-align:center;letter-spacing:-.2px}
+.pc-m .mb{margin-right:2px}
+.pc-m.ship{background:#1E7A55;color:#fff}.pc-m.inspect{background:#F8D9A0;color:#6B4100}.pc-m.mile{background:var(--steel-soft);color:var(--steel)}
+.pc-t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:10px;line-height:1.3;color:var(--ink);overflow:hidden;word-break:break-all}
+.pc-m .q{display:none}
+.pc-t>b{font-weight:800;margin-right:2px}
+.pc-t.st-n{color:var(--ink-2)}
+.pc-t.st-d{color:var(--ink-3);text-decoration:line-through}
+.pc-t .st,.pc-t .to{display:none}
+.pc-d .pc-t:nth-of-type(n+4){display:none}
+.pc-more{font-size:10px;color:var(--ink-3);font-weight:600}
+.pl-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 12px;font-size:12px;color:var(--ink-3);border-top:1px solid var(--line-2);align-items:center}
+.pl-legend .pc-m{display:inline-block;padding:0 6px;margin-right:4px}
+.pl-legend .st-n b{color:var(--ink-2)}
+@media (min-width:760px){
+  .pl-wd{font-size:12px}.pl-wd .zh{display:inline;font-weight:500;opacity:.8}
+  .pc-d{min-height:120px;padding:5px 6px 8px;gap:3px}
+  .pc-d .dn{font-size:14px}
+  .pc-m{font-size:12px;padding:2px 6px;line-height:17px;letter-spacing:0;text-overflow:ellipsis}.pc-m .mb{margin-right:5px}
+  .pc-t{display:block;-webkit-line-clamp:unset;font-size:12px;word-break:normal}.pc-m .q{display:inline}
+  .pc-t .st,.pc-t .to{display:inline}
+  .pc-d .pc-t:nth-of-type(n+4){display:block}
+  .pc-more{display:none}
+}
+.pl-bat{display:flex;flex-wrap:wrap;gap:6px}
+.pl-bat>span{display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:600;padding:4px 10px 4px 5px;border-radius:999px;border:1px solid var(--line)}
+.bk{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:6px;color:#fff;font-size:11px;font-weight:800;padding:0 4px;flex:none}
+.pl-note{font-size:13px;color:var(--ink-2);white-space:pre-wrap;line-height:1.6}
+.bat-row,.tier-row{display:grid;grid-template-columns:76px minmax(0,1.4fr) minmax(0,1fr) 40px;gap:8px;align-items:end}
+.tier-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.3fr) 40px}
+.bat-row label,.tier-row label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:600;color:var(--ink-3);min-width:0}
+.bat-row .icon-btn,.tier-row .icon-btn{height:42px}
+/* price page */
+.pr-calc{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;padding:10px 12px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.pr-calc b{font-family:var(--f-mono);color:var(--ink)}
+.pl-chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pj-chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;color:var(--ink-3);cursor:pointer;min-height:36px}
+.pj-chip i{width:10px;height:10px;border-radius:3px;opacity:.35}
+.pj-chip[aria-pressed=true]{border-color:var(--ink-2);color:var(--ink);background:var(--surface)}
+.pj-chip[aria-pressed=true] i{opacity:1}
+.pc-t .pj{font-style:normal;font-weight:800;font-size:9px;margin-right:3px;display:none}
+.pc-m .pjm{font-weight:600;opacity:.85;display:none}
+.pc-t.pjx{border-left:3px solid var(--pj);padding-left:3px}
+.pc-m.pjx{box-shadow:inset 4px 0 0 var(--pj)}
+@media (min-width:760px){.pc-t .pj,.pc-m .pjm{display:inline}.pc-t.pjx{border-left:0;padding-left:0}.pc-m.pjx{box-shadow:none}}
+.pl-wd small{font-size:9px;margin-left:2px;opacity:.85}
+.pl-wd.rest{background:#55708A}
+.pc-d.rest:not(.out){background:#FAFBFC}
+.pl-bat>span small{font-weight:500;color:var(--ink-3);font-size:12px;margin-left:2px}
+.pj-checks{display:flex;flex-direction:column;gap:2px}
+.pjdot{width:12px;height:12px;border-radius:3px;flex:none}
+.wd-checks{display:flex;flex-wrap:wrap;gap:2px 16px}
+.bat-row .bat-note{grid-column:1/-1}
+.pl-noteb{display:flex;flex-direction:column;gap:6px}
+.pl-noteb+.pl-noteb{border-top:1px solid var(--line-2);padding-top:12px}
+button.tile{font:inherit;color:inherit;width:100%;cursor:pointer}
+button.tile:hover{border-color:var(--ink-3)}
 </style>
 
 <div class="shell" id="shell">
@@ -533,7 +604,8 @@ table.age td.hot{color:var(--crit);font-weight:600}
 <div id="sheet-root"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="stage" aria-hidden="true"></div>
-<datalist id="dl-partners"></datalist>
+<datalist id="dl-partners"></datalist><datalist id="dl-products"></datalist><datalist id="dl-prcats"></datalist>
+<datalist id="dl-steps"><option value="在制料复核"><option value="校准版本复核"><option value="物料入库"><option value="IQC / 核版"><option value="SMT / AOI"><option value="组装烧录"><option value="调焦固化"><option value="复焦检查"><option value="测试/品质"><option value="余量测试"><option value="清尾复测"><option value="余量补验"><option value="包装入库"><option value="方案评审"><option value="打样"><option value="样品确认"><option value="开模"><option value="试模"><option value="试产"><option value="小批量试产"><option value="认证测试"><option value="客户确认"></datalist><datalist id="dl-terms"><option value="FOB Shenzhen"><option value="EXW"><option value="DDP"><option value="CIF"><option value="DAP"></datalist>
 <datalist id="dl-units"><option value="PCS"><option value="SET"><option value="EA"><option value="KG"><option value="MT"><option value="BOX"><option value="CTN"><option value="ROLL"><option value="M"></datalist>
 <datalist id="dl-pay"><option value="T/T 30% in advance, 70% before shipment"><option value="T/T 100% in advance"><option value="T/T 30 days after B/L date"><option value="L/C at sight"><option value="D/P at sight"><option value="D/A 60 days after B/L date"><option value="현금 선결제"><option value="월말 마감, 익월 말 현금 결제"></datalist>
 <datalist id="dl-ports"><option value="KRPUS">부산</option><option value="KRINC">인천</option><option value="KRPTK">평택</option><option value="KRKAN">광양</option><option value="KRICN">인천공항</option><option value="CNSHA">상하이</option><option value="CNNGB">닝보</option><option value="CNTAO">칭다오</option><option value="CNSZX">선전</option><option value="JPTYO">도쿄</option><option value="JPOSA">오사카</option><option value="VNSGN">호치민</option><option value="VNHPH">하이퐁</option><option value="SGSIN">싱가포르</option><option value="USLAX">LA</option><option value="USLGB">롱비치</option><option value="USNYC">뉴욕</option><option value="DEHAM">함부르크</option><option value="NLRTM">로테르담</option><option value="AEJEA">제벨알리</option></datalist>
@@ -610,30 +682,34 @@ const IC = {
   users: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.4 3-5.3 6-5.3s5.4 1.9 6 5.3M16 4.9a3 3 0 0 1 0 6M17.5 14.9c2 .6 3.2 2.3 3.5 5.1"/>',
   chat: '<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>',
   upload: '<path d="M12 16V4M7.5 8.5 12 4l4.5 4.5M5 20h14"/>',
+  tag: '<path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7.3 7.3a1 1 0 0 1-1.4 0z"/><circle cx="8" cy="8" r="1.6"/>',
+  cal: '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4M7.5 13h3M13.5 13h3M7.5 16.5h3"/>',
   chev: '<path d="M9 6l6 6-6 6"/>', back: '<path d="M15 6l-6 6 6 6"/>', x: '<path d="M6 6l12 12M18 6 6 18"/>', plus: '<path d="M12 5v14M5 12h14"/>'
 };
 const svg = (k, cls = '') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true">${IC[k]}</svg>`;
-const NAV = [['home', '홈', 'home'], ['partners', '거래처', 'users'], ['money', '자금', 'money'], ['po', 'PO', 'po'], ['ship', '출하', 'ship'], ['docs', '서류', 'docs']];
-const ROUTES = new Set(['home', 'partners', 'partner', 'po', 'ship', 'money', 'arap', 'docs', 'report', 'company']);
+const NAV = [['home', '홈', 'home'], ['partners', '거래처', 'users'], ['money', '자금', 'money'], ['po', 'PO', 'po'], ['products', '단가', 'tag'], ['plan', '일정', 'cal'], ['docs', '서류', 'docs']];
+const SIDE = [['home', '홈', 'home'], ['partners', '거래처', 'users'], ['money', '자금', 'money'], ['po', 'PO', 'po'], ['products', '제품 단가', 'tag'], ['plan', '생산·개발 일정', 'cal'], ['ship', '출하', 'ship'], ['docs', '서류', 'docs'], ['report', '리포트', 'report']];
+const ROUTES = new Set(['home', 'partners', 'partner', 'po', 'ship', 'money', 'arap', 'docs', 'report', 'company', 'plan', 'products']);
 
 /* ================= state ================= */
 const S = {
-  co: JSON.parse(JSON.stringify(DEF_CO)), partners: [], pos: [], ships: [], txns: [], docs: [],
+  co: JSON.parse(JSON.stringify(DEF_CO)), partners: [], pos: [], ships: [], txns: [], docs: [], plans: [], products: [],
+  planId: null, planSel: undefined, planYm: curYm(), planDay: '', planView: 'cal', prF: 'all', prQ: '',
   mode: 'connecting', canWrite: true, synced: new Set(), slow: false,
   route: 'home', month: curYm(), rmonth: curYm(),
   poF: { dir: 'all', st: 'active', q: '' }, shipF: 'active', docF: 'all', coTab: 'info', arapF: 'ar', quick: ''
 };
 let DB = null, SAMPLE = null, ASSETS = null;
-const COLS = ['partners', 'pos', 'ships', 'txns', 'docs'];
+const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.05-8';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-1';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
 function idbOpen() {
   return new Promise((res, rej) => {
-    const r = indexedDB.open(APP_ID, 1);
+    const r = indexedDB.open(APP_ID, 2);
     r.onupgradeneeded = () => { const db = r.result; for (const c of COLS) if (!db.objectStoreNames.contains(c)) db.createObjectStore(c, { keyPath: 'id' }); if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv', { keyPath: 'k' }); for (const s of ['files', 'gone']) if (!db.objectStoreNames.contains(s)) db.createObjectStore(s, { keyPath: 'id' }); };
     r.onsuccess = () => { const db = r.result; db.onversionchange = () => db.close(); res(db); };
     r.onerror = () => rej(r.error); r.onblocked = () => rej(new Error('blocked-open'));
@@ -731,7 +807,7 @@ async function makeBackup() {
   const files = await idbAll('files'), gone = await idbAll('gone');
   const enc = [];
   for (const f of files) enc.push({ id: f.id, name: f.name, type: f.type, at: f.at, data: await blobToB64(fileBlob(f)) });
-  return { app: APP_ID, format: 2, build: APP_BUILD, exportedAt: new Date().toISOString(), company: S.co, partners: S.partners, pos: S.pos, ships: S.ships, txns: S.txns, docs: S.docs, gone, files: enc };
+  const out = { app: APP_ID, format: 2, build: APP_BUILD, exportedAt: new Date().toISOString(), company: S.co }; for (const c of COLS) out[c] = S[c]; return Object.assign(out, { gone, files: enc });
 }
 async function doBackup(btn) {
   if (writeBlocked()) return;
@@ -755,6 +831,7 @@ async function applyBackup(data, mode) {
       const key = c + '/' + r.id, g = localGone.get(key), l = local.get(r.id);
       if (g && g.at >= num(r.updatedAt)) continue;
       if (l && num(l.updatedAt) > num(r.updatedAt)) continue;
+      if (!l && c === 'partners' && !repl && S.partners.some(x => String(x.name || '').trim().toLowerCase() === String(r.name || '').trim().toLowerCase())) continue;
       ops.push([c, 'put', JSON.parse(JSON.stringify(r))]); if (g) ops.push(['gone', 'delete', key]); n++;
     }
   }
@@ -777,7 +854,7 @@ async function applyBackup(data, mode) {
 }
 function openRestore(data) {
   const counts = COLS.map(c => [c, Array.isArray(data[c]) ? data[c].filter(x => x && x.id).length : 0]);
-  const label = { partners: '거래처', pos: 'PO', ships: '출하', txns: '입출금', docs: '서류' };
+  const label = { partners: '거래처', pos: 'PO·청구서', ships: '출하', txns: '입출금', docs: '서류', plans: '생산·개발 일정', products: '제품 단가' };
   const nFiles = Array.isArray(data.files) ? data.files.length : 0;
   const empty = COLS.every(c => !S[c].length);
   const body = `<dl class="kv2">${counts.map(([c, n]) => `<dt>${label[c]}</dt><dd class="mono">${n}건</dd>`).join('')}<dt>첨부 파일</dt><dd class="mono">${nFiles}개</dd><dt>회사 정보</dt><dd>${data.company ? '포함' : '없음'}</dd>${data.exportedAt ? `<dt>백업 시각</dt><dd class="mono">${esc(new Date(data.exportedAt).toLocaleString('ko-KR'))}</dd>` : ''}</dl>
@@ -795,7 +872,7 @@ function openRestore(data) {
         if (m === 'replace' && !empty && !$('#rs-ok', panel).checked) { toast('바꾸기에 동의하는 칸을 체크해 주세요.', 'crit'); return; }
         if (writeBlocked()) return;
         b.disabled = true; b.textContent = '불러오는 중…';
-        try { const r = await applyBackup(data, m); toast(`${r.n}건${r.files ? ` · 파일 ${r.files}개` : ''}를 불러왔어요`); closeSheet(); }
+        try { const r = await applyBackup(data, m); toast(`불러왔어요 · ${r.n}건${r.files ? ` · 파일 ${r.files}개` : ''}`); closeSheet(); }
         catch (err) { b.disabled = false; b.textContent = '불러오기'; toast(err && err.name === 'QuotaExceededError' ? '기기 저장 공간이 부족해요.' : '불러오지 못했어요. 이 앱에서 받은 백업 파일인지 확인해 주세요.', 'crit'); }
       });
     }
@@ -860,6 +937,7 @@ function computeAlerts(opts = {}) {
     }
   }
   for (const e of taxEvents()) { const d = dday(e.date); if (d <= Math.max(10, H)) push(d <= 3 ? 'warn' : 'info', `${e.title} ${dlabel(d)}`, `${fmtD(e.date, true)} · ${e.sub}`, d, 'tax', e.title, e.date); else break; }
+  for (const x of plMilestones(H, 7)) { const w = mileWord(x.t), what = `${x.pl.name || ''} · ${tText(x.pl, x.t)}`; if (x.d < 0) push('crit', `${w} 예정일 지남 · 끝났는지 확인`, what, x.d, 'plan', x.pl.id + '~' + x.t.id, x.t.start); else push(x.d <= 1 ? 'warn' : 'info', `${w} ${dlabel(x.d)}`, what, x.d, 'plan', x.pl.id + '~' + x.t.id, x.t.start); }
   const unc = S.txns.filter(t => !t.category).length;
   if (unc) push('info', `분류 안 된 입출금 ${unc}건`, '눌러서 바로 분류하면 월간 리포트가 정확해져요', 99, 'unc', '', '');
   const rank = { crit: 0, warn: 1, info: 2 };
@@ -905,6 +983,10 @@ function openAlert(key) {
     main = B('출금 직접 기록', 'data-aact="fixed-new"', 'btn-p') + B('고정 지출 설정', 'data-act="go" data-to="company" data-tab="app"');
     extra = cands.length ? `<div class="rel"><div class="rel-h"><span>이미 나간 출금 중에 있나요?</span></div>${cands.map(t => `<div class="prow"><div style="min-width:0"><div class="row-t">${esc(t.counterparty || t.memo || '출금')}${t.category ? `<span class="chip">${esc(CAT_LABEL[t.category] || '')}</span>` : ''}</div><div class="row-s">${fmtDF(t.date)} · ${esc(t.bank || '')}</div></div><div class="row-r"><span class="amt">${money(num(t.amount), t.currency || BASE())}</span></div><div class="acts"><button type="button" class="btn btn-s" data-aact="fixed-link" data-tid="${esc(t.id)}">이 출금이 ${esc(f.name)}예요</button></div></div>`).join('')}</div>` : '';
     doneLabel = '이번 달은 냈어요 · 알림 끄기';
+  } else if (kind === 'plan' && plTaskOf(ref)) {
+    const { pl, t } = plTaskOf(ref);
+    info = kv([['일정', esc(`${pl.name || ''} ${pl.title || ''}`)], ['내용', esc(tText(pl, t))], ['목표일', fmtDF(t.start) + (tEnd(t) !== t.start ? ' ~ ' + fmtDF(tEnd(t)) : '')], ['공장', esc(pl.partnerName || '')], ['메모', esc(t.note || '')]]);
+    main = B(t.type === 'ship' ? '출하 끝났어요' : t.type === 'inspect' ? '验货 끝났어요' : '끝났어요', 'data-aact="plan-done"', 'btn-p') + B('달력에서 보기', `data-act="pl-open" data-id="${esc(pl.id)}" data-d="${esc(t.start)}"`) + (t.type === 'ship' ? B('선적 등록', 'data-act="new-ship"') : '');
   } else if (kind === 'tax') {
     const e = taxEvents().find(x => x.title === ref && x.date === date);
     info = kv([['일정', esc(ref)], ['기한', fmtDF(date)], ['내용', esc(e ? e.sub : '')]]);
@@ -919,7 +1001,7 @@ function openAlert(key) {
     ${main ? `<div class="actions">${main}</div>` : ''}
     ${dateHTML}${extra}
     <div class="f"><span>알림 정리</span><div class="actions"><button type="button" class="btn btn-s" data-aact="snooze" data-n="1">내일 다시</button><button type="button" class="btn btn-s" data-aact="snooze" data-n="3">3일 뒤</button><button type="button" class="btn btn-s" data-aact="snooze" data-n="7">다음 주</button><button type="button" class="btn btn-s ${kind === 'tax' || kind === 'fixed' ? 'btn-p' : ''}" data-aact="done">${doneLabel}</button></div></div>`;
-  const sheetTitle = { pay: p && p.dir === 'import' ? '줄 돈 확인' : '받을 돈 확인', 'po-due': '납기 확인', fixed: '고정 지출 확인', tax: '세무 일정' }[kind] || (kind.startsWith('ship-') ? '출하 확인' : '알림');
+  const sheetTitle = { pay: p && p.dir === 'import' ? '줄 돈 확인' : '받을 돈 확인', 'po-due': '납기 확인', fixed: '고정 지출 확인', tax: '세무 일정', plan: '생산 일정 확인' }[kind] || (kind.startsWith('ship-') ? '출하 확인' : '알림');
   openSheet(sheetTitle, body, `<span class="sp"></span><button type="button" class="btn" data-act="sheet-close">닫기</button>`, {
     mount: panel => {
       panel.addEventListener('click', async e => {
@@ -937,6 +1019,7 @@ function openAlert(key) {
             await put('pos', Object.assign(JSON.parse(JSON.stringify(latest)), { paidExtra: Math.round((num(latest.paidExtra) + bal) * 100) / 100, status: isBill(latest) ? 'done' : latest.status, memo: [latest.memo, `${todayStr()} 통장 기록 없이 완납 처리 ${fmtNum(bal, latest.currency || 'USD')}`].filter(Boolean).join(' · ') }));
             toast('완납으로 처리했어요'); closeSheet();
           }
+          else if (act === 'plan-done') { const x = plTaskOf(ref); if (!x) return; const latest = JSON.parse(JSON.stringify(x.pl)); const tt = latest.tasks.find(y => y.id === x.t.id); if (tt) tt.st = 'done'; await put('plans', latest); toast('완료로 표시했어요'); closeSheet(); }
           else if (act === 'po-shipped' && p) { const latest = poById(p.id) || p; await put('pos', Object.assign(JSON.parse(JSON.stringify(latest)), { status: 'shipped' })); toast('선적 완료로 바꿨어요'); closeSheet(); }
           else if (act === 'ship-status' && s) {
             const v = b.dataset.v, latest = S.ships.find(x => x.id === s.id) || s, u = Object.assign(JSON.parse(JSON.stringify(latest)), { status: v });
@@ -1262,17 +1345,18 @@ function scheduleRender() { if (rq) return; rq = requestAnimationFrame(() => { r
 function render() {
   const a = document.activeElement; const keepId = a && a.id && $('#view').contains(a) ? a.id : null; const sel = keepId && a.selectionStart != null ? [a.selectionStart, a.selectionEnd] : null;
   const alerts = computeAlerts(); const urgent = alerts.filter(x => x.sev === 'crit').length;
-  const navBtn = (cls, [k, label, ic]) => `<button class="${cls}" data-act="go" data-to="${k}" ${S.route === k || (k === 'money' && (S.route === 'arap' || (cls === 'tab' && S.route === 'report'))) || (k === 'partners' && S.route === 'partner') ? 'aria-current="page"' : ''}>${svg(ic)}<span>${label}</span>${k === 'home' && urgent ? `<span class="pip">${urgent}</span>` : ''}</button>`;
-  $('#sidenav').innerHTML = [...NAV, ['report', '리포트', 'report']].map(n => navBtn('nav', n)).join('');
+  const navBtn = (cls, [k, label, ic]) => `<button class="${cls}" data-act="go" data-to="${k}" ${S.route === k || (k === 'money' && (S.route === 'arap' || (cls === 'tab' && S.route === 'report'))) || (k === 'partners' && S.route === 'partner') || (k === 'plan' && cls === 'tab' && S.route === 'ship') ? 'aria-current="page"' : ''}>${svg(ic)}<span>${label}</span>${k === 'home' && urgent ? `<span class="pip">${urgent}</span>` : ''}</button>`;
+  $('#sidenav').innerHTML = SIDE.map(n => navBtn('nav', n)).join('');
   $('#tabbar').innerHTML = NAV.map(n => navBtn('tab', n)).join('');
   if (S.route === 'company') $('#nav-company').setAttribute('aria-current', 'page'); else $('#nav-company').removeAttribute('aria-current');
   const lk = (S.co.logo || '').slice(-40) + '|' + (S.co.brand || S.co.nameKo || S.co.nameZh || '');
   $$('[data-co-logo]').forEach(el => { if (el.__k === lk) return; el.__k = lk; el.innerHTML = S.co.logo ? `<img src="${esc(S.co.logo)}" alt="${esc(S.co.brand || S.co.nameEn || '회사 로고')}">` : `<b>${esc(S.co.brand || S.co.nameKo || S.co.nameZh || '업무 대장')}</b>`; });
   $('#sync-note').textContent = { connecting: '불러오는 중…', live: '이 기기에 저장 중', local: '저장 안 됨', error: '저장소를 열지 못함', revoked: '' }[S.mode] || '';
-  const v = { home: viewHome, partners: viewPartners, partner: viewPartner, po: viewPo, ship: viewShip, money: viewMoney, arap: viewArap, docs: viewDocs, report: viewReport, company: viewCompany }[S.route] || viewHome;
+  const v = { home: viewHome, partners: viewPartners, partner: viewPartner, po: viewPo, ship: viewShip, money: viewMoney, arap: viewArap, docs: viewDocs, report: viewReport, company: viewCompany, plan: viewPlan, products: viewProducts }[S.route] || viewHome;
   $('#view').innerHTML = statusBanner() + v(alerts);
   if (keepId) { const el = document.getElementById(keepId); if (el) { el.focus(); if (sel && el.setSelectionRange) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) { } } }
   $('#dl-partners').innerHTML = S.partners.map(p => `<option value="${esc(p.name)}">`).join('');
+  $('#dl-products').innerHTML = S.products.map(p => `<option value="${esc(p.name)}">`).join(''); $('#dl-prcats').innerHTML = prCats().map(c => `<option value="${esc(c)}">`).join('');
   if (S.route === 'report') wireChart();
 }
 function statusBanner() {
@@ -1303,6 +1387,7 @@ function upcomingEvents(days) {
     ev.push({ date, d, tag: [dep ? '도착' : '출항', ''], title: routeText(s), sub: [s.ref, s.vessel].filter(Boolean).join(' · '), amt: '', key: K(dep ? 'ship-eta' : 'ship-etd', s.id, date) });
   }
   for (const e of taxEvents()) { const d = dday(e.date); if (d > days) break; ev.push({ date: e.date, d, tag: ['세무', 'c-warn'], title: e.title, sub: e.sub, amt: '', key: K('tax', e.title, e.date) }); }
+  for (const x of plMilestones(days, 0)) ev.push({ date: x.date, d: x.d, tag: [mileWord(x.t), x.t.type === 'ship' ? 'c-good' : x.t.type === 'inspect' ? 'c-warn' : 'c-steel'], title: x.pl.name || '', sub: `${x.pl.title || ''} · ${tText(x.pl, x.t)}${x.pl.partnerName ? ' · ' + x.pl.partnerName : ''}`, amt: '', key: x.key });
   return ev.filter(e => (S.co.alertOff || {})[e.key] !== 'done').sort((a, b) => a.date.localeCompare(b.date));
 }
 function viewHome(alerts) {
@@ -1412,7 +1497,7 @@ function viewShip() {
   const segBtn = (v, label) => `<button data-act="filter" data-k="ship" data-v="${v}" aria-pressed="${f === v}">${label}</button>`;
   return `
   <div class="page-head"><div><div class="eyebrow">Shipments</div><h1>출하 일정</h1></div><div class="actions"><button class="btn" data-act="ocr" data-kind="shipping">사진으로 입력</button><button class="btn btn-p" data-act="new-ship">${svg('plus')}출하 등록</button></div></div>
-  <div class="filters"><div class="seg" role="group" aria-label="상태">${segBtn('active', '진행 중')}${segBtn('closed', '완료·취소')}${segBtn('all', '전체')}</div>
+  <div class="filters"><div class="seg" role="group" aria-label="일정 메뉴"><button data-act="go" data-to="plan" aria-pressed="false">생산·개발 일정</button><button data-act="go" data-to="ship" aria-pressed="true">출하·선적</button></div><div class="seg" role="group" aria-label="상태">${segBtn('active', '진행 중')}${segBtn('closed', '완료·취소')}${segBtn('all', '전체')}</div>
     <span class="muted" style="font-size:13px">출항 ${num(S.co.alertDays) || 3}일 전부터 홈에 알림이 떠요</span></div>
   <section class="panel">${rows.length ? `<div class="list">${rows.map(voyage).join('')}</div>` : `<div class="empty">${S.ships.length ? '조건에 맞는 출하가 없어요.' : '아직 등록된 출하가 없어요. 부킹이 잡히면 ETD·ETA·서류 마감일을 넣어 두세요.'}<button class="btn btn-s" data-act="new-ship">출하 등록</button></div>`}</section>`;
 }
@@ -1657,7 +1742,7 @@ function itemRow(it, mode, cur) {
   const show = IT_SHOW[mode];
   const cell = k => { const lab = mode === 'av' && k === 'hs' ? 'HS·交期' : mode === 'av' && k === 'spec' ? '型号·규격' : (IT_FIELDS.find(f => f[0] === k) || [k, k])[1]; return `<label>${lab}<input class="in ${k === 'hs' ? 'mono' : ''}" data-k="${k}" ${IT_NUM.has(k) ? 'type="number" step="any" inputmode="decimal"' : ''} ${k === 'unit' ? 'list="dl-units" placeholder="PCS"' : ''} value="${esc(it[k] ?? '')}"></label>`; };
   const hidden = IT_FIELDS.map(f => f[0]).filter(k => k !== 'desc' && !show.includes(k)).map(k => `<input type="hidden" data-k="${k}" value="${esc(it[k] ?? '')}">`).join('');
-  return `<div class="it-row"><div class="it-top"><input class="in" data-k="desc" placeholder="품명 / Description" value="${esc(it.desc ?? '')}" aria-label="품명"><button type="button" class="icon-btn" data-act="it-del" aria-label="품목 삭제">${svg('x')}</button></div>${it.descKo ? `<div class="tr">${esc(it.descKo)}</div>` : ''}
+  return `<div class="it-row"><div class="it-top"><input class="in" data-k="desc" list="dl-products" placeholder="품명 / Description" value="${esc(it.desc ?? '')}" aria-label="품명"><button type="button" class="icon-btn" data-act="it-del" aria-label="품목 삭제">${svg('x')}</button></div>${it.descKo ? `<div class="tr">${esc(it.descKo)}</div>` : ''}
     <div class="it-grid">${show.map(cell).join('')}</div>${hidden}${show.includes('price') ? `<div class="it-amt">금액 <b class="mono" data-amt>${fmtNum(num(it.qty) * num(it.price), cur || 'USD')}</b></div>` : ''}</div>`;
 }
 const itemsEd = (items, mode, cur) => `<div class="items-ed" data-mode="${mode}" data-cur="${esc(cur || 'USD')}"><div class="it-list">${(items && items.length ? items : [{}]).map(it => itemRow(it, mode, cur)).join('')}</div>
@@ -1974,8 +2059,20 @@ function partnerData(pt) {
 }
 
 /* bank details printed on invoices, contracts, business cards */
+const BANK_LBL = '(?:HOLDER\\s*NAME|ACCOUNT\\s*HOLDER|BENEFICIARY\\s*BANK|BENEFICIARY(?:\\s*NAME)?|ACCOUNT\\s*NAME|A\\/C\\s*NAME|BANK\\s*NAME|BANK\\s*ADDRESS|A\\/C\\s*NO\\.?(?:\\s*\\([A-Z]{3}\\))?|ACCOUNT\\s*(?:NO\\.?|NUMBER)(?:\\s*\\([A-Z]{3}\\))?|ACCT\\.?\\s*NO\\.?|IBAN|SWIFT(?:\\s*\\/?\\s*BIC)?(?:\\s*CODE)?|收款人(?:名称|户名)?|收款单位|账户名称|户\\s*名|开户名称?|开户(?:银)?行(?:名称)?|银行名称|收款银行|银行地址|银行账号|收款账号|账\\s*号|帐\\s*号|银行卡号|卡\\s*号|예금주|은행\\s*명|계좌\\s*번호)';
+function normBankText(t) {
+  const only = new RegExp('^' + BANK_LBL + '\\s*(?:\\/[^:：\\n]{0,24})?\\s*[:：]?$', 'i'), any = new RegExp(BANK_LBL, 'i'), split = new RegExp('\\s+(?=' + BANK_LBL + '\\s*[:：])', 'gi');
+  const lines = String(t || '').replace(/\r/g, '').split('\n').flatMap(l => l.replace(/[ \t　]+/g, ' ').trim().split(split)).map(l => l.trim()).filter(Boolean);
+  const out = [], q = [];
+  for (const l of lines) {
+    if (only.test(l)) { q.push(l.replace(/\s*[:：]\s*$/, '')); continue; }
+    if (q.length && !any.test(l) && (/^[:：]/.test(l) || !/[:：]/.test(l))) { const lab = q.shift(); const v = l.replace(/^[:：]\s*/, ''); if (v) out.push(`${lab}: ${v}`); continue; }
+    q.length = 0; out.push(l);
+  }
+  return out.join('\n');
+}
 function parseBanks(text) {
-  const lines = String(text || '').replace(/\r/g, '').split('\n').map(s => s.replace(/[ \t　]+/g, ' ').trim()).filter(Boolean);
+  const lines = normBankText(text).split('\n').map(s => s.trim()).filter(Boolean);
   const out = []; let cur = {};
   const val = (l, re) => { const m = l.match(re); return m ? String(m[m.length - 1]).replace(/^[\s:：]+/, '').trim() : ''; };
   const push = () => { if (cur.account) out.push(cur); cur = {}; };
@@ -1984,8 +2081,8 @@ function parseBanks(text) {
     if (combo) { push(); cur = { bankName: combo[1].trim(), account: combo[2].replace(/\s/g, '') }; push(); continue; }
     const acc = l.match(/(?:A\/C\s*(?:No\.?|Number)?|ACCOUNT\s*(?:No\.?|NUMBER)|ACCT\.?\s*No\.?|账\s*号|帐\s*号|卡\s*号|收款账号|계좌\s*(?:번호)?)\s*(?:\(([A-Z]{3})\))?\s*[:：.]?\s*([\d][\d \-]{5,34}\d)/i);
     if (acc) { if (cur.account) push(); cur.account = acc[2].replace(/\s/g, ''); const c = (acc[1] || '').toUpperCase(); if (c) cur.currency = c === 'RMB' ? 'CNY' : c; continue; }
-    if (/(?:BENEFICIARY\s*(?:NAME)?|ACCOUNT\s*NAME|A\/C\s*NAME|HOLDER(?:\s*NAME)?|收款人(?:名称|户名)?|户\s*名|开户名称?|예금주)\s*[:：]\s*\S/i.test(l) && !/BANK/i.test(l.split(/[:：]/)[0])) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.holder) cur.holder = v.slice(0, 80); continue; }
-    if (/(?:BENEFICIARY\s*BANK|BANK\s*NAME|开户(?:银)?行(?:名称)?|收款(?:银)?行|은행\s*(?:명)?)\s*[:：]\s*\S/i.test(l)) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.bankName) cur.bankName = v.slice(0, 80); continue; }
+    if (/(?:BENEFICIARY\s*(?:NAME)?|ACCOUNT\s*NAME|ACCOUNT\s*HOLDER|A\/C\s*NAME|HOLDER(?:\s*NAME)?|收款人(?:名称|户名)?|收款单位|账户名称|户\s*名|开户名称?|예금주)\s*[:：]\s*\S/i.test(l) && !/BANK/i.test(l.split(/[:：]/)[0])) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.holder) cur.holder = v.slice(0, 80); continue; }
+    if (/(?:BENEFICIARY\s*BANK|BANK\s*NAME|^BANK\b[^:：]{0,14}|开户(?:银)?行(?:名称)?|银行名称|收款(?:银)?行|은행\s*(?:명)?)\s*[:：]\s*\S/i.test(l) && !/ADDRESS|地址/i.test(l.split(/[:：]/)[0])) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.bankName) cur.bankName = v.slice(0, 80); continue; }
     if (/SWIFT/i.test(l)) { const v = (l.match(/SWIFT(?:\s*\/?\s*BIC)?(?:\s*CODE)?\s*[:：]?\s*([A-Z0-9]{8,11})\b/i) || [])[1]; if (v) cur.swift = v.toUpperCase(); continue; }
     if (/(?:BANK\s*ADDRESS|银行地址)\s*[:：]\s*\S/i.test(l)) { cur.bankAddress = val(l, /[:：]\s*(.+)$/).slice(0, 120); continue; }
     if (/(美元|USD)\s*(账户|帐户|ACCOUNT)/i.test(l)) cur.currency = 'USD'; else if (/(人民币|RMB|CNY)\s*(账户|帐户|ACCOUNT)/i.test(l)) cur.currency = 'CNY';
@@ -2000,22 +2097,29 @@ function parsePartnerText(text) {
   const lines = t.split('\n').map(s => s.replace(/[ \t　]+/g, ' ').trim()).filter(Boolean);
   const g = re => { const m = t.match(re); return m ? String(m[1]).trim() : ''; };
   const o = {};
-  o.email = (t.match(/[\w.+-]+@[\w-]+\.[\w.]+/) || [''])[0];
-  o.tel = g(/(?:TEL|电话|手机|MOBILE|PHONE|H\.?P\.?|전화|휴대폰)\s*[:：.]?\s*(\+?\d[\d \-()]{6,}\d)/i) || (t.match(/\+\d{2}[\d \-]{8,}\d|(?<!\d)1[3-9]\d{9}(?!\d)/) || [''])[0];
+  const ourTel = [S.co.tel, S.co.telKr, S.co.fax].map(x => digits(x || '')).filter(x => x.length >= 7), ourMail = String(S.co.email || '').toLowerCase();
+  const notOurTel = x => { const d = digits(x); return d.length >= 7 && !ourTel.some(o => o.endsWith(d.slice(-9)) || d.endsWith(o.slice(-9))); };
+  o.email = ([...t.matchAll(/[\w.+-]+@[\w-]+\.[\w.]+/g)].map(m => m[0]).find(x => x.toLowerCase() !== ourMail)) || '';
+  o.tel = ([...t.matchAll(/(?:TEL|电话|手机|MOBILE|PHONE|H\.?P\.?|전화|휴대폰)\s*[:：.]?\s*(\+?\d[\d \-()]{6,}\d)/gi)].map(m => m[1].trim()).find(notOurTel)) || ([...t.matchAll(/\+\d{2}[\d \-]{8,}\d|(?<!\d)1[3-9]\d{9}(?!\d)/g)].map(m => m[0]).find(notOurTel)) || '';
   o.wechat = g(/(?:微信|WECHAT|위챗)\s*(?:号|ID)?\s*[:：]?\s*([A-Za-z][\w\-]{4,29})/i);
   const ourTax = String(S.co.bizNo || '').toUpperCase();
   o.taxId = ([...t.matchAll(/(?:统一社会信用代码|纳税人识别号|税\s*号|USCC|TAX\s*ID|VAT\s*NO\.?|사업자\s*(?:등록)?\s*번호)\s*(?:\/[^:：\n]*)?\s*[:：]?\s*([A-Z0-9][A-Z0-9\-]{8,20})/gi)].map(m => m[1].toUpperCase()).find(x => x !== ourTax)) || '';
   o.contact = g(/(?:联系人|CONTACT(?:\s*PERSON)?|ATTN\.?|담당자?)\s*[:：.]?\s*([^\n,，|:：]{2,30})/i);
-  o.address = g(/(?:地\s*址|ADDRESS|ADD\.|주\s*소)\s*[:：]\s*([^\n]{6,140})/i).replace(/\s*(TEL|电话|FAX|传真)\b.*$/i, '');
+  o.address = (([...t.matchAll(/(^|[^A-Za-z银行\/ ]\s*|\n)(?:地\s*址|ADDRESS|ADD\.|주\s*소)\s*[:：]\s*([^\n]{6,140})/gi)].map(m => m[2]).find(a => !/^\s*$/.test(a))) || '').replace(/\s*(TEL|电话|FAX|传真)\b.*$/i, '').replace(/\s*\|.*$/, '').trim();
+  const cutCo = x => { x = String(x || '').trim(); const m = x.match(/^(.*?(?:LIMITED|LTD\.?|CO\.,?\s*LTD\.?|CORPORATION|CORP\.?|INC\.?|LLC|GMBH|有限责任公司|有限公司|股份公司|株式会社|주식회사))(?=\s|$|[,，|])/i); return m && /[:：|]|\b(PO|DATE|NO|TEL|FAX|DATED)\b|日期|编号|电话/i.test(x.slice(m[1].length)) ? m[1].trim() : x; };
   const nm = ([...t.matchAll(/(?:公司名称|单位名称|名\s*称|COMPANY(?:\s*NAME)?|상\s*호|회사명)\s*[:：]\s*([^\n]{3,80})/gi)].map(m => m[1].trim()).find(x => !isOurs(x))) || '';
   const nameLine = lines.findIndex(l => COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址)/i.test(l));
-  o.name = (nm && !isOurs(nm) ? nm : '') || (nameLine >= 0 ? lines[nameLine] : '').replace(/^(TO|FROM|致)\s*[:：]?\s*/i, '');
-  if (!o.address && nameLine >= 0) { const nx = lines[nameLine + 1] || ''; if (/\d/.test(nx) && !/(识别号|信用代码|税\s*号|TEL|电话|FAX|传真|E-?MAIL|@|账号|帐号|开户|A\/C|ACCOUNT)/i.test(nx) && /(ROAD|RD\b|R\/D|STREET|ST\.|AVE|AVENUE|BLOCK|ROOM|RM\b|FLOOR|\bF\b|BUILDING|B\/D|DISTRICT|路|号|區|区|市|大厦|大廈|栋|楼|동|로|길)/i.test(nx) && nx.length <= 140) o.address = nx; }
-  for (const k of ['tel', 'email', 'address']) { const ours = String(S.co[k] || '').replace(/\s/g, '').toLowerCase(); if (o[k] && ours && (o[k].replace(/\s/g, '').toLowerCase() === ours)) o[k] = ''; }
+  o.name = cutCo((nm && !isOurs(nm) ? nm : '') || (nameLine >= 0 ? lines[nameLine] : '').replace(/^(TO|FROM|致|BUYER|SELLER|买方|卖方)\s*(?:\/\s*\S+\s*)?[:：]?\s*/i, ''));
+  const hanOf = x => /[一-鿿]/.test(x || '');
+  const alt = lines.find((l, k) => k !== nameLine && COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址|HOLDER|户名|^TO\b|^致)/i.test(l) && hanOf(l) !== hanOf(o.name));
+  if (alt && o.name) o.nameAlt = cutCo(alt.replace(/^(名\s*称|公司名称)\s*[:：]\s*/, ''));
+  if (!o.address && nameLine >= 0) for (const nx of lines.slice(nameLine + 1, nameLine + 3).filter(x => !COMPANY_RE.test(x)).slice(0, 1)) { if (/\d/.test(nx) && !/(识别号|信用代码|税\s*号|TEL|电话|FAX|传真|E-?MAIL|@|账号|帐号|开户|A\/C|ACCOUNT)/i.test(nx) && /(ROAD|RD\b|R\/D|STREET|ST\.|AVE|AVENUE|BLOCK|ROOM|RM\b|FLOOR|\bF\b|BUILDING|B\/D|DISTRICT|路|号|區|区|市|大厦|大廈|栋|楼|동|로|길)/i.test(nx) && nx.length <= 140) o.address = nx; }
+  if (o.address && (Array.isArray(S.co.banks) ? S.co.banks : []).some(b => b.bankAddress && b.bankAddress.replace(/\s/g, '').slice(0, 14).toLowerCase() === o.address.replace(/\s/g, '').slice(0, 14).toLowerCase())) o.address = '';
   if (o.address && [S.co.addressZh, S.co.addressEn, S.co.regAddressZh].some(a => a && a.replace(/\s/g, '').slice(0, 12) === o.address.replace(/\s/g, '').slice(0, 12))) o.address = '';
-  const blob = (o.address || '') + ' ' + lines.slice(Math.max(0, nameLine), Math.max(0, nameLine) + 3).join(' ');
+  const blob = (o.address || '') + ' ' + lines.slice(Math.max(0, nameLine), Math.max(0, nameLine) + (o.address ? 3 : 6)).filter(l => !isOurs(l)).join(' ');
   o.country = /HONG ?KONG|香港|九龍|九龙/i.test(blob) ? 'Hong Kong' : /KOREA|대한민국|한국|SEOUL|서울|韩国/i.test(blob) ? 'Korea' : /CHINA|中国|广东|深圳|上海|浙江|江苏|东莞|广州/i.test(blob) ? 'China' : /JAPAN|日本/i.test(blob) ? 'Japan' : /U\.?S\.?A|UNITED STATES/i.test(blob) ? 'USA' : '';
   o.banks = parseBanks(t);
+  if (o.name && !isOurs(o.name)) o.kindGuess = /(LOGISTICS|FORWARD|SHIPPING|FREIGHT|EXPRESS|货运|货代|物流|国际运输|报关|船务|물류|포워딩|통관)/i.test(o.name + ' ' + (o.nameAlt || '')) ? 'forwarder' : (BILL_TITLE.test(t) && o.banks.length) || /(SELLER|SUPPLIER|供方|卖方|供应商)/i.test(lines.slice(Math.max(0, nameLine - 2), nameLine + 1).join(' ').split(o.name)[0]) ? 'supplier' : /(BUYER|买方|需方|购买方)/i.test(lines.slice(Math.max(0, nameLine - 2), nameLine + 1).join(' ').split(o.name)[0]) ? 'buyer' : '';
   Object.keys(o).forEach(k => { if (o[k] === '' || (Array.isArray(o[k]) && !o[k].length)) delete o[k]; });
   return o;
 }
@@ -2023,6 +2127,7 @@ function parsePartnerText(text) {
 function mergePartnerInfo(pt, info) {
   const u = JSON.parse(JSON.stringify(pt)); const added = [];
   for (const [k, lab] of [['address', '주소'], ['contact', '담당자'], ['tel', '전화'], ['email', '이메일'], ['wechat', '위챗'], ['taxId', '세금번호'], ['country', '국가']]) if (info[k] && !u[k]) { u[k] = info[k]; added.push(lab); }
+  if (info.nameAlt && info.nameAlt !== u.name && !String(u.alias || '').includes(info.nameAlt)) { u.alias = [u.alias, info.nameAlt].filter(Boolean).join(', '); added.push('다른 이름'); }
   const have = new Set((u.banks || []).map(b => digits(b.account)));
   const nb = (info.banks || []).filter(b => !have.has(digits(b.account)));
   if (nb.length) { u.banks = (u.banks || []).concat(nb.map(b => Object.assign({}, b, { holder: b.holder || u.name || '' }))); added.push(`계좌 ${nb.length}개`); }
@@ -2066,14 +2171,14 @@ function viewPartners() {
   const bal = (D, side) => { const m = sumCur(D.open.filter(x => x.side === side)); return curMap(m).join(' · '); };
   return `
   <div class="page-head"><div><div class="eyebrow">Partners<i></i>${S.partners.length}</div><h1>거래처</h1></div>
-    <div class="actions"><button class="btn" data-act="pt-paste">붙여넣어 추가</button><button class="btn btn-p" data-act="new-partner">${svg('plus')}거래처 추가</button></div></div>
+    <div class="actions"><button class="btn" data-act="pt-paste">${svg('upload')}서류로 추가</button><button class="btn btn-p" data-act="new-partner">${svg('plus')}거래처 추가</button></div></div>
   <div class="filters"><div class="seg" role="group" aria-label="구분">${segBtn('all', '전체')}${segBtn('buyer', '고객')}${segBtn('supplier', '공급사')}${segBtn('forwarder', '물류')}${segBtn('etc', '기타')}</div>
     <input id="pt-q" class="search" type="search" placeholder="이름, 담당자, 전화, 메모 검색" value="${esc(S.ptQ || '')}" aria-label="거래처 검색"></div>
   <section class="panel">${rows.length ? `<div class="list">${rows.map(({ pt, D }) => { const ar = bal(D, 'ar'), ap = bal(D, 'ap'); return `<button class="row" data-act="open-partner" data-id="${esc(pt.id)}">
       <div style="min-width:0"><div class="row-t"><span style="min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(pt.name)}</span><span class="chip">${PT_SHORT[pt.kind] || '기타'}</span>${(pt.banks || []).some(b => b.account) ? '<span class="chip c-steel">계좌</span>' : ''}</div>
       <div class="row-s">${esc([pt.contact, pt.tel, pt.country].filter(Boolean).join(' · ') || '연락처 없음')}${D.last ? ` · 최근 ${fmtD(D.last)}` : ''}</div></div>
       <div class="row-r">${ar ? `<span class="amt amt-in">받을 ${esc(ar)}</span>` : ''}${ap ? `<span class="amt" style="color:var(--s-out)">줄 ${esc(ap)}</span>` : ''}${!ar && !ap ? `<span class="row-s">${D.pos.length + D.txns.length}건</span>` : ''}</div></button>`; }).join('')}</div>`
-      : `<div class="empty">${S.partners.length ? '조건에 맞는 거래처가 없어요.' : '아직 거래처가 없어요. 청구서·PO를 올리면 거래처가 저절로 만들어지고, 명함이나 계좌 안내를 붙여넣어도 돼요.'}<button class="btn btn-s" data-act="pt-paste">붙여넣어 추가</button></div>`}</section>`;
+      : `<div class="empty">${S.partners.length ? '조건에 맞는 거래처가 없어요.' : '아직 거래처가 없어요. 청구서·PO를 올리면 거래처가 저절로 만들어지고, 인보이스·계약서 PDF나 명함·계좌 안내 글자로도 추가할 수 있어요.'}<button class="btn btn-s" data-act="pt-paste">서류로 추가</button></div>`}</section>`;
 }
 
 /* one partner: contacts, bank accounts, balances, history */
@@ -2124,11 +2229,11 @@ function bankEdRow(b) {
   b = b || {};
   return `<div class="bank-ed"><div class="it-grid">
     <label>통화<select class="in" data-bk="currency">${['', 'CNY', 'USD', 'HKD', 'KRW', 'EUR', 'JPY'].map(c => `<option value="${c}" ${c === (b.currency || '') ? 'selected' : ''}>${c || '—'}</option>`).join('')}</select></label>
-    <label>은행 (开户行)<input class="in" data-bk="bankName" value="${esc(b.bankName || '')}"></label>
-    <label>계좌번호 (账号)<input class="in mono" data-bk="account" inputmode="numeric" value="${esc(b.account || '')}"></label>
-    <label>예금주 (收款人)<input class="in" data-bk="holder" value="${esc(b.holder || '')}"></label>
+    <label class="w">은행 (开户行)<input class="in" data-bk="bankName" value="${esc(b.bankName || '')}"></label>
+    <label class="w">계좌번호 (账号)<input class="in mono" data-bk="account" inputmode="numeric" value="${esc(b.account || '')}"></label>
+    <label class="w">예금주 (收款人)<input class="in" data-bk="holder" value="${esc(b.holder || '')}"></label>
     <label>SWIFT<input class="in mono" data-bk="swift" value="${esc(b.swift || '')}"></label>
-    <label>은행 주소<input class="in" data-bk="bankAddress" value="${esc(b.bankAddress || '')}"></label></div>
+    <label class="w">은행 주소<input class="in" data-bk="bankAddress" value="${esc(b.bankAddress || '')}"></label></div>
     <button type="button" class="btn btn-s btn-q btn-danger" data-bk-del>이 계좌 지우기</button></div>`;
 }
 function openPartner(p, opts = {}) {
@@ -2136,7 +2241,7 @@ function openPartner(p, opts = {}) {
   p = Object.assign({ kind: 'buyer', banks: [] }, p ? JSON.parse(JSON.stringify(p)) : {});
   const body = `${opts.banner ? `<div class="banner info"><span>${esc(opts.banner)}</span></div>` : ''}
     <div class="f"><span>붙여넣어 채우기</span><textarea class="in" id="pt-paste" rows="3" placeholder="명함, 위챗 메시지, 인보이스 머리글, 계좌 안내를 붙여넣으면 이름·연락처·계좌를 찾아 빈칸을 채워요">${esc(opts.paste || '')}</textarea>
-      <div class="actions"><button type="button" class="btn btn-s" id="pt-fill">빈칸 채우기</button><small class="muted" id="pt-fill-msg"></small></div></div>
+      <div class="actions"><button type="button" class="btn btn-s" id="pt-fill">빈칸 채우기</button><label class="btn btn-s">${svg('upload')}PDF에서 읽기<input type="file" class="sr" id="pt-file" accept="application/pdf,.pdf"></label><small class="muted" id="pt-fill-msg"></small></div></div>
     <form class="fgrid" id="pt-form" autocomplete="off">
     ${F('거래처 이름', inp('name', p.name, { req: 1 }), 'full')}
     ${F('구분', sel('kind', p.kind || 'buyer', PT_KIND))}${F('국가', inp('country', p.country, { ph: 'China' }))}
@@ -2155,15 +2260,19 @@ function openPartner(p, opts = {}) {
       const readBanks = () => $$('.bank-ed', list).map(r => { const o = {}; $$('[data-bk]', r).forEach(i => { o[i.dataset.bk] = i.value.trim(); }); return o; }).filter(b => b.account || b.bankName);
       $('#bank-add', panel).addEventListener('click', () => { list.insertAdjacentHTML('beforeend', bankEdRow({ currency: S.co.baseCur === 'CNY' ? 'CNY' : '' })); });
       list.addEventListener('click', e => { if (e.target.closest('[data-bk-del]')) e.target.closest('.bank-ed').remove(); });
+      let kindTouched = !!(p.kind && opts.kindSet); form.elements.kind.addEventListener('change', () => { kindTouched = true; });
       const fill = () => {
         const info = parsePartnerText($('#pt-paste', panel).value); const got = [];
         for (const k of ['name', 'contact', 'tel', 'email', 'wechat', 'taxId', 'country', 'address']) { const el = form.elements[k]; if (info[k] && el && !el.value.trim()) { el.value = info[k]; got.push({ name: '이름', contact: '담당자', tel: '전화', email: '이메일', wechat: '위챗', taxId: '세금번호', country: '국가', address: '주소' }[k]); } }
+        if (isNew && info.kindGuess && !kindTouched && form.elements.kind.value !== info.kindGuess) { form.elements.kind.value = info.kindGuess; got.push('구분'); }
+        { const al = form.elements.alias, nm = form.elements.name.value.trim(); if (info.nameAlt && al && info.nameAlt !== nm && !al.value.includes(info.nameAlt)) { al.value = [al.value.trim(), info.nameAlt].filter(Boolean).join(', '); got.push('다른 이름'); } }
         const have = new Set(readBanks().map(b => digits(b.account)));
         const nb = (info.banks || []).filter(b => !have.has(digits(b.account)));
         nb.forEach(b => list.insertAdjacentHTML('beforeend', bankEdRow(b))); if (nb.length) got.push(`계좌 ${nb.length}개`);
         $('#pt-fill-msg', panel).textContent = got.length ? `채웠어요: ${got.join(', ')}` : '새로 채울 내용을 찾지 못했어요';
       };
       $('#pt-fill', panel).addEventListener('click', fill);
+      $('#pt-file', panel).addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; const t = await docText(f, $('#pt-fill-msg', panel)); if (t) { $('#pt-paste', panel).value = t; fill(); } });
       if (opts.paste) fill();
       if (opts.focus === 'banks') setTimeout(() => { const el = $('#pt-banks', panel); if (el) el.scrollIntoView({ block: 'start' }); if (!(p.banks || []).length) $('#bank-add', panel).click(); }, 80);
       sheetSave = async () => {
@@ -2177,15 +2286,26 @@ function openPartner(p, opts = {}) {
     }
   });
 }
+/* text out of a PDF the user picked */
+async function docText(f, msgEl) {
+  const say = t => { if (msgEl) msgEl.textContent = t; };
+  if (!(/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name))) { say('사진은 사진 앱에서 글자를 길게 눌러 모두 선택 → 복사한 뒤 위 칸에 붙여넣어 주세요.'); return ''; }
+  say('PDF 읽는 중…');
+  try { const r = await readPdf(f, 0); if (!r.text.trim()) { say('이 PDF에는 글자가 없어요(스캔본). 사진처럼 글자를 복사해 붙여넣어 주세요.'); return ''; } say('PDF에서 읽었어요.'); return r.text; }
+  catch (e) { say('PDF를 읽지 못했어요.'); return ''; }
+}
 function openPtPaste() {
-  const body = `<div class="f"><span>붙여넣기</span><textarea class="in" id="pp-text" rows="6" placeholder="명함 사진의 글자, 위챗으로 받은 회사 정보·계좌 안내, 인보이스 머리글 등을 붙여넣으세요"></textarea>
+  const body = `<div class="f"><span>서류 PDF</span><div class="actions"><label class="btn btn-p">${svg('upload')}인보이스·계약서 PDF 고르기<input type="file" class="sr" id="pp-file" accept="application/pdf,.pdf"></label></div>
+    <small id="pp-msg">회사 이름(중문·영문), 주소, 전화, 세금번호, 계좌(开户行·账号·收款人)를 찾아 채워요. 인터넷 없이 앱이 직접 읽어요.</small></div>
+    <div class="f"><span>또는 글자 붙여넣기</span><textarea class="in" id="pp-text" rows="5" placeholder="명함 사진의 글자, 위챗으로 받은 회사 정보·계좌 안내, 인보이스에서 복사한 글자"></textarea>
     <small>아이폰은 사진의 글자를 길게 눌러 <b>모두 선택 → 복사</b>하면 돼요.</small></div>`;
   const foot = `<span class="sp"></span><button type="button" class="btn" data-act="sheet-close">닫기</button><button type="button" class="btn btn-p" id="pp-go">읽기</button>`;
-  openSheet('붙여넣어 거래처 추가', body, foot, {
+  openSheet('서류로 거래처 추가', body, foot, {
     mount: panel => {
+      $('#pp-file', panel).addEventListener('change', async e => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; const t = await docText(f, $('#pp-msg', panel)); if (t) { $('#pp-text', panel).value = t; $('#pp-go', panel).click(); } });
       $('#pp-go', panel).addEventListener('click', () => {
         const t = $('#pp-text', panel).value; if (!t.trim()) { toast('붙여넣어 주세요.', 'crit'); return; }
-        const info = parsePartnerText(t); const ex = info.name && (partnerByName(info.name) || matchPartner(info.name));
+        const info = parsePartnerText(t); const ex = (info.name && (partnerByName(info.name) || matchPartner(info.name))) || (info.nameAlt && (partnerByName(info.nameAlt) || matchPartner(info.nameAlt))) || null;
         closeSheet();
         if (ex) openPartner(ex, { paste: t, banner: `이미 있는 거래처 ‘${ex.name}’에 빈칸만 채워요.` });
         else openPartner(null, { paste: t });
@@ -2193,6 +2313,123 @@ function openPtPaste() {
     }
   });
 }
+/* ================= PDF text without any download: reads the file's own text, Chinese (UCS-2 / ToUnicode) included, laid out line by line ================= */
+async function inflateBytes(u8) {
+  if (typeof DecompressionStream === 'undefined') throw new Error('nodecomp');
+  const ds = new DecompressionStream('deflate'); const w = ds.writable.getWriter(); const r = ds.readable.getReader();
+  w.write(u8).catch(() => { }); w.close().catch(() => { });
+  const parts = []; let n = 0;
+  try { for (;;) { const { value, done } = await r.read(); if (done) break; parts.push(value); n += value.length; } } catch (e) { if (!n) throw e; }
+  const out = new Uint8Array(n); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return out;
+}
+const u8str = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return s; };
+const strU8 = s => { const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i) & 255; return u; };
+async function pdfTextLite(buf) {
+  const bin = u8str(new Uint8Array(buf));
+  const objs = new Map();
+  const re = /(\d+)\s+\d+\s+obj\b/g; let m;
+  while ((m = re.exec(bin))) { const end = bin.indexOf('endobj', re.lastIndex); if (end < 0) break; objs.set(+m[1], bin.slice(re.lastIndex, end)); re.lastIndex = end + 6; }
+  const streamOf = async body => {
+    const si = body.indexOf('stream'); if (si < 0) return null;
+    const dict = body.slice(0, si); let st = si + 6; if (body[st] === '\r') st++; if (body[st] === '\n') st++;
+    let en = body.lastIndexOf('endstream'); if (en < st) en = body.length; let data = body.slice(st, en).replace(/\r?\n$/, '');
+    if (/\/Subtype\s*\/Image/.test(dict)) return { dict, text: '' };
+    let u8 = strU8(data);
+    if (/\/FlateDecode/.test(dict)) { try { u8 = await inflateBytes(u8); } catch (e) { return { dict, text: '' }; } }
+    else if (/\/Filter/.test(dict)) return { dict, text: '' };
+    return { dict, text: u8str(u8) };
+  };
+  // object streams (PDF 1.5+) hide font dictionaries inside
+  for (const [num, body] of [...objs]) {
+    if (!/\/Type\s*\/ObjStm/.test(body.slice(0, 400))) continue;
+    const s = await streamOf(body); if (!s || !s.text) continue;
+    const first = +((s.dict.match(/\/First\s+(\d+)/) || [])[1] || 0); const head = s.text.slice(0, first).trim().split(/\s+/).map(Number);
+    for (let i = 0; i + 1 < head.length; i += 2) { const a = first + head[i + 1], b = i + 3 < head.length ? first + head[i + 3] : s.text.length; if (!objs.has(head[i])) objs.set(head[i], s.text.slice(a, b)); }
+  }
+  // fonts: name → how to turn its bytes into text
+  const fontInfo = new Map(), nameToObj = new Map();
+  for (const [num, body] of objs) {
+    const sIdx = body.indexOf('stream'); const head = sIdx >= 0 ? body.slice(0, sIdx) : body;
+    if (/\/BaseFont\s*\//.test(head) && /\/Subtype\s*\/(Type0|TrueType|Type1|Type3|MMType1)\b/.test(head)) {
+      const enc = (head.match(/\/Encoding\s*\/([\w-]+)/) || [])[1] || '';
+      fontInfo.set(num, { ucs2: /UCS2|UTF16/i.test(enc), two: /Type0/.test(head), tu: +((head.match(/\/ToUnicode\s+(\d+)\s+\d+\s+R/) || [])[1] || 0), map: null });
+    }
+    for (const fm of head.matchAll(/\/Font\s*<<([\s\S]*?)>>/g)) for (const r of fm[1].matchAll(/\/([^\s\/<>\[\]]+)\s+(\d+)\s+\d+\s+R/g)) if (!nameToObj.has(r[1])) nameToObj.set(r[1], +r[2]);
+    for (const fr of head.matchAll(/\/Font\s+(\d+)\s+\d+\s+R/g)) { const fb = objs.get(+fr[1]) || ''; for (const r of fb.matchAll(/\/([^\s\/<>\[\]]+)\s+(\d+)\s+\d+\s+R/g)) if (!nameToObj.has(r[1])) nameToObj.set(r[1], +r[2]); }
+    for (const rr of head.matchAll(/\/Resources\s+(\d+)\s+\d+\s+R/g)) { const rb = objs.get(+rr[1]) || ''; for (const fm of rb.matchAll(/\/Font\s*<<([\s\S]*?)>>/g)) for (const r of fm[1].matchAll(/\/([^\s\/<>\[\]]+)\s+(\d+)\s+\d+\s+R/g)) if (!nameToObj.has(r[1])) nameToObj.set(r[1], +r[2]); }
+  }
+  const hexStr = h => { h = h.replace(/[^0-9a-f]/gi, ''); let s = ''; for (let i = 0; i + 3 < h.length + 2; i += 4) { const c = parseInt(h.slice(i, i + 4).padEnd(4, '0'), 16); if (!isNaN(c)) s += String.fromCharCode(c); } return s; };
+  for (const f of fontInfo.values()) {
+    if (!f.tu || !objs.has(f.tu)) continue;
+    const s = await streamOf(objs.get(f.tu)); if (!s || !s.text) continue;
+    const map = new Map(); let bytes = 1;
+    for (const blk of s.text.matchAll(/beginbfchar([\s\S]*?)endbfchar/g)) for (const p of blk[1].matchAll(/<([0-9a-fA-F]+)>\s*<([0-9a-fA-F]+)>/g)) { map.set(parseInt(p[1], 16), hexStr(p[2])); if (p[1].length > 2) bytes = 2; }
+    for (const blk of s.text.matchAll(/beginbfrange([\s\S]*?)endbfrange/g)) {
+      for (const p of blk[1].matchAll(/<([0-9a-fA-F]+)>\s*<([0-9a-fA-F]+)>\s*(<([0-9a-fA-F]+)>|\[([^\]]*)\])/g)) {
+        const lo = parseInt(p[1], 16), hi = parseInt(p[2], 16); if (p[1].length > 2) bytes = 2; if (hi - lo > 20000) continue;
+        if (p[4]) { const base = hexStr(p[4]); const last = base.charCodeAt(base.length - 1); for (let c = lo; c <= hi; c++) map.set(c, base.slice(0, -1) + String.fromCharCode(last + c - lo)); }
+        else { const arr = [...p[5].matchAll(/<([0-9a-fA-F]+)>/g)].map(x => hexStr(x[1])); for (let c = lo; c <= hi && c - lo < arr.length; c++) map.set(c, arr[c - lo]); }
+      }
+    }
+    f.map = map; f.bytes = f.two ? 2 : bytes;
+  }
+  const decode = (raw, fname) => {
+    const f = fontInfo.get(nameToObj.get(fname));
+    if (f && f.ucs2) { let s = ''; for (let i = 0; i + 1 < raw.length; i += 2) s += String.fromCharCode((raw.charCodeAt(i) << 8) | raw.charCodeAt(i + 1)); return s; }
+    if (f && f.map) { let s = ''; const b = f.bytes || 1; for (let i = 0; i + b - 1 < raw.length; i += b) { const c = b === 2 ? (raw.charCodeAt(i) << 8) | raw.charCodeAt(i + 1) : raw.charCodeAt(i); s += f.map.has(c) ? f.map.get(c) : ''; } return s; }
+    if (f && f.two) return '';
+    return raw;
+  };
+  // content streams → runs with positions → lines
+  const runs = [];
+  for (const body of objs.values()) {
+    if (body.indexOf('stream') < 0) continue;
+    const dictHead = body.slice(0, body.indexOf('stream'));
+    if (/\/Type\s*\/(XRef|ObjStm|Metadata)/.test(dictHead) || /\/Subtype\s*\/(Image|XML)/.test(dictHead) || /\/Length1|\/Length2|\/Subtype\s*\/(Type1C|CIDFontType0C|OpenType)/.test(dictHead)) continue;
+    const s = await streamOf(body); if (!s || !s.text || !/\bBT\b/.test(s.text) || !/T[jJ]/.test(s.text)) continue;
+    const t = s.text; let i = 0; const st = []; let font = '', tm = [1, 0, 0, 1, 0, 0], lm = [1, 0, 0, 1, 0, 0], ctm = [1, 0, 0, 1, 0, 0], lead = 0; const cstack = [];
+    const pos = () => ({ x: ctm[0] * tm[4] + ctm[2] * tm[5] + ctm[4], y: ctm[1] * tm[4] + ctm[3] * tm[5] + ctm[5] });
+    const emit = str => { if (!str) return; const p = pos(); runs.push({ x: p.x, y: p.y, s: str, size: Math.abs(tm[3] * ctm[3]) || 10 }); };
+    const lit = () => { let depth = 1, out = ''; i++; while (i < t.length && depth) { const c = t[i]; if (c === '\\') { const n = t[i + 1]; if (/[0-7]/.test(n)) { let o = ''; let k = i + 1; while (k < i + 4 && /[0-7]/.test(t[k])) o += t[k++]; out += String.fromCharCode(parseInt(o, 8) & 255); i = k; continue; } out += ({ n: '\n', r: '\r', t: '\t', b: '\b', f: '\f' })[n] ?? (n === '\r' || n === '\n' ? '' : n); i += 2; continue; } if (c === '(') depth++; else if (c === ')') { depth--; if (!depth) { i++; break; } } out += c; i++; } return { str: out }; };
+    while (i < t.length) {
+      const c = t[i];
+      if (c === '(') { st.push(lit()); continue; }
+      if (c === '<' && t[i + 1] !== '<') { const e = t.indexOf('>', i); const h = t.slice(i + 1, e).replace(/\s/g, ''); let out = ''; for (let k = 0; k < h.length; k += 2) out += String.fromCharCode(parseInt((h.slice(k, k + 2) + '0').slice(0, 2), 16)); st.push({ str: out }); i = e + 1; continue; }
+      if (c === '[') { st.push({ arrStart: true }); i++; continue; }
+      if (c === ']') { const arr = []; while (st.length && !st[st.length - 1].arrStart) arr.unshift(st.pop()); st.pop(); st.push({ arr }); i++; continue; }
+      if (c === '/') { const mm = /^\/[^\s\/\[\]()<>{}%]*/.exec(t.slice(i, i + 128)); st.push({ name: mm[0].slice(1) }); i += mm[0].length; continue; }
+      if (c === '%') { const e = t.indexOf('\n', i); i = e < 0 ? t.length : e; continue; }
+      if (/[\d.+-]/.test(c)) { const mm = /^[+-]?(\d+\.?\d*|\.\d+)/.exec(t.slice(i, i + 32)); if (mm) { st.push(+mm[0]); i += mm[0].length; continue; } }
+      if (/[A-Za-z'"*]/.test(c)) {
+        const mm = /^[A-Za-z'"*]+[0-9]?/.exec(t.slice(i, i + 8)); const op = mm[0]; i += op.length;
+        const nums = st.filter(x => typeof x === 'number');
+        if (op === 'BI') { const e = t.indexOf('EI', i); i = e < 0 ? t.length : e + 2; }
+        else if (op === 'q') cstack.push(ctm.slice());
+        else if (op === 'Q') ctm = cstack.pop() || [1, 0, 0, 1, 0, 0];
+        else if (op === 'cm' && nums.length >= 6) { const [a, b, cc, d, e, f] = nums.slice(-6); const m0 = ctm; ctm = [a * m0[0] + b * m0[2], a * m0[1] + b * m0[3], cc * m0[0] + d * m0[2], cc * m0[1] + d * m0[3], e * m0[0] + f * m0[2] + m0[4], e * m0[1] + f * m0[3] + m0[5]]; }
+        else if (op === 'BT') { tm = [1, 0, 0, 1, 0, 0]; lm = tm.slice(); }
+        else if (op === 'Tf') { const nm = st.find(x => x && x.name); if (nm) font = nm.name; }
+        else if (op === 'TL' && nums.length) lead = nums[nums.length - 1];
+        else if (op === 'Tm' && nums.length >= 6) { tm = nums.slice(-6); lm = tm.slice(); }
+        else if ((op === 'Td' || op === 'TD') && nums.length >= 2) { const [tx, ty] = nums.slice(-2); if (op === 'TD') lead = -ty; lm = [lm[0], lm[1], lm[2], lm[3], lm[4] + tx * lm[0] + ty * lm[2], lm[5] + tx * lm[1] + ty * lm[3]]; tm = lm.slice(); }
+        else if (op === 'T*') { lm = [lm[0], lm[1], lm[2], lm[3], lm[4] - lead * lm[2], lm[5] - lead * lm[3]]; tm = lm.slice(); }
+        else if (op === 'Tj' || op === "'" || op === '"') { if (op !== 'Tj') { lm = [lm[0], lm[1], lm[2], lm[3], lm[4] - lead * lm[2], lm[5] - lead * lm[3]]; tm = lm.slice(); } const sv = st.filter(x => x && x.str !== undefined).pop(); if (sv) emit(decode(sv.str, font)); }
+        else if (op === 'TJ') { const a = st.filter(x => x && x.arr).pop(); if (a) emit(a.arr.map(x => x.str !== undefined ? decode(x.str, font) : (typeof x === 'number' && x < -180 ? ' ' : '')).join('')); }
+        st.length = 0; continue;
+      }
+      i++;
+    }
+  }
+  // group runs into lines by their height on the page, left to right
+  const clean = s => s.replace(/[\u0000-\u0008\u000b-\u001f\uFFFD]/g, '').replace(/\s+/g, ' ');
+  const rs = runs.map(r => Object.assign(r, { s: clean(r.s) })).filter(r => r.s.trim());
+  rs.sort((a, b) => (b.y - a.y) || (a.x - b.x));
+  const lines = []; let cur = null;
+  for (const r of rs) { const tol = Math.max(2, r.size * 0.45); if (cur && Math.abs(cur.y - r.y) <= tol) cur.items.push(r); else { cur = { y: r.y, items: [r] }; lines.push(cur); } }
+  return lines.map(l => l.items.sort((a, b) => a.x - b.x).map(x => x.s.trim()).join(' ').replace(/\s+([:：])/g, ' $1').trim()).filter(Boolean).join('\n');
+}
+const textScore = s => { s = String(s || ''); const cjk = (s.match(/[一-鿿가-힣]/g) || []).length; const al = (s.match(/[A-Za-z0-9]/g) || []).length; return { cjk, al, bad: (s.match(/[\uFFFD]/g) || []).length }; };
+
 const fileHref = id => fileSrc(id);
 
 /* ================= documents ================= */
@@ -2588,8 +2825,9 @@ function parseBillText(text) {
   for (const re of pick) {
     for (let i = 0; i < lines.length && !total; i++) {
       if (!re.test(lines[i]) || /SUB\s*-?\s*TOTAL|小计/i.test(lines[i]) || (/大写/.test(lines[i]) && !/小写/.test(lines[i]))) continue;
-      let v = amt(lines[i]); if (!v && lines[i + 1] && !/[A-Za-z一-龥]{3,}/.test(lines[i + 1])) v = amt(lines[i + 1]);
-      if (v > 0) { total = v; totalLine = lines[i] + ' ' + (lines[i + 1] || ''); }
+      let v = amt(lines[i]), pre = ''; if (!v && lines[i + 1] && !/[A-Za-z一-龥]{3,}/.test(lines[i + 1])) v = amt(lines[i + 1]);
+      if (!v && i > 0 && /[\d,]+\.\d{2}\s*$/.test(lines[i - 1]) && !/TOTAL|合计|总计|小计/i.test(lines[i - 1])) { v = amt(lines[i - 1]); pre = lines[i - 1] + ' '; }
+      if (v > 0) { total = v; totalLine = pre + lines[i] + ' ' + (lines[i + 1] || ''); }
     }
     if (total) break;
   }
@@ -2608,6 +2846,9 @@ function parseBillText(text) {
   if (named.length >= 2) { if (!billTo) billTo = named[0]; if (!issuer) issuer = named[1]; }
   if (!issuer) { const top = lines.slice(0, 12).find(l => COMPANY_RE.test(l) && !toRe.test(l) && !(billTo && l.includes(billTo)) && l.length <= 80 && !/(BANK|银行)/i.test(l)); if (top) issuer = top.replace(/^(FROM|发自)\s*[:：]?\s*/i, '').trim(); }
   const usIssuer = isOurs(issuer), usTo = isOurs(billTo);
+  const hanOf = x => /[一-鿿]/.test(x || '');
+  const issuerAlt = issuer ? (lines.slice(0, 12).find(l => l !== issuer && COMPANY_RE.test(l) && !toRe.test(l) && !(billTo && l.includes(billTo)) && l.length <= 80 && !isOurs(l) && !/(BANK|银行)/i.test(l) && hanOf(l) !== hanOf(issuer)) || '').trim() : '';
+  const charges = []; { const hi = lines.findIndex(l => /^(DESCRIPTION|项目|品名|费用名称|费用项目|ITEM|CHARGE)/i.test(l) && /(AMOUNT|金额)/i.test(l)); for (let k = hi + 1; hi >= 0 && k < lines.length && charges.length < 20; k++) { const l = lines[k]; if (/TOTAL|合计|总计|REMARK|备注/i.test(l)) break; const mm = l.match(/^([A-Za-z一-鿿][^\d]{1,60}?)\s+[\d*].*?([\d,]+\.\d{2})\s*$/); if (mm) charges.push({ desc: mm[1].trim(), amt: parseNum(mm[2]) }); } }
   const ti = lines.findIndex(l => BILL_TITLE.test(l)); const head = lines.slice(0, ti > 2 ? ti : 8).join('\n');
   const dir = usIssuer && !usTo ? 'export' : 'import';
   const partnerName = dir === 'export' ? billTo : issuer;
@@ -2643,9 +2884,9 @@ function parseBillText(text) {
   return {
     kind: 'bill', dir, no, partnerName: (partnerName || '').slice(0, 80), billTo, issuer, toOther: dir === 'import' && !!billTo && !usTo, title: title.toUpperCase(),
     poDate: date, payDue, payTerms: termsM ? termsM[1].trim() : '', currency, total, category,
-    items: [{ desc: `${descWord}${no ? ' · ' + no : ''}`, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: total }],
+    items: charges.length > 1 && Math.abs(sumBy(charges, c => c.amt) - total) <= Math.max(0.05, total * 0.005) ? charges.map(c => ({ desc: c.desc, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: c.amt })) : [{ desc: `${descWord}${no ? ' · ' + no : ''}${charges.length ? ' (' + charges.map(c => c.desc).slice(0, 4).join(', ') + ')' : ''}`, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: total }], issuerAlt,
     refPo: po ? po.no : (ship && ship.blNo) || refs[0] || '', poLink: po ? po.id : '', shipId: ship ? ship.id : '', supBank: bankLines.join('\n'), memo, status: 'open', source: 'ocr',
-    ptInfo: dir === 'import' ? Object.assign((() => { const o = parsePartnerText(head); delete o.name; delete o.banks; return o; })(), { banks: parseBanks(all) }) : {}
+    ptInfo: dir === 'import' ? Object.assign((() => { const o = parsePartnerText(head); delete o.name; delete o.banks; delete o.nameAlt; return o; })(), { banks: parseBanks(all) }, issuerAlt ? { nameAlt: issuerAlt } : {}) : {}
   };
 }
 
@@ -3413,7 +3654,7 @@ function localRead(text, note, kind) {
 /* PDF → page images + text (pdf.js runs on the main thread: the worker script is loaded first so pdf.js uses it in place) */
 const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
 const PDFJS_W = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-async function readPdf(file, maxPages) {
+async function readPdfJs(file, maxPages) {
   await loadScript(PDFJS_W); await loadScript(PDFJS);
   const lib = window.pdfjsLib; if (!lib) throw new Error('load');
   lib.GlobalWorkerOptions.workerSrc = PDFJS_W;
@@ -3431,6 +3672,17 @@ async function readPdf(file, maxPages) {
     }
   }
   return { images, text: text.replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').trim(), pages: pdf.numPages };
+}
+const liteLooksRight = s => { s = String(s || ''); if (s.replace(/\s/g, '').length < 30) return false; const nb = s.replace(/\s/g, ''); const ok = (nb.match(/[A-Za-z0-9.,:;\/()\-+$%#@&'"*·|<>\[\]_=?!~^`{}\\一-鿿가-힣　-〿＀-￯ -ÿ‐-‧№]/g) || []).length / nb.length; const words = (s.match(/\b(the|and|of|to|no|date|total|amount|price|qty|quantity|invoice|order|company|tel|bank|account|description|unit|name)\b/gi) || []).length; return ok >= 0.92 && (words >= 2 || textScore(s).cjk >= 6); };
+async function readPdf(file, maxPages) {
+  let lite = '';
+  try { lite = await pdfTextLite(await file.arrayBuffer()); } catch (e) { }
+  if (liteLooksRight(lite) && !maxPages) return { images: [], text: lite, pages: 1, src: 'lite' };
+  let pj = null; try { pj = await readPdfJs(file, maxPages); } catch (e) { }
+  if (!pj) { if (lite) return { images: [], text: lite, pages: 1, src: 'lite' }; throw new Error('pdf'); }
+  // pdf.js without its Chinese tables drops CJK; the built-in reader keeps it and keeps rows together
+  if (liteLooksRight(lite) && (textScore(lite).cjk >= textScore(pj.text).cjk || textScore(pj.text).bad > 0)) pj.text = lite;
+  return pj;
 }
 
 /* turn Claude's reading into a checklist of things to save */
@@ -3466,8 +3718,8 @@ function buildPlan(r) {
     }
     P.attachTo = 'pos';
   } else if (r.kind === 'bill' && r.bill) {
-    const b = r.bill; const data = JSON.parse(JSON.stringify(b)); ['total', 'billTo', 'issuer', 'toOther', 'title', 'poLink', 'ptInfo'].forEach(k => delete data[k]);
-    const exP = (data.partnerName && (partnerByName(data.partnerName) || matchPartner(data.partnerName))) || null;
+    const b = r.bill; const data = JSON.parse(JSON.stringify(b)); ['total', 'billTo', 'issuer', 'toOther', 'title', 'poLink', 'ptInfo', 'issuerAlt'].forEach(k => delete data[k]);
+    const exP = (data.partnerName && (partnerByName(data.partnerName) || matchPartner(data.partnerName))) || (b.issuerAlt && (partnerByName(b.issuerAlt) || matchPartner(b.issuerAlt))) || null;
     if (exP) data.partnerName = exP.name;
     if (data.partnerName) P.partner = { existing: exP, on: !exP, data: { name: data.partnerName, kind: data.dir === 'export' ? 'buyer' : data.category === 'logistics' ? 'forwarder' : 'supplier', address: '', contact: '', tel: '', email: '', country: '', alias: '' } };
     const ex = data.no ? S.pos.find(x => isBill(x) && (x.no || '').trim().toLowerCase() === data.no.trim().toLowerCase()) : null;
@@ -3615,7 +3867,7 @@ function openSmart(opts = {}) {
         for (const f of files) {
           if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) {
             busy(`PDF 읽는 중 · ${f.name}`);
-            try { const r = await readPdf(f, 3); pdfImgs.push(...r.images); pdfText += `\n${r.text}`; } catch (e) { pdfFail = true; }
+            try { const r = await readPdf(f, SAMPLE ? 3 : 0); pdfImgs.push(...r.images); pdfText += `\n${r.text}`; } catch (e) { pdfFail = true; }
           } else photos.push(f);
         }
         st.innerHTML = '';
@@ -3792,6 +4044,818 @@ const ACT = {
   'doc-style': async el => { if (writeBlocked()) return; try { await saveCo({ docStyle: el.dataset.v }); toast(el.dataset.v === 'avory' ? '이제 서류가 회사 표준 서식으로 나와요' : '기본 서식으로 바꿨어요'); } catch (e) { } },
   'img-clear': async el => { try { await saveCo({ [el.dataset.k]: '' }); toast('지웠어요'); } catch (e) { } }
 };
+/* ================= Excel files without an extra library: styled writer + plain reader on JSZip ================= */
+const XW = {
+  esc: s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, ''),
+  col: n => { let s = ''; n++; while (n) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; },
+  colIdx: s => { let n = 0; for (const ch of String(s).toUpperCase()) { if (ch < 'A' || ch > 'Z') break; n = n * 26 + ch.charCodeAt(0) - 64; } return n - 1; },
+  ref: (r, c) => XW.col(c) + (r + 1),
+  sheetName: (s, used) => { let b = String(s || 'Sheet').replace(/[\[\]:*?\/\\]/g, ' ').trim().slice(0, 31) || 'Sheet'; let n = b, i = 2; while (used.has(n)) n = (b.slice(0, 28) + ' ' + i++); used.add(n); return n; }
+};
+/* sheets: [{ name, cols:[width], rows:[[cell]], merges:['A1:B1'], heights:{rowIdx:pt}, freeze:'A5', landscape }]
+   cell: value | { v, f, s:{ b, i, strike, sz, color, fill, h, v, wrap, border:true|'lrtb', bc, fmt, font } } */
+async function xlsxBlob(sheets) {
+  await loadScript(JSZIP_URL);
+  const fonts = ['<font><sz val="10"/><name val="Arial"/></font>'], fills = ['<fill><patternFill patternType="none"/></fill>', '<fill><patternFill patternType="gray125"/></fill>'];
+  const borders = ['<border><left/><right/><top/><bottom/><diagonal/></border>'], numFmts = [], xfs = ['<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'];
+  const add = (arr, x) => { let i = arr.indexOf(x); if (i < 0) { arr.push(x); i = arr.length - 1; } return i; };
+  const hex = c => 'FF' + String(c).replace('#', '').toUpperCase();
+  const xfMap = new Map();
+  const styleId = st => {
+    if (!st) return 0; const key = JSON.stringify(st); if (xfMap.has(key)) return xfMap.get(key);
+    const fontId = add(fonts, `<font>${st.b ? '<b/>' : ''}${st.i ? '<i/>' : ''}${st.strike ? '<strike/>' : ''}<sz val="${st.sz || 10}"/>${st.color ? `<color rgb="${hex(st.color)}"/>` : ''}<name val="${XW.esc(st.font || 'Arial')}"/></font>`);
+    const fillId = st.fill ? add(fills, `<fill><patternFill patternType="solid"><fgColor rgb="${hex(st.fill)}"/><bgColor indexed="64"/></patternFill></fill>`) : 0;
+    const bd = st.border === true ? 'lrtb' : (st.border || ''); const bc = `<color rgb="${hex(st.bc || '#C9D3DC')}"/>`;
+    const side = (n, on) => on ? `<${n} style="thin">${bc}</${n}>` : `<${n}/>`;
+    const borderId = bd ? add(borders, `<border>${side('left', bd.includes('l'))}${side('right', bd.includes('r'))}${side('top', bd.includes('t'))}${side('bottom', bd.includes('b'))}<diagonal/></border>`) : 0;
+    let numFmtId = 0;
+    if (st.fmt) { const builtin = { '0': 1, '0.00': 2, '#,##0': 3, '#,##0.00': 4, '0%': 9, '0.00%': 10 }; numFmtId = builtin[st.fmt] || (164 + add(numFmts, st.fmt)); }
+    const al = (st.h || st.v || st.wrap) ? `<alignment${st.h ? ` horizontal="${st.h}"` : ''}${st.v ? ` vertical="${st.v}"` : ''}${st.wrap ? ' wrapText="1"' : ''}/>` : '';
+    xfs.push(`<xf numFmtId="${numFmtId}" fontId="${fontId}" fillId="${fillId}" borderId="${borderId}" xfId="0"${numFmtId ? ' applyNumberFormat="1"' : ''}${fontId ? ' applyFont="1"' : ''}${fillId ? ' applyFill="1"' : ''}${borderId ? ' applyBorder="1"' : ''}${al ? ` applyAlignment="1">${al}</xf>` : '/>'}`);
+    const id = xfs.length - 1; xfMap.set(key, id); return id;
+  };
+  const used = new Set();
+  const names = sheets.map(sh => XW.sheetName(sh.name, used));
+  const sheetXml = sh => {
+    let data = '', maxC = 0;
+    (sh.rows || []).forEach((row, r) => {
+      if (!row) return; let cells = '';
+      row.forEach((cell, c) => {
+        if (cell === undefined || cell === null || cell === '') return;
+        const o = typeof cell === 'object' ? cell : { v: cell }; const s = styleId(o.s); const at = `r="${XW.ref(r, c)}"${s ? ` s="${s}"` : ''}`; maxC = Math.max(maxC, c);
+        if (o.f) cells += `<c ${at}><f>${XW.esc(String(o.f).replace(/^=/, ''))}</f></c>`;
+        else if (o.v === undefined || o.v === null || o.v === '') cells += `<c ${at}/>`;
+        else if (typeof o.v === 'number' && Number.isFinite(o.v)) cells += `<c ${at}><v>${o.v}</v></c>`;
+        else if (typeof o.v === 'boolean') cells += `<c ${at} t="b"><v>${o.v ? 1 : 0}</v></c>`;
+        else cells += `<c ${at} t="inlineStr"><is><t xml:space="preserve">${XW.esc(o.v)}</t></is></c>`;
+      });
+      const ht = sh.heights && sh.heights[r];
+      data += `<row r="${r + 1}"${ht ? ` ht="${ht}" customHeight="1"` : ''}>${cells}</row>`;
+    });
+    const fr = sh.freeze ? (() => { const m = sh.freeze.match(/^([A-Z]+)(\d+)$/); const xs = XW.colIdx(m[1]), ys = +m[2] - 1; return `<pane${xs ? ` xSplit="${xs}"` : ''}${ys ? ` ySplit="${ys}"` : ''} topLeftCell="${sh.freeze}" activePane="${xs && ys ? 'bottomRight' : ys ? 'bottomLeft' : 'topRight'}" state="frozen"/>`; })() : '';
+    const cols = (sh.cols || []).map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('');
+    const merges = (sh.merges || []).length ? `<mergeCells count="${sh.merges.length}">${sh.merges.map(m => `<mergeCell ref="${m}"/>`).join('')}</mergeCells>` : '';
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`
+      + `<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr><sheetViews><sheetView workbookViewId="0"${sh.grid === false ? ' showGridLines="0"' : ''}>${fr}</sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>`
+      + (cols ? `<cols>${cols}</cols>` : '') + `<sheetData>${data}</sheetData>${merges}`
+      + `<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.2" footer="0.2"/><pageSetup paperSize="9" orientation="${sh.landscape ? 'landscape' : 'portrait'}" fitToWidth="1" fitToHeight="0"/></worksheet>`;
+  };
+  const zip = new window.JSZip();
+  const sx = sheets.map(sheetXml);
+  sx.forEach((x, i) => zip.file(`xl/worksheets/sheet${i + 1}.xml`, x));
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sx.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`);
+  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+  zip.file('xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView/></bookViews><sheets>${names.map((n, i) => `<sheet name="${XW.esc(n)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`);
+  zip.file('xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${names.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${names.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+  zip.file('xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${numFmts.length ? `<numFmts count="${numFmts.length}">${numFmts.map((f, i) => `<numFmt numFmtId="${164 + i}" formatCode="${XW.esc(f)}"/>`).join('')}</numFmts>` : ''}<fonts count="${fonts.length}">${fonts.join('')}</fonts><fills count="${fills.length}">${fills.join('')}</fills><borders count="${borders.length}">${borders.join('')}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${xfs.length}">${xfs.join('')}</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`);
+  return zip.generateAsync({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', compression: 'DEFLATE' });
+}
+/* every sheet as rows of values (shared strings, inline strings, numbers; formulas give their saved result) */
+async function xlsxRead(buf) {
+  await loadScript(JSZIP_URL);
+  const zip = await window.JSZip.loadAsync(buf);
+  const P = s => new DOMParser().parseFromString(s, 'application/xml');
+  const tags = (node, name) => [...node.getElementsByTagNameNS('*', name)];
+  const txt = async p => { const f = zip.file(p); return f ? f.async('string') : ''; };
+  const ss = []; const ssx = await txt('xl/sharedStrings.xml');
+  if (ssx) for (const si of tags(P(ssx), 'si')) ss.push(tags(si, 't').filter(t => { const pn = t.parentNode && t.parentNode.localName; return pn === 'si' || pn === 'r'; }).map(t => t.textContent).join(''));
+  const wb = P(await txt('xl/workbook.xml')); const rels = P(await txt('xl/_rels/workbook.xml.rels') || '<x/>');
+  const relMap = {}; for (const r of tags(rels, 'Relationship')) relMap[r.getAttribute('Id')] = r.getAttribute('Target');
+  const out = [];
+  for (const sh of tags(wb, 'sheet')) {
+    const rid = sh.getAttribute('r:id') || sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+    let t = String(relMap[rid] || ''); t = t.replace(/^\//, ''); if (!t.startsWith('xl/')) t = 'xl/' + t;
+    const x = await txt(t); if (!x) continue;
+    const rows = [];
+    for (const row of tags(P(x), 'row')) {
+      const r = (+row.getAttribute('r') || rows.length + 1) - 1; const arr = rows[r] = rows[r] || [];
+      let ci = 0;
+      for (const c of tags(row, 'c')) {
+        const ref = c.getAttribute('r'); const col = ref ? XW.colIdx(ref.replace(/\d+/g, '')) : ci; ci = col + 1;
+        const tp = c.getAttribute('t'); const v = tags(c, 'v')[0];
+        let val = '';
+        if (tp === 's') val = v ? (ss[+v.textContent] ?? '') : '';
+        else if (tp === 'inlineStr') val = tags(c, 't').map(z => z.textContent).join('');
+        else if (tp === 'b') val = !!v && v.textContent === '1';
+        else if (v) { const n = Number(v.textContent); val = (tp === 'str' || tp === 'e' || !Number.isFinite(n)) ? v.textContent : n; }
+        arr[col] = val;
+      }
+    }
+    for (let i = 0; i < rows.length; i++) if (!rows[i]) rows[i] = [];
+    out.push({ name: sh.getAttribute('name') || '', rows });
+  }
+  return out;
+}
+const xlDate = v => { if (typeof v === 'number' && v > 20000 && v < 80000) { const d = new Date(Math.round((v - 25569) * 864e5)); return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`; } return cellDate(v); };
+
+/* ================= production · development schedule (생산·개발 일정) ================= */
+const PL_ST = [['排', '확정 · 工厂排期'], ['拟', '제안 · 待工厂确认'], ['done', '완료']];
+const PL_TYPE = [['task', '공정'], ['inspect', '验货 검사'], ['ship', '出货 출하'], ['mile', '이정표']];
+const PL_KIND = [['prod', '생산'], ['dev', '개발']];
+const PL_COLORS = ['#0D5E83', '#2463A5', '#6B4FA0', '#1E7A55', '#93600A', '#B83232'];
+const PL_SOFT = ['#E1EEF3', '#E3ECF8', '#ECE7F6', '#DFF2E8', '#FCF0DA', '#F8E2E2'];
+const PJ_COLORS = ['#173A52', '#8B3A8F', '#1E7A55', '#B5551D', '#2463A5', '#8A6D00'];
+const PL_WD_ZH = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+const PL_WD_KO = '월화수목금토일';
+const PL_LEGEND = '排 工厂排期　拟 建议排程，待工厂确认　周六 正常上班　周日 休息　跨日工序列在开始日，注明结束日。测试按日列出，验货和出货均为目标日期。';
+const plById = id => S.plans.find(x => x.id === id);
+const plOrder = (a, b) => (a.status === 'done') - (b.status === 'done') || num(a.createdAt) - num(b.createdAt) || String(a.name || '').localeCompare(String(b.name || ''));
+const plRest = pl => Array.isArray(pl && pl.restDays) ? pl.restDays : [6];
+const pjShort = pl => (pl.short || String(pl.name || '').split(/[\s+·/]+/).filter(Boolean)[0] || '일정').slice(0, 12);
+const pjCol = pl => pl.color || PJ_COLORS[Math.max(0, S.plans.slice().sort(plOrder).findIndex(p => p.id === pl.id)) % PJ_COLORS.length];
+/* which projects the calendar shows (kept on this device) */
+function plSelIds() { if (S.planSel === undefined) { try { S.planSel = JSON.parse(localStorage.getItem('avory-plsel') || 'null'); } catch (e) { S.planSel = null; } } return Array.isArray(S.planSel) ? S.planSel : null; }
+function plSetSel(ids) { S.planSel = ids; try { localStorage.setItem('avory-plsel', JSON.stringify(ids)); } catch (e) { } }
+function plSel() {
+  const ids = plSelIds(); let out = ids ? S.plans.filter(p => ids.includes(p.id)) : [];
+  if (!out.length) { const act = S.plans.filter(p => p.status !== 'done'); out = act.length ? act : S.plans.slice(0, 1); }
+  return out.sort(plOrder);
+}
+function plCur() { const sel = plSel(); const p = plById(S.planId); return p && sel.includes(p) ? p : (sel[0] || S.plans[0] || null); }
+const isMile = t => t.type === 'inspect' || t.type === 'ship' || t.type === 'mile';
+const tEnd = t => (t.end && t.end > t.start) ? t.end : t.start;
+const mdS = s => { const d = parseYmd(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
+const bIdx = (pl, k) => { const bs = pl.batches || []; let i = bs.findIndex(b => b.k === k); if (i < 0 && k) i = bs.findIndex(b => b.k === String(k).split(/[+&,/ ]/)[0]); return Math.max(0, i); };
+const bCol = (pl, k) => PL_COLORS[bIdx(pl, k) % PL_COLORS.length];
+const bSoft = (pl, k) => PL_SOFT[bIdx(pl, k) % PL_SOFT.length];
+const plUnit = pl => pl.unit || '套';
+const qtyStr = (q, unit) => { if (q === '' || q == null) return ''; const n = Number(String(q).replace(/,/g, '')); return Number.isFinite(n) && /^[\d,.\s]+$/.test(String(q)) ? `${n.toLocaleString('en-US')}${unit || ''}` : String(q); };
+const mileWord = t => t.type === 'inspect' ? '验货' : t.type === 'ship' ? '出货' : (t.name || '节点');
+const stWord = st => st === 'done' ? '✓' : (st || '');
+function tText(pl, t, o = {}) {
+  const b = t.b ? t.b + ' ' : '';
+  if (isMile(t)) return `${b}${mileWord(t)} ${qtyStr(t.qty, plUnit(pl))}`.trim();
+  return `${b}${o.noSt ? '' : stWord(t.st) + ' '}${tBody(t)}`.replace(/\s+/g, ' ').trim();
+}
+const tBody = t => `${t.name || ''}${t.mark || ''}${t.qty !== '' && t.qty != null ? ' ' + qtyStr(t.qty) : ''}${tEnd(t) !== t.start ? ' 至' + mdS(tEnd(t)) : ''}`.trim();
+const plSorted = pl => (pl.tasks || []).map((t, i) => [t, i]).sort((a, b) => a[0].start.localeCompare(b[0].start) || bIdx(pl, a[0].b) - bIdx(pl, b[0].b) || String(a[0].b).length - String(b[0].b).length || a[1] - b[1]).map(x => x[0]);
+function plDay(pl, day) { const ts = plSorted(pl); return { miles: ts.filter(t => isMile(t) && t.start <= day && tEnd(t) >= day), tasks: ts.filter(t => !isMile(t) && t.start === day) }; }
+function dayItems(pls, day) { const miles = [], tasks = []; for (const pl of pls) { const d = plDay(pl, day); d.miles.forEach(t => miles.push({ pl, t })); d.tasks.forEach(t => tasks.push({ pl, t })); } return { miles, tasks }; }
+const plShipIn = (pl, ym) => sumBy((pl.tasks || []).filter(t => t.type === 'ship' && (t.start || '').startsWith(ym)), t => num(String(t.qty).replace(/,/g, '')));
+const shipIn = (pls, ym) => { const by = {}; for (const pl of pls) { const q = plShipIn(pl, ym); if (q) by[plUnit(pl)] = (by[plUnit(pl)] || 0) + q; } return Object.entries(by).map(([u, q]) => `${q.toLocaleString('en-US')} ${u}`).join(' · '); };
+const plHasIn = (pl, ym) => (pl.tasks || []).some(t => t.start.slice(0, 7) <= ym && tEnd(t).slice(0, 7) >= ym);
+function plMonths(pl) {
+  const ts = (pl.tasks || []).filter(t => isYmd(t.start)); if (!ts.length) return [curYm()];
+  let a = ts.reduce((m, t) => t.start < m ? t.start : m, '9999').slice(0, 7), z = ts.reduce((m, t) => tEnd(t) > m ? tEnd(t) : m, '0000').slice(0, 7);
+  const out = []; for (let m = a; m <= z && out.length < 24; m = addMonths(m, 1)) out.push(m); return out;
+}
+const monthsBetween = (a, z) => { const out = []; if (!/^\d{4}-\d{2}$/.test(a) || !/^\d{4}-\d{2}$/.test(z)) return out; for (let m = a; m <= z && out.length < 12; m = addMonths(m, 1)) out.push(m); return out; };
+const plNote = (pl, ym) => ((pl.notes || []).find(n => n.ym === ym) || {}).text || '';
+const plUpdated = pls => { const t = Math.max(0, ...pls.map(p => num(p.updatedAt))); if (!t) return ''; const d = new Date(t); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+function plGrid(ym) {
+  const first = parseYmd(ym + '-01'); const lead = (first.getDay() + 6) % 7; const days = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  const cells = []; for (let i = 0; i < lead; i++) cells.push(null); for (let d = 1; d <= days; d++) cells.push(`${ym}-${pad2(d)}`); while (cells.length % 7) cells.push(null);
+  const weeks = []; for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7)); return weeks;
+}
+const bk = (pl, k) => k ? `<span class="bk" style="background:${bCol(pl, k)}">${esc(k)}</span>` : '';
+const stCls = st => st === '拟' ? 'st-n' : st === 'done' ? 'st-d' : 'st-p';
+const pjTag = pl => `<em class="pj" style="color:${pjCol(pl)}">${esc(pjShort(pl))}</em>`;
+
+function plHeadPanel(pl, multi) {
+  const upd = plUpdated([pl]);
+  return `<section class="panel pl-head" ${multi ? `style="border-left:4px solid ${pjCol(pl)}"` : ''}><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap"><div style="min-width:0"><div class="eyebrow">${esc(L(PL_KIND, pl.kind || 'prod'))} 일정${pl.partnerName ? ' · ' + esc(pl.partnerName) : ''}${upd ? ` · 수정 ${fmtD(upd)}` : ''}</div><h2 style="font-size:${multi ? 17 : 20}px;margin:2px 0 0">${esc(pl.name || '')} <span style="font-weight:500;color:var(--ink-3)">${esc(pl.title || '')}</span></h2>
+      ${pl.customer || pl.poNo ? `<div class="row-s">${[pl.customer ? '고객 ' + esc(pl.customer) : '', pl.poNo ? 'PO ' + esc(pl.poNo) : ''].filter(Boolean).join(' · ')}</div>` : ''}</div>
+      <div class="actions"><button class="btn btn-s" data-act="pl-edit" data-id="${esc(pl.id)}">일정 설정</button><button class="btn btn-s" data-act="pl-shift" data-id="${esc(pl.id)}">일정 미루기</button></div></div>
+    ${(pl.batches || []).length ? `<div class="pl-bat">${pl.batches.map(b => `<span style="background:${bSoft(pl, b.k)}">${bk(pl, b.k)}${esc(b.name || '')} <b class="mono">${esc(qtyStr(b.qty, plUnit(pl)))}</b>${b.note ? `<small>${esc(b.note)}</small>` : ''}</span>`).join('')}</div>` : ''}
+  </div></section>`;
+}
+function viewPlan() {
+  const all = S.plans.slice().sort(plOrder);
+  const segTop = `<div class="seg" role="group" aria-label="일정 메뉴"><button data-act="go" data-to="plan" aria-pressed="true">생산·개발 일정</button><button data-act="go" data-to="ship" aria-pressed="false">출하·선적</button></div>`;
+  const head = `<div class="page-head"><div><div class="eyebrow">Production · Development</div><h1>생산·개발 일정</h1></div><div class="actions"><label class="btn">엑셀 불러오기<input type="file" class="sr" accept=".xlsx" data-plimport="1"></label><button class="btn btn-p" data-act="pl-new">${svg('plus')}새 일정</button></div></div>`;
+  if (!all.length) return `${head}<div class="filters">${segTop}</div><section class="panel"><div class="empty">아직 일정이 없어요. 공장과 맞춘 생산 일정이나 개발 일정을 만들어 두면 달력으로 보고, 사진·PDF·엑셀로 바로 보낼 수 있어요.<span class="actions" style="justify-content:center"><button class="btn btn-s btn-p" data-act="pl-new">새 일정 만들기</button></span></div></section>`;
+  const sel = plSel(), multi = sel.length > 1; S.planId = (plCur() || {}).id;
+  const ym = S.planYm || curYm();
+  if (!S.planDay || !S.planDay.startsWith(ym)) { const t = todayStr(); S.planDay = t.startsWith(ym) ? t : ((sel.flatMap(plSorted).filter(x => x.start.startsWith(ym)).sort((a, b) => a.start.localeCompare(b.start))[0] || {}).start || `${ym}-01`); }
+  const rest = plRest(sel[0]);
+  const ship = shipIn(sel, ym);
+  const weeks = plGrid(ym), t0 = todayStr();
+  const cell = day => {
+    if (!day) return '<div class="pc-d out" aria-hidden="true"></div>';
+    const { miles, tasks } = dayItems(sel, day); const wd = (parseYmd(day).getDay() + 6) % 7;
+    return `<button class="pc-d ${rest.includes(wd) ? 'rest' : ''} ${day === t0 ? 'today' : ''} ${day === S.planDay ? 'sel' : ''}" data-act="pl-day" data-d="${day}" aria-label="${fmtD(day, true)} · ${miles.length + tasks.length}건"><b class="dn">${+day.slice(8)}</b>`
+      + miles.map(({ pl, t }) => `<i class="pc-m ${t.type}${multi ? ' pjx' : ''}" style="--pj:${pjCol(pl)}">${multi ? `<span class="pjm">${esc(pjShort(pl))}</span> ` : ''}${t.b ? `<span class="mb">${esc(t.b)}</span>` : ''}${esc(mileWord(t))}<span class="q"> ${esc(qtyStr(t.qty, plUnit(pl)))}</span></i>`).join('')
+      + tasks.map(({ pl, t }) => `<span class="pc-t ${stCls(t.st)}${multi ? ' pjx' : ''}" style="--pj:${pjCol(pl)}">${multi ? pjTag(pl) : ''}<b style="color:${bCol(pl, t.b)}">${esc(t.b || '')}</b><span class="st">${esc(stWord(t.st))} </span>${esc(t.name || '')}${t.mark ? esc(t.mark) : ''}${t.qty !== '' && t.qty != null ? `<span class="to"> ${esc(qtyStr(t.qty))}</span>` : ''}${tEnd(t) !== t.start ? `<span class="to"> 至${mdS(tEnd(t))}</span>` : ''}</span>`).join('')
+      + (tasks.length > 3 ? `<small class="pc-more">+${tasks.length - 3}</small>` : '') + '</button>';
+  };
+  const day = S.planDay, dd = dayItems(sel, day);
+  const dayRows = [...dd.miles, ...dd.tasks];
+  const listMonth = sel.flatMap(pl => plSorted(pl).filter(t => t.start.startsWith(ym) || (isMile(t) && t.start < `${ym}-01` && tEnd(t) >= `${ym}-01`)).map(t => ({ pl, t }))).sort((a, b) => a.t.start.localeCompare(b.t.start));
+  const byDay = {}; for (const x of listMonth) { const k = x.t.start < `${ym}-01` ? `${ym}-01` : x.t.start; (byDay[k] = byDay[k] || []).push(x); }
+  const tRow = ({ pl, t }) => `<button class="row" data-act="pl-task" data-pl="${esc(pl.id)}" data-id="${esc(t.id)}"><div style="min-width:0"><div class="row-t">${multi ? `<span class="chip" style="color:${pjCol(pl)}">${esc(pjShort(pl))}</span>` : ''}${bk(pl, t.b)}${isMile(t) ? `<span class="chip ${t.type === 'ship' ? 'c-good' : t.type === 'inspect' ? 'c-warn' : 'c-steel'}">${esc(mileWord(t))}</span>` : `<span class="chip ${t.st === 'done' ? 'c-good' : t.st === '拟' ? '' : 'c-steel'}">${esc(t.st === 'done' ? '완료' : t.st === '拟' ? '拟 제안' : '排 확정')}</span>`}<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${t.st === 'done' ? 'text-decoration:line-through;color:var(--ink-3)' : ''}">${esc(isMile(t) ? qtyStr(t.qty, plUnit(pl)) || mileWord(t) : (t.name || '') + (t.mark || ''))}</span></div>
+    <div class="row-s">${fmtD(t.start, true)}${tEnd(t) !== t.start ? ` → ${fmtD(tEnd(t), true)}` : ''}${!isMile(t) && t.qty !== '' && t.qty != null ? ` · ${esc(qtyStr(t.qty))}` : ''}${t.note ? ' · ' + esc(t.note) : ''}</div></div><span class="row-r">${svg('chev')}</span></button>`;
+  const chips = all.length > 1 ? `<div class="pl-chips" role="group" aria-label="달력에 보일 프로젝트"><span class="muted" style="font-size:12px;font-weight:600">달력에 보기</span>${all.map(p => `<button class="pj-chip" data-act="pl-tog" data-id="${esc(p.id)}" aria-pressed="${sel.includes(p)}"><i style="background:${pjCol(p)}"></i>${esc(p.name || '이름 없음')}${p.status === 'done' ? ' · 끝' : ''}</button>`).join('')}${sel.length < all.length ? '<button class="btn btn-s btn-q" data-act="pl-all">모두</button>' : ''}</div>` : '';
+  return `${head}
+  <div class="filters">${segTop}</div>${chips}
+  ${sel.map(pl => plHeadPanel(pl, multi)).join('')}
+  <div class="filters">${monthNav('planYm', ym)}<span class="chip c-good" style="font-size:12px">이달 출하 계획 ${ship || '없음'}</span>
+    <div class="seg" role="group" aria-label="보기"><button data-act="pl-view" data-v="cal" aria-pressed="${S.planView !== 'list'}">달력</button><button data-act="pl-view" data-v="list" aria-pressed="${S.planView === 'list'}">목록</button></div>
+    <button class="btn btn-s btn-p" data-act="pl-share">공유 · 사진·PDF</button></div>
+  ${S.planView === 'list' ? `<section class="panel">${Object.keys(byDay).length ? Object.entries(byDay).map(([d, list]) => `<div class="day-h">${fmtD(d, true)}</div><div class="list">${list.map(tRow).join('')}</div>`).join('') : `<div class="empty">${ymLabel(ym)}에는 잡힌 작업이 없어요.</div>`}</section>`
+    : `<section class="panel pl-calp"><div class="pl-cal">${PL_WD_ZH.map((w, i) => `<div class="pl-wd ${rest.includes(i) ? 'rest' : ''}">${PL_WD_KO[i]}${rest.includes(i) ? '<small>休</small>' : ''}<span class="zh"> ${w}</span></div>`).join('')}${weeks.flat().map(cell).join('')}</div>
+    <div class="pl-legend"><span><i class="pc-m inspect">验货</i> 검사 목표일</span><span><i class="pc-m ship">出货</i> 출하 목표일</span><span><b>排</b> 공장 확정</span><span class="st-n"><b>拟</b> 제안·확인 대기</span>${rest.length ? `<span>${rest.map(i => PL_WD_KO[i]).join('·')} 쉬는 날</span>` : ''}</div></section>
+  <section class="panel" id="pl-dayp"><div class="panel-h"><h2>${fmtD(day, true)}</h2><button class="btn btn-s" data-act="pl-add" data-d="${day}">${svg('plus')}이 날 작업 추가</button></div>
+    ${dayRows.length ? `<div class="list">${dayRows.map(tRow).join('')}</div>` : '<div class="empty">이 날 잡힌 작업이 없어요.</div>'}</section>`}
+  <section class="panel"><div class="panel-h"><h2>${ymLabel(ym)} 메모</h2></div><div class="panel-b" style="display:flex;flex-direction:column;gap:12px">${sel.map(pl => { const n = plNote(pl, ym); return `<div class="pl-noteb">${multi ? `<div class="row-t" style="margin-bottom:4px"><span class="chip" style="color:${pjCol(pl)}">${esc(pjShort(pl))}</span></div>` : ''}<div class="pl-note">${n ? esc(n) : '<span class="muted">달력 아래에 붙는 각주예요. 사진·PDF·엑셀에도 들어가요.</span>'}</div><div><button class="btn btn-s btn-q" data-act="pl-note" data-id="${esc(pl.id)}">고치기</button></div></div>`; }).join('')}</div></section>
+  <section class="panel"><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:10px">
+    <div class="actions"><button class="btn btn-p" data-act="pl-add" data-d="${day}">${svg('plus')}작업 추가</button><button class="btn" data-act="pl-share">공유 · 사진·PDF·엑셀</button></div>
+    <small class="muted">공유할 프로젝트와 기간을 골라 사진(위챗용)·PDF로 보내요. 엑셀은 프로젝트 하나씩 받고, 작업 목록 시트를 고쳐 ‘엑셀 불러오기’로 다시 올릴 수 있어요.</small></div></section>`;
+}
+
+/* ---------- task sheet ---------- */
+function openTask(pl, t, defaults = {}) {
+  const isNew = !t, home = pl;
+  t = Object.assign({ id: 't' + uid(), b: (pl.batches || [])[0] ? pl.batches[0].k : '', type: 'task', st: '拟', name: '', start: defaults.d || todayStr(), end: '', qty: '', note: '', mark: '' }, t ? JSON.parse(JSON.stringify(t)) : {}, isNew ? defaults.t || {} : {});
+  const codes = [...new Set([...(pl.batches || []).map(b => b.k), ...(pl.tasks || []).map(x => x.b)].filter(Boolean))];
+  const pjOpts = S.plans.slice().sort(plOrder).map(p => [p.id, p.name || '이름 없음']);
+  const body = `<form class="fgrid" id="pt-task" autocomplete="off">
+    ${S.plans.length > 1 ? F('프로젝트', sel('plan', pl.id, pjOpts), 'full') : ''}
+    <div class="full">${radios('type', t.type, PL_TYPE)}</div>
+    ${F('배치·단계', inp('b', t.b, { list: 'dl-bk', ph: 'A · B+C' }), '', '합친 배치는 B+C처럼')}${F('상태', sel('st', t.st, PL_ST))}
+    <datalist id="dl-bk">${codes.map(c => `<option value="${esc(c)}">`).join('')}</datalist>
+    <div class="full" id="tk-name-w">${F('공정 이름', inp('name', t.name, { list: 'dl-steps', ph: 'SMT/AOI, 组装烧录, 测试/品质 …' }), 'full')}</div>
+    ${F('시작일', inp('start', t.start, { type: 'date', req: 1 }))}${F('끝나는 날', inp('end', t.end, { type: 'date' }), '', '하루짜리면 비워 두세요')}
+    ${F('수량', inp('qty', t.qty, { ph: '约3,000 · 15000' }), '', '验货·出货는 숫자만 쓰면 ‘套’가 붙어요')}${F('표시 (각주)', inp('mark', t.mark, { ph: '¹' }))}
+    ${F('메모', inp('note', t.note), 'full')}
+  </form>${isNew ? '' : `<div class="actions"><button type="button" class="btn btn-s" id="tk-copy">다음 날로 복사</button><button type="button" class="btn btn-s" id="tk-done">${t.st === 'done' ? '완료 취소' : '완료로 표시'}</button></div>`}`;
+  openSheet(isNew ? '작업 추가' : '작업', body, footStd(!isNew), {
+    mount: panel => {
+      const form = $('#pt-task', panel);
+      const sync = () => { const ty = ($('input[name=type]:checked', form) || {}).value; $('#tk-name-w', panel).hidden = ty === 'inspect' || ty === 'ship'; };
+      form.addEventListener('change', sync); sync();
+      const read = () => { const v = readForm(form); const o = Object.assign(t, { type: v.type || 'task', b: String(v.b || '').toUpperCase().replace(/\s+/g, ''), st: v.st || '拟', name: v.name || '', start: v.start, end: v.end && v.end > v.start ? v.end : '', qty: v.qty || '', note: v.note || '', mark: v.mark || '' }); if (o.type === 'ship' || o.type === 'inspect') o.name = ''; if (/^[\d,]+$/.test(String(o.qty)) && isMile(o)) o.qty = Number(String(o.qty).replace(/,/g, '')); return [o, v.plan || home.id]; };
+      const saveIn = async (pid, mut) => { const latest = JSON.parse(JSON.stringify(plById(pid) || home)); latest.tasks = latest.tasks || []; mut(latest.tasks); await put('plans', latest); };
+      sheetSave = async () => {
+        const [o, pid] = read(); if (!isYmd(o.start)) { toast('시작일을 골라 주세요.', 'crit'); return false; }
+        if (o.type === 'task' && !o.name) { toast('공정 이름을 적어 주세요.', 'crit'); return false; }
+        if (!isNew && pid !== home.id) { await saveIn(home.id, ts => { const i = ts.findIndex(x => x.id === o.id); if (i >= 0) ts.splice(i, 1); }); }
+        await saveIn(pid, ts => { const i = ts.findIndex(x => x.id === o.id); if (i >= 0) ts[i] = o; else ts.push(o); });
+        toast(isNew ? '작업을 추가했어요' : '작업을 고쳤어요');
+        const ids = plSel().map(p => p.id); if (!ids.includes(pid)) plSetSel([...ids, pid]);
+        S.planYm = o.start.slice(0, 7); S.planDay = o.start; return true;
+      };
+      sheetDelete = async () => { await saveIn(home.id, ts => { const i = ts.findIndex(x => x.id === t.id); if (i >= 0) ts.splice(i, 1); }); toast('작업을 지웠어요'); };
+      const cp = $('#tk-copy', panel); if (cp) cp.addEventListener('click', async () => {
+        const [o, pid] = read(); const p2 = plById(pid) || home; let nd = addDays(o.start, 1); for (let k = 0; k < 6 && plRest(p2).includes((parseYmd(nd).getDay() + 6) % 7); k++) nd = addDays(nd, 1);
+        const span = tEnd(o) !== o.start ? Math.round((parseYmd(tEnd(o)) - parseYmd(o.start)) / 864e5) : 0;
+        const c = Object.assign({}, o, { id: 't' + uid(), start: nd, end: span ? addDays(nd, span) : '' });
+        try { await saveIn(pid, ts => ts.push(c)); toast(`${fmtD(nd, true)}에 복사했어요`); S.planYm = nd.slice(0, 7); S.planDay = nd; closeSheet(); openTask(plById(pid) || p2, c); } catch (e) { }
+      });
+      const dn = $('#tk-done', panel); if (dn) dn.addEventListener('click', async () => {
+        const [o] = read(); o.st = o.st === 'done' ? '排' : 'done';
+        try { await saveIn(home.id, ts => { const i = ts.findIndex(x => x.id === o.id); if (i >= 0) ts[i] = o; }); toast(o.st === 'done' ? '완료로 표시했어요' : '완료를 취소했어요'); closeSheet(); } catch (e) { }
+      });
+    }
+  });
+}
+
+/* ---------- plan settings ---------- */
+const batRow = b => `<div class="bat-row"><label>코드<input class="in mono" data-bt="k" value="${esc(b.k || '')}" maxlength="6" placeholder="A"></label><label>이름<input class="in" data-bt="name" value="${esc(b.name || '')}" placeholder="在制批 · EVT"></label><label>수량<input class="in mono" data-bt="qty" inputmode="numeric" value="${esc(b.qty ?? '')}" placeholder="15000"></label><button type="button" class="icon-btn" data-bt-del aria-label="배치 지우기">${svg('x')}</button><label class="bat-note">메모<input class="in" data-bt="note" value="${esc(b.note || '')}" placeholder="11/13 出货 · 与 C 合并"></label></div>`;
+function openPlanEd(pl) {
+  const isNew = !pl;
+  pl = Object.assign({ kind: 'prod', title: '生产日历', unit: '套', status: 'active', restDays: [6], batches: [{ k: 'A', name: '', qty: '' }], tasks: [], notes: [], legend: PL_LEGEND }, pl ? JSON.parse(JSON.stringify(pl)) : {});
+  const rest = plRest(pl);
+  const body = `<form class="fgrid" id="pl-form" autocomplete="off">
+    <div class="full">${radios('kind', pl.kind || 'prod', PL_KIND)}</div>
+    ${F('제품·프로젝트 이름', inp('name', pl.name, { req: 1, ph: 'FH8333 + SC235HAI' }), 'full')}
+    ${F('짧은 이름 (여러 프로젝트를 함께 볼 때)', inp('short', pl.short, { ph: pjShort(Object.assign({}, pl, { short: '' })) }))}${F('제목 (사진·엑셀 머리글)', inp('title', pl.title, { ph: '生产日历 · 开发日程' }))}
+    ${F('공장·협력사', inp('partnerName', pl.partnerName, { list: 'dl-partners' }))}${F('고객', inp('customer', pl.customer, { list: 'dl-partners' }))}
+    ${F('관련 PO', inp('poNo', pl.poNo, { mono: 1 }))}${F('단위', inp('unit', pl.unit, { ph: '套 · PCS' }))}
+    ${F('상태', sel('status', pl.status || 'active', [['active', '진행 중'], ['done', '끝남']]))}
+    <div class="f full"><span>쉬는 날 (달력에 休 표시, 일정 옮길 때 건너뛰어요)</span><div class="wd-checks">${PL_WD_KO.split('').map((w, i) => `<label class="check"><input type="checkbox" name="rest${i}" ${rest.includes(i) ? 'checked' : ''}>${w}</label>`).join('')}</div></div>
+    <div class="fsec full">배치·단계 · 달력에 A·B·C처럼 색으로 구분돼요</div>
+    <div class="full" style="display:flex;flex-direction:column;gap:8px"><div id="bat-list" style="display:flex;flex-direction:column;gap:10px">${(pl.batches || []).map(batRow).join('')}</div><div><button type="button" class="btn btn-s" id="bat-add">${svg('plus')}배치 추가</button></div></div>
+    ${F('범례 문구 (사진·엑셀에 들어가요)', ta('legend', pl.legend, 2), 'full')}
+  </form>${isNew ? '' : '<div class="actions"><button type="button" class="btn btn-s" id="pl-dup">이 일정 복제해서 새 프로젝트</button></div>'}`;
+  openSheet(isNew ? '새 일정' : '일정 설정', body, footStd(!isNew), {
+    mount: panel => {
+      const form = $('#pl-form', panel), list = $('#bat-list', panel);
+      $('#bat-add', panel).addEventListener('click', () => { const used = new Set($$('[data-bt=k]', list).map(i => i.value.trim())); let k = 'A'; while (used.has(k) && k < 'Z') k = String.fromCharCode(k.charCodeAt(0) + 1); list.insertAdjacentHTML('beforeend', batRow({ k })); });
+      list.addEventListener('click', e => { if (e.target.closest('[data-bt-del]')) e.target.closest('.bat-row').remove(); });
+      form.addEventListener('change', e => { if (e.target.name === 'kind' && !form.elements.title.dataset.touched) form.elements.title.value = e.target.value === 'dev' ? '开发日程' : '生产日历'; });
+      form.elements.title.addEventListener('input', e => { e.target.dataset.touched = '1'; });
+      const collect = () => {
+        const v = readForm(form);
+        const batches = $$('.bat-row', list).map(r => { const o = {}; $$('[data-bt]', r).forEach(i => { o[i.dataset.bt] = i.value.trim(); }); o.k = o.k.toUpperCase(); if (/^[\d,]+$/.test(o.qty)) o.qty = Number(o.qty.replace(/,/g, '')); return o; }).filter(b => b.k);
+        const restDays = [0, 1, 2, 3, 4, 5, 6].filter(i => v['rest' + i]);
+        return { kind: v.kind || 'prod', name: v.name, short: v.short, title: v.title, unit: v.unit || '套', partnerName: v.partnerName, customer: v.customer, poNo: v.poNo, status: v.status, legend: v.legend, batches, restDays };
+      };
+      sheetSave = async () => {
+        const v = collect(); if (!v.name) { toast('이름을 적어 주세요.', 'crit'); return false; }
+        const latest = isNew ? pl : JSON.parse(JSON.stringify(plById(pl.id) || pl));
+        const id = await put('plans', Object.assign(latest, v));
+        S.planId = id; const ids = plSel().map(p => p.id); if (!ids.includes(id)) plSetSel([...ids, id]);
+        toast(isNew ? '일정을 만들었어요. 작업을 추가해 보세요' : '일정 설정을 저장했어요'); if (S.route !== 'plan') go('plan'); return true;
+      };
+      sheetDelete = async () => { await remove('plans', pl.id); plSetSel((plSelIds() || []).filter(x => x !== pl.id)); S.planId = null; toast('일정을 지웠어요'); };
+      const dp = $('#pl-dup', panel); if (dp) dp.addEventListener('click', async () => {
+        if (writeBlocked()) return;
+        const src = JSON.parse(JSON.stringify(plById(pl.id) || pl)); const c = Object.assign({}, src, collect());
+        delete c.id; delete c.createdAt; delete c.updatedAt; c.name = `${c.name} (복사)`; c.short = ''; c.status = 'active';
+        c.tasks = (src.tasks || []).map(t => Object.assign({}, t, { id: 't' + uid(), st: t.st === 'done' ? '拟' : t.st })); c.notes = (src.notes || []).slice();
+        try { const id = await put('plans', c); plSetSel([id]); S.planId = id; closeSheet(); toast('복제했어요. 이름을 바꾸고 ‘일정 미루기’로 날짜를 옮기세요'); openPlanEd(plById(id) || Object.assign(c, { id })); } catch (e) { }
+      });
+    }
+  });
+}
+function openPlNote(pl, ym) {
+  const body = F(`${pl.name || ''} · ${ymLabel(ym)} 메모 · 각주`, ta('note', plNote(pl, ym), 6, '1. A：测试11/6–11/11 …\n2. B+C：…'), 'full', '한 줄에 하나씩. 사진·PDF·엑셀 달력 아래에 그대로 들어가요');
+  openSheet('달 메모', `<form id="pn-form">${body}</form>`, footStd(false), {
+    mount: panel => {
+      sheetSave = async () => {
+        const v = readForm($('#pn-form', panel)); const latest = JSON.parse(JSON.stringify(plById(pl.id) || pl));
+        latest.notes = (latest.notes || []).filter(n => n.ym !== ym); if (v.note) latest.notes.push({ ym, text: v.note });
+        await put('plans', latest); toast('메모를 저장했어요'); return true;
+      };
+    }
+  });
+}
+function openPlShift(pl) {
+  const bOpts = [['*', '전체'], ...[...new Set([...(pl.batches || []).map(b => b.k), ...(pl.tasks || []).map(t => t.b)].filter(Boolean))].map(k => [k, `${k} ${((pl.batches || []).find(b => b.k === k) || {}).name || ''}`.trim()])];
+  const rest = plRest(pl);
+  const body = `<div class="banner info"><span>공장 일정이 밀리거나 당겨질 때 써요. 기준일부터 시작하는 작업과 验货·出货를 한꺼번에 옮겨요. 끝난(완료) 작업은 그대로 둬요.</span></div>
+    <form class="fgrid" id="sh-form">${F('배치', sel('b', '*', bOpts))}${F('기준일', inp('from', todayStr(), { type: 'date' }))}${F('며칠', inp('n', 1, { type: 'number', step: '1' }), '', '앞당기려면 -2처럼 적어요')}
+    ${rest.length ? `<label class="check full"><input type="checkbox" name="skipRest" checked>쉬는 날(${rest.map(i => PL_WD_KO[i]).join('·')})에 걸리면 건너뛰기</label>` : ''}</form><div class="row-s" id="sh-prev"></div>`;
+  openSheet(`일정 미루기 · ${pl.name || ''}`, body, footStd(false, '옮기기'), {
+    mount: panel => {
+      const form = $('#sh-form', panel);
+      const pick = v => (pl.tasks || []).filter(t => t.st !== 'done' && (v.b === '*' || t.b === v.b) && t.start >= v.from);
+      const prev = () => { const v = readForm(form); $('#sh-prev', panel).textContent = `${pick(v).length}개 작업이 ${num(v.n) >= 0 ? num(v.n) + '일 뒤로' : -num(v.n) + '일 앞으로'} 옮겨져요.`; };
+      form.addEventListener('input', prev); form.addEventListener('change', prev); prev();
+      sheetSave = async () => {
+        const v = readForm(form); const n = Math.round(num(v.n)); if (!n) { toast('며칠 옮길지 적어 주세요.', 'crit'); return false; }
+        const latest = JSON.parse(JSON.stringify(plById(pl.id) || pl)); const ids = new Set(pick(v).map(t => t.id));
+        const mv = s => { let d = addDays(s, n); for (let k = 0; k < 6 && v.skipRest && rest.includes((parseYmd(d).getDay() + 6) % 7); k++) d = addDays(d, n > 0 ? 1 : -1); return d; };
+        latest.tasks.forEach(t => { if (!ids.has(t.id)) return; const span = tEnd(t) !== t.start ? Math.round((parseYmd(tEnd(t)) - parseYmd(t.start)) / 864e5) : 0; t.start = mv(t.start); t.end = span ? addDays(t.start, span) : ''; });
+        await put('plans', latest); toast(`${ids.size}개 작업을 옮겼어요`); return true;
+      };
+    }
+  });
+}
+
+/* ---------- share: pick projects and months → photo / PDF / Excel ---------- */
+function openPlShare() {
+  const all = S.plans.slice().sort(plOrder), selIds = plSel().map(p => p.id), ym = S.planYm || curYm();
+  let to = ym; for (let i = 1; i <= 2; i++) { const m = addMonths(ym, i); if (plSel().some(pl => plHasIn(pl, m))) to = m; }
+  const defTitle = ids => { const ps = all.filter(p => ids.includes(p.id)); return ps.length === 1 ? `${ps[0].name || ''}　${ps[0].title || ''}`.trim() : '生产 · 开发日历'; };
+  const body = `<form class="fgrid" id="ps-form" autocomplete="off">
+    <div class="f full"><span>보낼 프로젝트</span><div class="pj-checks">${all.map(p => `<label class="check"><input type="checkbox" name="pj" value="${esc(p.id)}" ${selIds.includes(p.id) ? 'checked' : ''}><i class="pjdot" style="background:${pjCol(p)}"></i><span style="min-width:0">${esc(p.name || '')} <small class="muted">${esc(p.title || '')}${p.status === 'done' ? ' · 끝' : ''}</small></span></label>`).join('')}</div></div>
+    ${F('시작 달', inp('from', ym, { type: 'month' }))}${F('끝 달', inp('to', to, { type: 'month' }))}
+    ${F('제목', inp('title', defTitle(selIds)), 'full')}
+    <div class="full">${radios('fmt', 'png', [['png', '사진'], ['pdf', 'PDF'], ['xlsx', '엑셀']])}</div>
+    <small class="muted full" id="ps-hint"></small>
+  </form>`;
+  openSheet('일정 공유하기', body, footStd(false, '만들기'), {
+    mount: panel => {
+      const form = $('#ps-form', panel); let touched = false;
+      const ids = () => $$('input[name=pj]:checked', form).map(i => i.value);
+      const hint = () => { const v = readForm(form), n = ids().length, ms = monthsBetween(v.from, v.to).length; $('#ps-hint', panel).textContent = !n ? '프로젝트를 하나 이상 고르세요.' : v.fmt === 'xlsx' && n > 1 ? '엑셀은 프로젝트 하나씩 받아요. 하나만 고르세요.' : `${n}개 프로젝트 · ${ms || 0}개월${v.fmt === 'png' ? ' · 사진 한 장(달마다 이어 붙임)' : v.fmt === 'pdf' ? ' · 달마다 한 쪽 (A4 가로)' : ' · 달력 시트 + 작업 목록 시트'}`; };
+      form.elements.title.addEventListener('input', () => { touched = true; });
+      form.addEventListener('change', e => { if (e.target.name === 'pj' && !touched) form.elements.title.value = defTitle(ids()); hint(); }); hint();
+      sheetSave = async () => {
+        const v = readForm(form), pick = ids(); const pls = all.filter(p => pick.includes(p.id)); const months = monthsBetween(v.from, v.to);
+        if (!pls.length) { toast('프로젝트를 하나 이상 고르세요.', 'crit'); return false; }
+        if (!months.length) { toast('기간을 확인해 주세요. (최대 12개월)', 'crit'); return false; }
+        if (v.fmt === 'xlsx' && pls.length > 1) { toast('엑셀은 프로젝트 하나씩 받아요.', 'crit'); return false; }
+        const btn = $('[data-act=sheet-save]', panel); if (btn) { btn.disabled = true; btn.textContent = '만드는 중…'; }
+        try {
+          if (v.fmt === 'xlsx') await plXlsx(pls[0], months);
+          else { const cvs = plCanvases(pls, months, v.title || defTitle(pick)); const base = `${safeName(pls.length === 1 ? pls[0].name || '일정' : '생산개발일정')}_${months[0]}${months.length > 1 ? '~' + months[months.length - 1] : ''}`; if (v.fmt === 'pdf') await saveFile(`${base}.pdf`, await canvasPdf(cvs)); else await saveFile(`${base}.png`, await canvasStack(cvs)); }
+        } catch (e) { toast('파일을 만들지 못했어요.', 'crit'); if (btn) { btn.disabled = false; btn.textContent = '만들기'; } return false; }
+        return true;
+      };
+    }
+  });
+}
+
+/* ---------- picture of the calendar (canvas, nothing to download) ---------- */
+function plCanvases(pls, months, title) {
+  const W = 1800, P = 14, CW = (W - P * 2) / 7, LH = 22;
+  const FF = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Noto Sans SC","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  const fnt = (sz, b) => `${b ? 700 : 400} ${sz}px ${FF}`;
+  const multi = pls.length > 1, rest = plRest(pls[0]), upd = plUpdated(pls);
+  const scratch = document.createElement('canvas').getContext('2d');
+  const wrap = (g, text, w, font) => { g.font = font; const out = []; let cur = ''; for (const ch of String(text)) { if (g.measureText(cur + ch).width > w && cur) { out.push(cur); cur = ch.trim() ? ch : ''; } else cur += ch; } if (cur) out.push(cur); return out.length ? out : ['']; };
+  const legendParts = txt => String(txt || '').split(/　+/).filter(Boolean).map(s => { const m = s.match(/^(\S{1,3})\s+(.+)$/); return m && !/[，。]/.test(m[1]) ? [m[1], m[2]] : ['', s]; });
+  const draw = (g, ym, drawing) => {
+    let y = P; const [yy, mm] = ym.split('-');
+    const R = (x, yv, w, h, c) => { if (drawing) { g.fillStyle = c; g.fillRect(x, yv, w, h); } };
+    const T = (s, x, yv, font, c, align = 'left') => { g.font = font; const w = g.measureText(s).width; if (drawing) { g.fillStyle = c; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, yv); } return w; };
+    const has = pls.some(pl => plHasIn(pl, ym));
+    R(P, y, W - P * 2, 66, '#173A52'); T(`${yy}年 ${+mm}月`, P + 18, y + 34, fnt(32, 1), '#FFFFFF'); T(title, P + CW * 1.4, y + 34, fnt(32, 1), '#FFFFFF'); if (upd) T(`更新 ${upd}`, W - P - 18, y + 34, fnt(16), '#9FB3C4', 'right'); y += 66;
+    const sq = shipIn(pls, ym); R(P, y, W - P * 2, 48, '#DDF1EC'); const w0 = T('本月计划出货', P + 18, y + 24, fnt(21, 1), '#14532D'); T(sq || '暂无', P + 18 + w0 + 22, y + 24, fnt(23, 1), '#14532D'); y += 48;
+    if (!has) {
+      const note = pls.map(pl => plNote(pl, ym)).filter(Boolean).join('\n') || `${+mm}月暂无排产计划。`;
+      const ls = note.split('\n').flatMap(l => wrap(g, l, W - P * 2 - 36, fnt(17))); R(P, y, W - P * 2, ls.length * 26 + 20, '#EEF6F3'); ls.forEach((l, k) => T(l, P + 18, y + 10 + 13 + k * 26, fnt(17), '#435669')); y += ls.length * 26 + 20;
+    } else if (!multi) {
+      const bs = pls[0].batches || [];
+      if (bs.length) { const bw = (W - P * 2) / Math.max(3, bs.length); bs.forEach((b, i) => { const x = P + i * bw; R(x, y, bw, 48, bSoft(pls[0], b.k)); let xx = x + 18; xx += T(b.k, xx, y + 24, fnt(19, 1), '#0F2236') + 18; xx += T(b.name || '', xx, y + 24, fnt(19, 1), '#0F2236') + 14; xx += T(qtyStr(b.qty, plUnit(pls[0])), xx, y + 24, fnt(19, 1), '#0F2236') + 14; if (b.note) T(b.note, xx, y + 24, fnt(15), '#6A7C8E'); }); if (bs.length < 3) R(P + bs.length * bw, y, W - P * 2 - bs.length * bw, 48, '#F1F4F7'); y += 48; }
+    } else {
+      pls.forEach(pl => { R(P, y, W - P * 2, 42, '#F4F7F9'); R(P + 18, y + 13, 16, 16, pjCol(pl)); let xx = P + 44; xx += T(`${pl.name || ''}`, xx, y + 21, fnt(19, 1), '#0F2236') + 16; xx += T(pl.title || '', xx, y + 21, fnt(16), '#6A7C8E') + 18; const s1 = plShipIn(pl, ym); if (s1) xx += T(`本月出货 ${s1.toLocaleString('en-US')}${plUnit(pl)}`, xx, y + 21, fnt(16, 1), '#1E7A55') + 18; T((pl.batches || []).map(b => `${b.k} ${qtyStr(b.qty, plUnit(pl))}${b.note ? ' (' + b.note + ')' : ''}`).join('　'), xx, y + 21, fnt(15), '#6A7C8E'); y += 42; });
+    }
+    R(P, y, W - P * 2, 42, '#FFFFFF'); { let xx = P + 18; const lg = pls[0].legend || PL_LEGEND; for (const [k, rest2] of legendParts(lg)) { if (k) xx += T(k, xx, y + 21, fnt(16, 1), '#0F2236') + 8; xx += T(rest2, xx, y + 21, fnt(16), '#6A7C8E') + 26; } } y += 42;
+    PL_WD_ZH.forEach((w, i) => { R(P + i * CW, y, CW, 40, rest.includes(i) ? '#55708A' : '#2D4A60'); T(w + (rest.includes(i) ? '（休）' : ''), P + i * CW + CW / 2, y + 20, fnt(18, 1), '#FFFFFF', 'center'); }); y += 40;
+    for (const wk of plGrid(ym)) {
+      const info = wk.map(d => d ? dayItems(pls, d) : null);
+      const maxM = Math.max(0, ...info.map(x => x ? x.miles.length : 0));
+      const lineSets = info.map(x => {
+        if (!x || !x.tasks.length) return [];
+        g.font = fnt(14, 1); const pW = multi ? Math.max(...x.tasks.map(({ pl }) => g.measureText(pjShort(pl)).width)) + 8 : 0;
+        g.font = fnt(15, 1); const bW = Math.max(...x.tasks.map(({ t }) => g.measureText(t.b || '').width)); const sX = pW + (bW ? bW + 9 : 0);
+        const sW = Math.max(...x.tasks.map(({ t }) => g.measureText(stWord(t.st)).width)); const tX = sX + (sW ? sW + 9 : 0);
+        return x.tasks.map(({ pl, t }) => ({ pre: [multi ? [pjShort(pl), fnt(14, 1), pjCol(pl), 0] : null, [t.b || '', fnt(15, 1), '#0F2236', pW], [stWord(t.st), fnt(15, t.st !== '拟'), t.st === '拟' ? '#8A99A8' : '#1E7A55', sX]].filter(Boolean), tX, body: wrap(g, tBody(t), CW - 16 - tX, fnt(15)), col: t.st === 'done' ? '#8A99A8' : t.st === '拟' ? '#435669' : '#0F2236' }));
+      });
+      const nl = Math.max(1, ...lineSets.map(ls => ls.reduce((a, l) => a + l.body.length, 0)));
+      const h = 38 + maxM * 36 + nl * LH + 16;
+      wk.forEach((d, i) => {
+        const x = P + i * CW;
+        R(x, y, CW, h, d ? (rest.includes(i) ? '#F7F9FA' : '#FFFFFF') : '#EEF2F5');
+        if (!d) return;
+        R(x, y, CW, 36, '#E7EDF2'); T(String(+d.slice(8)), x + 10, y + 19, fnt(21, 1), '#0F2236');
+        info[i].miles.forEach(({ pl, t }, k) => { const c = t.type === 'ship' ? ['#1E7A55', '#FFFFFF'] : t.type === 'inspect' ? ['#F8D9A0', '#6B4100'] : ['#DCE7F5', '#2463A5']; R(x, y + 38 + k * 36 + 1, CW, 33, c[0]); T(`${multi ? pjShort(pl) + ' · ' : ''}${tText(pl, t)}`, x + CW / 2, y + 38 + k * 36 + 18, fnt(17, 1), c[1], 'center'); });
+        let ly = y + 38 + maxM * 36 + 6 + LH / 2;
+        for (const l of lineSets[i]) { l.pre.forEach(([s, f, c, px]) => { if (s) T(s, x + 8 + px, ly, f, c); }); l.body.forEach((b, k) => { T(b, x + 8 + l.tX, ly + k * LH, fnt(15), l.col); }); ly += l.body.length * LH; }
+      });
+      if (drawing) { g.strokeStyle = '#C9D3DC'; g.lineWidth = 1; for (let i = 0; i <= 7; i++) { g.beginPath(); g.moveTo(Math.round(P + i * CW) + .5, y); g.lineTo(Math.round(P + i * CW) + .5, y + h); g.stroke(); } g.beginPath(); g.moveTo(P, y + h - .5); g.lineTo(W - P, y + h - .5); g.stroke(); }
+      y += h;
+    }
+    if (has) {
+      const lines = pls.flatMap(pl => { const n = plNote(pl, ym); return n ? n.split('\n').filter(Boolean).map(l => multi ? `[${pjShort(pl)}] ${l}` : l) : []; });
+      if (lines.length) { const ls = lines.flatMap(l => wrap(g, l, W - P * 2 - 40, fnt(16))); R(P, y, W - P * 2, ls.length * 25 + 24, '#FFFFFF'); ls.forEach((l, k) => T(l, P + 24, y + 12 + 12 + k * 25, fnt(16), '#435669')); y += ls.length * 25 + 24; }
+    }
+    return y + P;
+  };
+  return months.map(ym => {
+    const H = draw(scratch, ym, false);
+    const cv = document.createElement('canvas'); cv.width = W; cv.height = Math.ceil(H); const g = cv.getContext('2d');
+    g.fillStyle = '#E9EEF3'; g.fillRect(0, 0, W, cv.height); draw(g, ym, true); return cv;
+  });
+}
+async function canvasStack(cvs) {
+  const W = Math.max(...cvs.map(c => c.width)), H = cvs.reduce((a, c) => a + c.height, 0);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d'); g.fillStyle = '#E9EEF3'; g.fillRect(0, 0, W, H);
+  let y = 0; for (const c of cvs) { g.drawImage(c, 0, y); y += c.height; }
+  const blob = await new Promise(r => cv.toBlob(r, 'image/png')); if (!blob) throw new Error('png'); return blob;
+}
+/* a small PDF: one JPEG page per month, A4 (landscape when wide) */
+async function canvasPdf(cvs) {
+  const pages = [];
+  for (const c of cvs) { const b = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)); if (!b) throw new Error('jpg'); pages.push({ data: new Uint8Array(await b.arrayBuffer()), w: c.width, h: c.height }); }
+  const enc = new TextEncoder(), parts = [], offs = []; let len = 0;
+  const push = x => { const b = typeof x === 'string' ? enc.encode(x) : x; parts.push(b); len += b.length; };
+  const obj = (n, dict, stream) => { offs[n] = len; push(`${n} 0 obj\n${dict}\n`); if (stream) { push('stream\n'); push(stream); push('\nendstream\n'); } push('endobj\n'); };
+  push('%PDF-1.4\n'); push(new Uint8Array([0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));
+  const N = pages.length; obj(1, '<< /Type /Catalog /Pages 2 0 R >>'); obj(2, `<< /Type /Pages /Kids [${pages.map((_, i) => `${3 + i * 3} 0 R`).join(' ')}] /Count ${N} >>`);
+  pages.forEach((p, i) => {
+    const pn = 3 + i * 3, land = p.w >= p.h, PW = land ? 842 : 595, PH = land ? 595 : 842, M = 20;
+    const s = Math.min((PW - 2 * M) / p.w, (PH - 2 * M) / p.h), w = p.w * s, h = p.h * s, x = (PW - w) / 2, y = PH - M - h;
+    const cs = `q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${x.toFixed(2)} ${y.toFixed(2)} cm /Im${i} Do Q`;
+    obj(pn, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${PW} ${PH}] /Resources << /XObject << /Im${i} ${pn + 2} 0 R >> >> /Contents ${pn + 1} 0 R >>`);
+    obj(pn + 1, `<< /Length ${cs.length} >>`, cs);
+    obj(pn + 2, `<< /Type /XObject /Subtype /Image /Width ${p.w} /Height ${p.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.data.length} >>`, p.data);
+  });
+  const total = 3 + N * 3, xref = len;
+  let x = `xref\n0 ${total}\n0000000000 65535 f \n`; for (let n = 1; n < total; n++) x += `${String(offs[n]).padStart(10, '0')} 00000 n \n`;
+  push(x); push(`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(parts, { type: 'application/pdf' });
+}
+
+/* ---------- Excel out: one calendar sheet per month + the task list ---------- */
+async function plXlsx(pl, months) {
+  months = months && months.length ? months : plMonths(pl);
+  {
+    const unit = plUnit(pl), title = `${pl.name || ''}　${pl.title || ''}`.trim(), rest = plRest(pl), upd = plUpdated([pl]);
+    const bd = { border: true, bc: '#C9D3DC' };
+    const sheets = [];
+    for (const ym of months) {
+      const rows = [], merges = [], heights = {}; const [y, m] = ym.split('-'); const has = plHasIn(pl, ym);
+      rows.push([{ v: `${y}年 ${+m}月`, s: { b: 1, sz: 16, color: '#FFFFFF', fill: '#173A52', v: 'center' } }, { s: { fill: '#173A52' } }, { v: title, s: { b: 1, sz: 16, color: '#FFFFFF', fill: '#173A52', v: 'center' } }, ...Array(3).fill({ s: { fill: '#173A52' } }), { v: upd ? `更新 ${upd}` : '', s: { sz: 9, color: '#9FB3C4', fill: '#173A52', v: 'center', h: 'right' } }]);
+      merges.push('A1:B1', 'C1:F1'); heights[0] = 32;
+      const sq = plShipIn(pl, ym);
+      rows.push([{ v: `本月计划出货　${sq ? sq.toLocaleString('en-US') + ' ' + unit : '暂无'}`, s: { b: 1, sz: 12, color: '#14532D', fill: '#DDF1EC', v: 'center' } }, ...Array(6).fill({ s: { fill: '#DDF1EC' } })]); merges.push('A2:G2'); heights[1] = 24;
+      if (!has) { rows.push([{ v: plNote(pl, ym) || `${+m}月暂无排产计划。`, s: { sz: 10, color: '#435669', fill: '#EEF6F3', v: 'center', wrap: 1 } }, ...Array(6).fill({ s: { fill: '#EEF6F3' } })]); merges.push('A3:G3'); heights[2] = 24; }
+      else {
+        const bs = (pl.batches || []).slice(0, 3); const brow = Array(7).fill(null);
+        if ((pl.batches || []).length > 3) { brow[0] = { v: pl.batches.map(b => `${b.k} ${b.name || ''} ${qtyStr(b.qty, unit)}${b.note ? ' ' + b.note : ''}`).join('　　'), s: { b: 1, sz: 11, fill: '#EEF2F5', v: 'center' } }; merges.push('A3:G3'); }
+        else bs.forEach((b, i) => { const c0 = i * 2, c1 = i === bs.length - 1 ? 6 : c0 + 1; brow[c0] = { v: `${b.k}　${b.name || ''}　${qtyStr(b.qty, unit)}${b.note ? '　' + b.note : ''}`, s: { b: 1, sz: 10, fill: bSoft(pl, b.k), v: 'center', wrap: 1 } }; for (let c = c0 + 1; c <= c1; c++) brow[c] = { s: { fill: bSoft(pl, b.k) } }; if (c1 > c0) merges.push(`${XW.col(c0)}3:${XW.col(c1)}3`); });
+        rows.push(brow); heights[2] = 26;
+      }
+      rows.push([{ v: pl.legend || PL_LEGEND, s: { sz: 9, color: '#435669', v: 'center' } }]); merges.push('A4:G4'); heights[3] = 20;
+      rows.push(PL_WD_ZH.map((w, i) => ({ v: w + (rest.includes(i) ? '（休）' : ''), s: Object.assign({ b: 1, sz: 11, color: '#FFFFFF', fill: rest.includes(i) ? '#55708A' : '#2D4A60', h: 'center', v: 'center' }, bd) }))); heights[4] = 22;
+      for (const wk of plGrid(ym)) {
+        const info = wk.map(d => d ? plDay(pl, d) : null); const r0 = rows.length;
+        rows.push(wk.map(d => ({ v: d ? +d.slice(8) : '', s: Object.assign({ b: 1, sz: 12, fill: d ? '#E9EEF3' : '#F1F4F7', v: 'center', h: 'left' }, bd) }))); heights[r0] = 20;
+        const maxM = Math.max(0, ...info.map(x => x ? x.miles.length : 0));
+        for (let k = 0; k < maxM; k++) { rows.push(info.map((x, i) => { const t = x && x.miles[k]; if (!t) return { s: Object.assign({ fill: wk[i] ? '#FFFFFF' : '#F1F4F7' }, bd) }; const sh = t.type === 'ship' ? { color: '#FFFFFF', fill: '#1E7A55' } : t.type === 'inspect' ? { color: '#6B4100', fill: '#F8D9A0' } : { color: '#2463A5', fill: '#E3EDF8' }; return { v: tText(pl, t), s: Object.assign({ b: 1, sz: 10, h: 'center', v: 'center' }, sh, bd) }; })); heights[rows.length - 1] = 18; }
+        const lines = info.map(x => x ? x.tasks.map(t => tText(pl, t)) : []); const nl = Math.max(1, ...lines.map(l => l.length));
+        rows.push(lines.map((l, i) => ({ v: l.join('\n'), s: Object.assign({ sz: 9, wrap: 1, v: 'top', fill: wk[i] ? (rest.includes(i) ? '#F7F9FA' : '#FFFFFF') : '#F1F4F7' }, bd) }))); heights[rows.length - 1] = Math.max(30, nl * 13 + 6);
+      }
+      const note = has ? plNote(pl, ym) : '';
+      if (note) note.split('\n').filter(Boolean).forEach(line => { rows.push([{ v: line, s: { sz: 9, color: '#435669', wrap: 1, v: 'top' } }]); merges.push(`A${rows.length}:G${rows.length}`); heights[rows.length - 1] = line.length > 110 ? 26 : 14; });
+      sheets.push({ name: `${y}年${+m}月`, cols: Array(7).fill(25), rows, merges, heights, landscape: true, grid: false });
+    }
+    const hd = { b: 1, color: '#FFFFFF', fill: '#2D4A60', border: true, h: 'center' };
+    const list = [['批次', '类型', '状态', '工序/内容', '开始日期', '结束日期', '数量', '标注', '备注'].map(v => ({ v, s: hd }))];
+    for (const t of plSorted(pl)) list.push([t.b || '', t.type === 'task' ? '工序' : t.type === 'inspect' ? '验货' : t.type === 'ship' ? '出货' : '节点', t.st === 'done' ? '完成' : (t.st || ''), t.type === 'task' || t.type === 'mile' ? t.name || '' : '', t.start, tEnd(t) !== t.start ? tEnd(t) : '', t.qty === '' || t.qty == null ? '' : (/^[\d,]+$/.test(String(t.qty)) ? Number(String(t.qty).replace(/,/g, '')) : String(t.qty)), t.mark || '', t.note || ''].map(v => ({ v, s: { border: true } })));
+    const info = [['项目', pl.name || ''], ['简称', pl.short || ''], ['标题', pl.title || ''], ['单位', unit], ['工厂', pl.partnerName || ''], ['客户', pl.customer || ''], ['PO', pl.poNo || ''], ['休息日', rest.map(i => PL_WD_ZH[i]).join(',')], ['图例', pl.legend || ''], ...(pl.batches || []).map(b => [`批次 ${b.k}`, `${b.name || ''}|${b.qty ?? ''}|${b.note || ''}`]), ...(pl.notes || []).map(n => [`备注 ${n.ym}`, n.text])];
+    sheets.push({ name: '作业清单', cols: [8, 8, 8, 24, 12, 12, 10, 6, 30], rows: list, freeze: 'A2' });
+    sheets.push({ name: '项目信息', cols: [14, 70], rows: info.map(([a, b]) => [{ v: a, s: { b: 1, border: true, fill: '#EEF2F5' } }, { v: b, s: { border: true, wrap: 1 } }]) });
+    await saveFile(`${safeName(pl.name || '일정')}_${safeName(pl.title || '日程')}_${todayStr()}.xlsx`, await xlsxBlob(sheets));
+  }
+}
+/* read back the task list (the sheet this app writes, or any sheet with 批次/开始 headers) */
+async function plImport(file) {
+  let books; try { books = await xlsxRead(await file.arrayBuffer()); } catch (e) { toast('엑셀 파일을 읽지 못했어요. xlsx 파일인지 확인해 주세요.', 'crit'); return; }
+  const H = { b: /^(批次|배치|batch|단계)/i, type: /^(类型|종류|type)/i, st: /^(状态|상태|status)/i, name: /^(工序|공정|内容|작업|task)/i, start: /^(开始|시작|start)/i, end: /^(结束|끝|end)/i, qty: /^(数量|수량|qty)/i, mark: /^(标注|표시)/i, note: /^(备注|메모|note)/i };
+  let tasks = null; const meta = {};
+  for (const sh of books) {
+    const hi = sh.rows.findIndex(r => r.some(c => H.start.test(String(c).trim())) && r.some(c => H.name.test(String(c).trim()) || H.b.test(String(c).trim())));
+    if (hi >= 0 && !tasks) {
+      const map = {}; sh.rows[hi].forEach((c, i) => { for (const [k, re] of Object.entries(H)) if (map[k] === undefined && re.test(String(c).trim())) map[k] = i; });
+      tasks = sh.rows.slice(hi + 1).map(r => {
+        const g = k => map[k] === undefined ? '' : r[map[k]];
+        const start = xlDate(g('start')); if (!isYmd(start)) return null;
+        const ty = String(g('type')).trim(); const type = /验货|검사|inspect/i.test(ty) ? 'inspect' : /出货|출하|ship/i.test(ty) ? 'ship' : /节点|이정표|mile/i.test(ty) ? 'mile' : 'task';
+        const stx = String(g('st')).trim(); const st = /完成|완료|done/i.test(stx) ? 'done' : /排|확정/.test(stx) ? '排' : '拟';
+        const end = xlDate(g('end')); const q = g('qty');
+        return { id: 't' + uid(), b: String(g('b')).trim().toUpperCase(), type, st, name: String(g('name')).trim(), start, end: isYmd(end) && end > start ? end : '', qty: q === '' ? '' : (typeof q === 'number' ? q : String(q).trim()), mark: String(g('mark')).trim(), note: String(g('note')).trim() };
+      }).filter(Boolean);
+    }
+    if (/项目信息|정보/.test(sh.name)) for (const r of sh.rows) { const k = String(r[0] || '').trim(), v = String(r[1] ?? '').trim(); if (k) meta[k] = v; }
+  }
+  if (!tasks || !tasks.length) { toast('작업 목록(批次·开始日期 열)이 있는 시트를 찾지 못했어요. 이 앱에서 받은 엑셀을 고쳐서 올려 주세요.', 'crit'); return; }
+  const pl = plCur();
+  const name = meta['项目'] || (pl ? pl.name : String(file.name || '').replace(/\.xlsx$/i, '').split('_')[0]);
+  const target = S.plans.find(p => p.name === name) || null;
+  const batches = Object.keys(meta).filter(k => /^批次 /.test(k)).map(k => { const [n, q, note] = meta[k].split('|'); return { k: k.slice(3).trim(), name: n || '', qty: /^\d+$/.test(q || '') ? Number(q) : (q || ''), note: note || '' }; });
+  const notes = Object.keys(meta).filter(k => /^备注 \d{4}-\d{2}$/.test(k)).map(k => ({ ym: k.slice(3), text: meta[k] }));
+  const restDays = meta['休息日'] !== undefined ? PL_WD_ZH.map((w, i) => meta['休息日'].includes(w) ? i : -1).filter(i => i >= 0) : null;
+  const body = `<div class="banner info"><span>작업 ${tasks.length}개를 읽었어요 (${fmtDF(tasks.reduce((a, t) => t.start < a ? t.start : a, '9999'))} ~ ${fmtDF(tasks.reduce((a, t) => tEnd(t) > a ? tEnd(t) : a, '0000'))}).</span></div>
+    <div class="f"><span>어디에 넣을까요?</span>${radios('pi-mode', target ? 'replace' : 'new', [...(target ? [['replace', `‘${target.name}’ 일정을 이 내용으로 바꾸기`]] : []), ['new', '새 일정으로 만들기']])}</div>`;
+  openSheet('일정 엑셀 불러오기', body, footStd(false, '불러오기'), {
+    mount: panel => {
+      sheetSave = async () => {
+        const mode = ($('input[name=pi-mode]:checked', panel) || {}).value || 'new';
+        let rec;
+        if (mode === 'replace' && target) { rec = JSON.parse(JSON.stringify(target)); rec.tasks = tasks; if (batches.length) rec.batches = batches; if (notes.length) rec.notes = notes; if (restDays) rec.restDays = restDays; if (meta['图例']) rec.legend = meta['图例']; }
+        else rec = { kind: /开发|dev/i.test(meta['标题'] || '') ? 'dev' : 'prod', name: mode === 'new' && target ? `${name} (엑셀)` : (name || '새 일정'), short: meta['简称'] || '', title: meta['标题'] || '生产日历', unit: meta['单位'] || '套', partnerName: meta['工厂'] || '', customer: meta['客户'] || '', poNo: meta['PO'] || '', status: 'active', legend: meta['图例'] || PL_LEGEND, restDays: restDays || [6], batches: batches.length ? batches : [...new Set(tasks.map(t => t.b).filter(b => b && !/[+&]/.test(b)))].map(k => ({ k, name: '', qty: '' })), tasks, notes };
+        const id = await put('plans', rec); S.planId = id; const ids = plSel().map(p => p.id); if (!ids.includes(id)) plSetSel([...ids, id]);
+        S.planYm = tasks[0].start.slice(0, 7); S.planDay = ''; toast('일정을 불러왔어요'); if (S.route !== 'plan') go('plan'); return true;
+      };
+    }
+  });
+}
+/* inspection / shipment targets for the home list and alerts */
+function plMilestones(days, back = 3) {
+  const out = [];
+  for (const pl of S.plans) {
+    if (pl.status === 'done') continue;
+    for (const t of pl.tasks || []) {
+      if (!isMile(t) || t.st === 'done' || !isYmd(t.start)) continue;
+      const d = dday(t.start); if (d > days || d < -back) continue;
+      out.push({ pl, t, d, date: t.start, key: `plan|${encodeURIComponent(pl.id + '~' + t.id)}|${t.start}` });
+    }
+  }
+  return out;
+}
+const plTaskOf = ref => { const [pid, tid] = String(ref || '').split('~'); const pl = plById(pid); const t = pl && (pl.tasks || []).find(x => x.id === tid); return pl && t ? { pl, t } : null; };
+
+/* ================= product prices: cost · quote · margin (제품 단가) ================= */
+const PR_CATS = ['PCBA', 'LCD', '센서', 'PCB', '렌즈', '기구', '기타'];
+const PR_TERMS = ['FOB Shenzhen', 'EXW', 'DDP', 'CIF', 'DAP'];
+const prWarn = () => { const w = Number(S.co.marginWarn); return Number.isFinite(w) && w > 0 && w < 1 ? w : 0.1; };
+const prCurOf = c => { c = String(c || '').trim().toUpperCase(); return c === 'RMB' || c === '人民币' ? 'CNY' : (c || 'USD'); };
+const hasNum = v => v !== '' && v !== null && v !== undefined && Number.isFinite(Number(v));
+const prMg = (buy, sell) => hasNum(buy) && hasNum(sell) && num(sell) > 0 ? { m: Math.round((num(sell) - num(buy)) * 1e4) / 1e4, r: (num(sell) - num(buy)) / num(sell) } : null;
+const prAfter = p => ({ buy: hasNum(p.buy) ? Math.round((num(p.buy) + num(p.buyUp)) * 1e4) / 1e4 : '', sell: hasNum(p.sell) ? Math.round((num(p.sell) + num(p.sellUp)) * 1e4) / 1e4 : '' });
+const prHasUp = p => num(p.buyUp) !== 0 || num(p.sellUp) !== 0;
+const usdCny = () => { const u = toBase(1, 'USD'), c = toBase(1, 'CNY'); return u && c ? u / c : 7; };
+const toUSD = (v, cur) => { cur = prCurOf(cur); if (!hasNum(v)) return null; if (cur === 'USD') return num(v); const b = toBase(num(v), cur), u = toBase(1, 'USD'); return b === null || !u ? null : b / u; };
+const pfx = (v, cur) => hasNum(v) ? `${{ USD: '$', CNY: '¥', KRW: '₩', EUR: '€', JPY: '¥', HKD: 'HK$' }[prCurOf(cur)] || prCurOf(cur) + ' '}${Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}` : '—';
+const pct = r => r === null || r === undefined ? '—' : `${(r * 100).toFixed(1)}%`;
+function prCats() { const s = new Set(PR_CATS); S.products.forEach(p => p.cat && s.add(p.cat)); return [...s]; }
+const prByName = n => { const k = String(n || '').trim().toLowerCase(); return k ? S.products.find(p => String(p.name || '').trim().toLowerCase() === k) : null; };
+const prSort = (a, b) => { const ca = prCats().indexOf(a.cat || '기타'), cb = prCats().indexOf(b.cat || '기타'); return (ca < 0 ? 99 : ca) - (cb < 0 ? 99 : cb) || num(a.no) - num(b.no) || String(a.name || '').localeCompare(String(b.name || '')); };
+
+function viewProducts() {
+  const f = S.prF || 'all', q = (S.prQ || '').trim().toLowerCase(), warn = prWarn();
+  const all = S.products.slice().sort(prSort);
+  let rows = all;
+  if (f === 'warn') rows = rows.filter(p => { const m = prMg(p.buy, p.sell); return m && m.r < warn; });
+  else if (f === 'up') rows = rows.filter(prHasUp);
+  else if (f !== 'all') rows = rows.filter(p => (p.cat || '기타') === f);
+  if (q) rows = rows.filter(p => [p.name, p.spec, p.cat, p.note, p.supplier, p.customer, p.cond].join(' ').toLowerCase().includes(q));
+  const withSell = all.filter(p => hasNum(p.sell));
+  const rates = all.map(p => prMg(p.buy, p.sell)).filter(Boolean).map(m => m.r);
+  const nWarn = rates.filter(r => r < warn).length;
+  const cats = prCats().filter(c => all.some(p => (p.cat || '기타') === c));
+  const segBtn = (v, label) => `<button data-act="pr-f" data-v="${esc(v)}" aria-pressed="${f === v}">${esc(label)}</button>`;
+  const row = p => {
+    const m = prMg(p.buy, p.sell), a = prAfter(p), ma = prMg(a.buy, a.sell);
+    return `<button class="row" data-act="pr-edit" data-id="${esc(p.id)}"><div style="min-width:0"><div class="row-t"><span class="chip">${esc(p.cat || '기타')}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name || '')}</span></div>
+      <div class="row-s">${[p.spec, p.terms, p.supplier ? '매입처 ' + p.supplier : '', (p.tiers || []).length ? `수량별 ${(p.tiers || []).length}단계` : ''].filter(Boolean).map(esc).join(' · ') || '&nbsp;'}</div>
+      ${prHasUp(p) ? `<div class="row-s" style="color:var(--warn)">${esc(p.cond || '가격 변경 예정')} → 매입 ${pfx(a.buy, p.currency)} · 견적 ${pfx(a.sell, p.currency)}${ma ? ` · 마진율 ${pct(ma.r)}` : ''}</div>` : ''}</div>
+      <div class="row-r"><span class="amt">${pfx(p.buy, p.currency)} <span class="muted" style="font-weight:500">→</span> ${hasNum(p.sell) ? pfx(p.sell, p.currency) : '<span class="muted" style="font-weight:500">견적 미입력</span>'}</span>
+      ${m ? `<span class="chip ${m.r < warn ? 'c-crit' : 'c-good'}">마진 ${pfx(m.m, p.currency)} · ${pct(m.r)}</span>` : ''}</div></button>`;
+  };
+  return `
+  <div class="page-head"><div><div class="eyebrow">Cost · Quote · Margin</div><h1>제품 단가</h1></div><div class="actions"><label class="btn">엑셀 불러오기<input type="file" class="sr" accept=".xlsx" data-primport="1"></label><button class="btn" data-act="pr-xlsx">${svg('upload')}엑셀로 받기</button><button class="btn btn-p" data-act="pr-new">${svg('plus')}품목 추가</button></div></div>
+  <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
+    <div class="tile"><div class="k">등록 품목</div><div class="v">${all.length}</div><div class="s">견적가 입력 ${withSell.length}개</div></div>
+    <div class="tile"><div class="k">평균 마진율</div><div class="v">${rates.length ? pct(rates.reduce((a, b) => a + b, 0) / rates.length) : '—'}</div><div class="s">견적가 있는 품목 기준</div></div>
+    <button class="tile" data-act="pr-f" data-v="warn" style="text-align:left;cursor:pointer"><div class="k">마진 ${Math.round(warn * 100)}% 미만</div><div class="v" style="color:${nWarn ? 'var(--crit)' : 'var(--ink)'}">${nWarn}</div><div class="s">눌러서 보기</div></button>
+    <button class="tile" data-act="pr-f" data-v="up" style="text-align:left;cursor:pointer"><div class="k">가격 변경 예정</div><div class="v">${all.filter(prHasUp).length}</div><div class="s">인상 조건이 걸린 품목</div></button>
+  </div>
+  <div class="filters"><div class="seg" role="group" aria-label="대분류" style="flex-wrap:wrap">${segBtn('all', '전체')}${cats.map(c => segBtn(c, c)).join('')}${f === 'warn' ? segBtn('warn', '마진 경고') : ''}${f === 'up' ? segBtn('up', '변경 예정') : ''}</div>
+    <input id="pr-q" class="search" type="search" placeholder="품목, 사양, 메모 검색" value="${esc(S.prQ || '')}" aria-label="품목 검색"></div>
+  <section class="panel">${rows.length ? `<div class="list">${rows.map(row).join('')}</div>` : `<div class="empty">${all.length ? '조건에 맞는 품목이 없어요.' : '아직 등록된 품목이 없어요. 원가·견적가 엑셀을 불러오거나 하나씩 추가해 보세요.'}<span class="actions" style="justify-content:center"><button class="btn btn-s btn-p" data-act="pr-new">품목 추가</button></span></div>`}</section>
+  <div class="muted" style="font-size:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">USD 환산 1 USD = ${usdCny().toFixed(4).replace(/0+$/, '').replace(/\.$/, '')} CNY (설정 › 환율) · 마진 경고선 ${Math.round(warn * 100)}%<button class="btn btn-s btn-q" data-act="pr-warn">경고선 바꾸기</button></div>`;
+}
+
+const tierRow = t => `<div class="tier-row"><label>수량<input class="in mono" data-tr="qty" type="number" step="any" inputmode="decimal" value="${esc(t.qty ?? '')}" placeholder="3000"></label><label>단가<input class="in mono" data-tr="price" type="number" step="any" inputmode="decimal" value="${esc(t.price ?? '')}"></label><label>메모<input class="in" data-tr="note" value="${esc(t.note || '')}" placeholder="샘플 · 양산"></label><button type="button" class="icon-btn" data-tr-del aria-label="지우기">${svg('x')}</button></div>`;
+function openProduct(p, opts = {}) {
+  const isNew = !p || !p.id;
+  p = Object.assign({ cat: S.prF && !['all', 'warn', 'up'].includes(S.prF) ? S.prF : 'PCBA', currency: 'USD', tiers: [], hist: [] }, p ? JSON.parse(JSON.stringify(p)) : {});
+  const curOpts = [...new Set(['USD', 'CNY', 'KRW', 'HKD', 'EUR', 'JPY', prCurOf(p.currency)])].map(c => [c, c === 'CNY' ? 'CNY (RMB)' : c]);
+  const hist = (p.hist || []).slice().reverse();
+  const body = `<form class="fgrid" id="pr-form" autocomplete="off">
+    ${F('대분류', inp('cat', p.cat, { list: 'dl-prcats' }))}${F('통화', sel('currency', prCurOf(p.currency), curOpts))}
+    ${F('품목 / 모델', inp('name', p.name, { req: 1, ph: '(위엔)FH8333 + SC235HAI' }), 'full')}
+    ${F('구성·사양', inp('spec', p.spec, { ph: 'PBA · 8층 化金板' }))}${F('거래조건', inp('terms', p.terms, { list: 'dl-terms', ph: 'FOB Shenzhen' }))}
+    ${F('매입처', inp('supplier', p.supplier, { list: 'dl-partners' }))}${F('고객', inp('customer', p.customer, { list: 'dl-partners' }))}
+    <div class="fsec full">기준 가격</div>
+    ${F('매입가', inp('buy', p.buy, { type: 'number', mono: 1 }))}${F('견적가', inp('sell', p.sell, { type: 'number', mono: 1 }))}
+    <div class="full pr-calc" id="pr-calc"></div>
+    ${isNew ? '' : F('변경 사유 (가격을 바꾸면 이력에 남아요)', inp('why', '', { ph: '원자재 인상, 30K 이후 조건 적용 …' }), 'full')}
+    <div class="fsec full">가격 변경 조건 · 예정된 인상</div>
+    ${F('조건', inp('cond', p.cond, { ph: '첫 양산 30K 이후 +$0.15' }), 'full')}
+    ${F('매입 인상액', inp('buyUp', p.buyUp, { type: 'number', mono: 1 }))}${F('견적 인상액', inp('sellUp', p.sellUp, { type: 'number', mono: 1 }))}
+    <div class="full pr-calc" id="pr-after"></div>
+    <div class="fsec full">수량별 단가 · 샘플/양산 등</div>
+    <div class="full" style="display:flex;flex-direction:column;gap:8px"><div id="tier-list" style="display:flex;flex-direction:column;gap:8px">${(p.tiers || []).map(tierRow).join('')}</div><div><button type="button" class="btn btn-s" id="tier-add">${svg('plus')}단계 추가</button></div></div>
+    ${F('비고', ta('note', p.note, 2), 'full')}
+  </form>
+  ${!isNew && prHasUp(p) ? `<div class="banner"><span>조건이 충족되면 눌러서 변경후 가격을 기준 가격으로 바꿔요. 이력에 남아요.</span><button type="button" class="btn btn-s btn-p" id="pr-apply">지금 인상 적용</button></div>` : ''}
+  ${hist.length ? `<div class="rel"><div class="rel-h"><span>가격 변경 이력 ${hist.length}건</span></div>${hist.map(h => `<div class="prow"><div style="min-width:0"><div class="row-t mono" style="font-weight:600">${fmtDF(h.date)}</div><div class="row-s">${esc(h.why || '')}</div></div><div class="row-r" style="font-size:12px"><span class="mono">매입 ${pfx(h.buy0, p.currency)} → ${pfx(h.buy1, p.currency)}</span><span class="mono">견적 ${pfx(h.sell0, p.currency)} → ${pfx(h.sell1, p.currency)}</span></div></div>`).join('')}</div>` : ''}
+  ${isNew ? '' : '<div class="actions"><button type="button" class="btn btn-s" id="pr-dup">복제해서 새 품목</button></div>'}`;
+  openSheet(isNew ? '품목 추가' : (p.name || '품목'), body, footStd(!isNew), {
+    mount: panel => {
+      const form = $('#pr-form', panel), tl = $('#tier-list', panel);
+      const calc = () => {
+        const v = readForm(form), cur = v.currency, m = prMg(v.buy, v.sell), a = prAfter(v), ma = prMg(a.buy, a.sell), warn = prWarn();
+        const usd = x => cur !== 'USD' && toUSD(x, cur) !== null ? ` <span class="muted">(${pfx(toUSD(x, cur), 'USD')})</span>` : '';
+        $('#pr-calc', panel).innerHTML = `<span>마진 <b>${m ? pfx(m.m, cur) : '—'}</b></span><span>마진율 <b style="color:${m && m.r < warn ? 'var(--crit)' : 'inherit'}">${m ? pct(m.r) : '—'}</b></span><span>매입 ${pfx(v.buy, cur)}${usd(v.buy)}</span><span>견적 ${pfx(v.sell, cur)}${usd(v.sell)}</span>`;
+        $('#pr-after', panel).innerHTML = prHasUp(v) ? `<span>변경후 매입 <b>${pfx(a.buy, cur)}</b></span><span>견적 <b>${pfx(a.sell, cur)}</b></span><span>마진 <b>${ma ? pfx(ma.m, cur) : '—'}</b></span><span>마진율 <b>${ma ? pct(ma.r) : '—'}</b></span>` : '<span class="muted">인상액을 넣으면 변경후 가격과 마진이 계산돼요</span>';
+      };
+      form.addEventListener('input', calc); form.addEventListener('change', calc); calc();
+      $('#tier-add', panel).addEventListener('click', () => tl.insertAdjacentHTML('beforeend', tierRow({})));
+      tl.addEventListener('click', e => { if (e.target.closest('[data-tr-del]')) e.target.closest('.tier-row').remove(); });
+      const collect = () => {
+        const v = readForm(form); delete v.why;
+        const tiers = $$('.tier-row', tl).map(r => { const o = {}; $$('[data-tr]', r).forEach(i => { o[i.dataset.tr] = i.type === 'number' ? (i.value === '' ? '' : Number(i.value)) : i.value.trim(); }); return o; }).filter(t => hasNum(t.qty) || hasNum(t.price));
+        return Object.assign(v, { tiers, currency: prCurOf(v.currency) });
+      };
+      const histOf = (old, nu, why) => (num(old.buy) !== num(nu.buy) || num(old.sell) !== num(nu.sell) || hasNum(old.buy) !== hasNum(nu.buy) || hasNum(old.sell) !== hasNum(nu.sell)) && (hasNum(old.buy) || hasNum(old.sell)) ? [{ date: todayStr(), buy0: old.buy ?? '', buy1: nu.buy ?? '', sell0: old.sell ?? '', sell1: nu.sell ?? '', why: why || '' }] : [];
+      sheetSave = async () => {
+        const v = collect(); if (!v.name) { toast('품목 이름을 적어 주세요.', 'crit'); return false; }
+        const dup = prByName(v.name); if (dup && dup.id !== p.id) { toast('같은 이름의 품목이 이미 있어요.', 'crit'); return false; }
+        const latest = isNew ? p : JSON.parse(JSON.stringify(S.products.find(x => x.id === p.id) || p));
+        const why = isNew ? '' : (($('[name=why]', form) || {}).value || '').trim();
+        latest.hist = (latest.hist || []).concat(isNew ? [] : histOf(latest, v, why));
+        if (isNew && !hasNum(latest.no)) latest.no = Math.max(0, ...S.products.map(x => num(x.no))) + 1;
+        await put('products', Object.assign(latest, v)); toast(isNew ? '품목을 추가했어요' : '저장했어요'); return true;
+      };
+      sheetDelete = async () => { await remove('products', p.id); toast('품목을 지웠어요'); };
+      const ap = $('#pr-apply', panel); if (ap) ap.addEventListener('click', async () => {
+        if (ap.dataset.sure !== '1') { ap.dataset.sure = '1'; ap.textContent = '한 번 더 누르면 적용해요'; return; }
+        if (writeBlocked()) return;
+        const latest = JSON.parse(JSON.stringify(S.products.find(x => x.id === p.id) || p)); const a = prAfter(latest);
+        latest.hist = (latest.hist || []).concat([{ date: todayStr(), buy0: latest.buy ?? '', buy1: a.buy, sell0: latest.sell ?? '', sell1: a.sell, why: `인상 적용 · ${latest.cond || ''}`.trim() }]);
+        Object.assign(latest, { buy: a.buy, sell: a.sell, buyUp: '', sellUp: '', cond: latest.cond ? `(적용 ${fmtDF(todayStr())}) ${latest.cond}` : '' });
+        try { await put('products', latest); toast('변경후 가격을 기준 가격으로 바꿨어요'); closeSheet(); } catch (e) { }
+      });
+      const dp = $('#pr-dup', panel); if (dp) dp.addEventListener('click', () => { const v = collect(); v.name = `${v.name} (복사)`; delete v.id; closeSheet(); openProduct(Object.assign({}, v, { hist: [] })); });
+    }
+  });
+}
+function openPrWarn() {
+  const body = `<form id="pw-form">${F('마진 경고선 (%)', inp('w', Math.round(prWarn() * 100), { type: 'number', step: '0.5' }), 'full', '마진율이 이보다 낮으면 빨간색으로 표시해요')}</form>`;
+  openSheet('마진 경고선', body, footStd(false), { mount: panel => { sheetSave = async () => { const w = num(readForm($('#pw-form', panel)).w); if (!(w > 0 && w < 100)) { toast('0~100 사이로 적어 주세요.', 'crit'); return false; } await saveCo({ marginWarn: w / 100 }); toast('경고선을 바꿨어요'); return true; }; } });
+}
+
+/* ---------- Excel out: same columns as the cost/quote/margin sheet, with live formulas ---------- */
+async function prXlsx(btn) {
+  if (btn) btn.disabled = true;
+  try {
+    const list = S.products.slice().sort(prSort), warn = prWarn(), rate = Math.round(usdCny() * 1e4) / 1e4;
+    const H = ['No.', '대분류', '품목/모델', '구성·사양', '거래조건', '통화', '기준 매입가', '기준 견적가', '기준 마진', '기준 마진율', '가격변경 조건', '매입 인상액', '견적 인상액', '변경후 매입가', '변경후 견적가', '변경후 마진', '변경후 마진율', 'USD 환산 매입가', 'USD 환산 견적가', '매입처', '고객', '비고'];
+    const hs = { b: 1, color: '#FFFFFF', fill: '#173A52', border: true, h: 'center', v: 'center', wrap: 1 };
+    const c = { border: true }, n2 = { border: true, fmt: '#,##0.00##' }, pc = { border: true, fmt: '0.0%' };
+    const rows = [[{ v: '원가 · 견적가 · 마진 관리 리스트', s: { b: 1, sz: 15, color: '#173A52' } }], [{ v: `기준일 ${todayStr()} · USD 환산 1 USD = ${rate} CNY (설정 시트 B4) · 마진 경고선 ${Math.round(warn * 100)}%`, s: { sz: 9, color: '#6A7C8E' } }], [], H.map(v => ({ v, s: hs }))];
+    list.forEach((p, i) => {
+      const r = rows.length + 1, cur = prCurOf(p.currency) === 'CNY' ? 'RMB' : prCurOf(p.currency), m = prMg(p.buy, p.sell);
+      const nv = v => hasNum(v) ? Number(v) : '';
+      const usdF = col => `IF(${col}${r}="","",IF(F${r}="USD",${col}${r},IF(OR(F${r}="RMB",F${r}="CNY"),${col}${r}/설정!$B$4,"")))`;
+      rows.push([{ v: i + 1, s: c }, { v: p.cat || '', s: c }, { v: p.name || '', s: { border: true, b: 1 } }, { v: p.spec || '', s: c }, { v: p.terms || '', s: c }, { v: cur, s: { border: true, h: 'center' } },
+        { v: nv(p.buy), s: n2 }, { v: nv(p.sell), s: n2 }, { f: `IF(OR(G${r}="",H${r}=""),"",H${r}-G${r})`, s: n2 }, { f: `IFERROR(I${r}/H${r},"")`, s: Object.assign({}, pc, m && m.r < warn ? { color: '#B83232', b: 1 } : {}) },
+        { v: p.cond || '', s: c }, { v: nv(p.buyUp) === '' ? 0 : nv(p.buyUp), s: n2 }, { v: nv(p.sellUp) === '' ? 0 : nv(p.sellUp), s: n2 },
+        { f: `IF(G${r}="","",G${r}+L${r})`, s: n2 }, { f: `IF(H${r}="","",H${r}+M${r})`, s: n2 }, { f: `IF(OR(N${r}="",O${r}=""),"",O${r}-N${r})`, s: n2 }, { f: `IFERROR(P${r}/O${r},"")`, s: pc },
+        { f: usdF('G'), s: n2 }, { f: usdF('H'), s: n2 }, { v: p.supplier || '', s: c }, { v: p.customer || '', s: c }, { v: p.note || '', s: { border: true, wrap: 1 } }]);
+    });
+    const tiers = [['품목/모델', '통화', '수량', '단가', '메모'].map(v => ({ v, s: hs }))];
+    list.forEach(p => (p.tiers || []).forEach(t => tiers.push([{ v: p.name || '', s: c }, { v: prCurOf(p.currency) === 'CNY' ? 'RMB' : prCurOf(p.currency), s: c }, { v: hasNum(t.qty) ? Number(t.qty) : '', s: { border: true, fmt: '#,##0' } }, { v: hasNum(t.price) ? Number(t.price) : '', s: n2 }, { v: t.note || '', s: c }])));
+    const hist = [['변경일', '대분류', '품목/모델', '통화', '이전 매입가', '변경 매입가', '이전 견적가', '변경 견적가', '매입 변동', '견적 변동', '변경후 마진', '변경후 마진율', '사유/비고'].map(v => ({ v, s: hs }))];
+    list.forEach(p => (p.hist || []).forEach(h => { const r = hist.length + 1; const nv = v => hasNum(v) ? Number(v) : ''; hist.push([{ v: h.date || '', s: c }, { v: p.cat || '', s: c }, { v: p.name || '', s: c }, { v: prCurOf(p.currency) === 'CNY' ? 'RMB' : prCurOf(p.currency), s: c }, { v: nv(h.buy0), s: n2 }, { v: nv(h.buy1), s: n2 }, { v: nv(h.sell0), s: n2 }, { v: nv(h.sell1), s: n2 }, { f: `IF(OR(E${r}="",F${r}=""),"",F${r}-E${r})`, s: n2 }, { f: `IF(OR(G${r}="",H${r}=""),"",H${r}-G${r})`, s: n2 }, { f: `IF(OR(F${r}="",H${r}=""),"",H${r}-F${r})`, s: n2 }, { f: `IFERROR(K${r}/H${r},"")`, s: pc }, { v: h.why || '', s: c }]); }));
+    const setting = [[{ v: '관리 설정', s: { b: 1, sz: 13 } }], [], [{ v: '항목', s: hs }, { v: '값', s: hs }], [{ v: 'USD/CNY 환율', s: c }, { v: rate, s: { border: true, fmt: '0.0000' } }], [{ v: '기준일', s: c }, { v: todayStr(), s: c }], [{ v: '마진 경고선', s: c }, { v: warn, s: pc }]];
+    const blob = await xlsxBlob([
+      { name: '품목마스터', cols: [5, 9, 34, 22, 13, 6, 11, 11, 10, 10, 24, 10, 10, 11, 11, 10, 10, 11, 11, 16, 16, 30], rows, freeze: 'D5', heights: { 3: 32 }, landscape: true },
+      { name: '수량별단가', cols: [34, 7, 10, 10, 20], rows: tiers, freeze: 'A2' },
+      { name: '가격변경이력', cols: [11, 9, 30, 6, 11, 11, 11, 11, 10, 10, 10, 10, 30], rows: hist, freeze: 'A2' },
+      { name: '설정', cols: [16, 14], rows: setting }
+    ]);
+    await saveFile(`제품단가_원가견적마진_${todayStr()}.xlsx`, blob);
+  } catch (e) { toast('엑셀을 만들지 못했어요. 인터넷 연결을 확인해 주세요.', 'crit'); }
+  finally { if (btn) btn.disabled = false; }
+}
+/* read a cost/quote sheet (this app's, or the user's own list) and merge by product name */
+async function prImport(file) {
+  let books; try { books = await xlsxRead(await file.arrayBuffer()); } catch (e) { toast('엑셀 파일을 읽지 못했어요. xlsx 파일인지 확인해 주세요.', 'crit'); return; }
+  const H = [['name', /^(품목\s*\/\s*모델|품목|모델|品名|型号|产品|item|model)/i], ['cat', /^(대분류|분류|类别|category)/i], ['spec', /^(구성|사양|규격|规格|spec)/i], ['terms', /^(거래조건|조건\s*\(|incoterms|贸易条件)/i], ['currency', /^(통화|币种|currency)/i], ['buy', /^(기준\s*)?(매입가|원가|采购价|成本|cost)/i], ['sell', /^(기준\s*)?(견적가|판매가|报价|售价|price|quote)/i], ['cond', /^(가격\s*변경\s*조건|变更条件)/i], ['buyUp', /^매입\s*인상/], ['sellUp', /^견적\s*인상/], ['supplier', /^(매입처|공급처|供应商)/], ['customer', /^(고객|客户)/], ['note', /^(비고|메모|备注|note)/i]];
+  let got = null, tiersIn = [];
+  for (const sh of books) {
+    const hi = sh.rows.findIndex(r => r.some(c => H[0][1].test(String(c).trim())) && r.some(c => /(매입|견적|원가|价|cost|price)/i.test(String(c))));
+    if (hi >= 0 && !got) {
+      const map = {}; sh.rows[hi].forEach((c, i) => { const s = String(c).trim(); for (const [k, re] of H) if (map[k] === undefined && re.test(s) && !/(변경후|USD 환산|마진)/.test(s)) map[k] = i; });
+      got = sh.rows.slice(hi + 1).map(r => { const g = k => map[k] === undefined ? '' : r[map[k]]; const o = {}; for (const [k] of H) o[k] = typeof g(k) === 'string' ? g(k).trim() : g(k); return o; })
+        .filter(o => o.name).map(o => { for (const k of ['buy', 'sell', 'buyUp', 'sellUp']) o[k] = hasNum(o[k]) && String(o[k]).trim() !== '' ? Number(o[k]) : ''; o.currency = prCurOf(o.currency); o.cat = o.cat || '기타'; return o; });
+    }
+    if (/수량별|tier|阶梯/i.test(sh.name)) { const r0 = sh.rows.findIndex(r => r.some(c => /수량|数量|qty/i.test(String(c)))); if (r0 >= 0) { const hd = sh.rows[r0].map(c => String(c)); const ix = re => hd.findIndex(c => re.test(c)); const [iN, iQ, iP, iM] = [ix(/품목|品名|item/i), ix(/수량|数量|qty/i), ix(/단가|单价|price/i), ix(/메모|备注|note/i)]; sh.rows.slice(r0 + 1).forEach(r => { if (r[iN] && hasNum(r[iQ])) tiersIn.push({ name: String(r[iN]).trim(), qty: Number(r[iQ]), price: hasNum(r[iP]) ? Number(r[iP]) : '', note: iM >= 0 ? String(r[iM] || '') : '' }); }); } }
+  }
+  if (!got || !got.length) { toast('품목/모델·매입가 열이 있는 시트를 찾지 못했어요.', 'crit'); return; }
+  const upd = got.filter(o => prByName(o.name)), add = got.filter(o => !prByName(o.name));
+  const body = `<div class="banner info"><span>${got.length}개 품목을 읽었어요. 새 품목 ${add.length}개, 이미 있는 품목 ${upd.length}개예요.</span></div>
+    <div class="list" style="max-height:280px;overflow:auto">${got.slice(0, 60).map(o => { const m = prMg(o.buy, o.sell); return `<div class="row" style="cursor:default"><div style="min-width:0"><div class="row-t"><span class="chip">${esc(o.cat)}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.name)}</span>${prByName(o.name) ? '<span class="chip c-steel">갱신</span>' : '<span class="chip c-good">새로</span>'}</div><div class="row-s">${esc(o.spec || '')}</div></div><div class="row-r"><span class="amt">${pfx(o.buy, o.currency)} → ${pfx(o.sell, o.currency)}</span>${m ? `<span class="row-s">${pct(m.r)}</span>` : ''}</div></div>`; }).join('')}</div>
+    <small class="muted">이미 있는 품목은 엑셀 값으로 바꾸고, 가격이 달라졌으면 이력에 ‘엑셀 불러오기’로 남겨요. 빈 칸은 앱 값을 그대로 둬요.</small>`;
+  openSheet('단가 엑셀 불러오기', body, footStd(false, `${got.length}개 불러오기`), {
+    mount: panel => {
+      sheetSave = async () => {
+        let n = 0, no = Math.max(0, ...S.products.map(x => num(x.no)));
+        for (const o of got) {
+          const ex = prByName(o.name); const rec = ex ? JSON.parse(JSON.stringify(ex)) : { no: ++no, tiers: [], hist: [] };
+          const before = { buy: rec.buy, sell: rec.sell };
+          for (const [k] of H) if (o[k] !== '' && o[k] !== undefined) rec[k] = o[k];
+          if (ex && (num(before.buy) !== num(rec.buy) || num(before.sell) !== num(rec.sell)) && (hasNum(before.buy) || hasNum(before.sell))) rec.hist = (rec.hist || []).concat([{ date: todayStr(), buy0: before.buy ?? '', buy1: rec.buy ?? '', sell0: before.sell ?? '', sell1: rec.sell ?? '', why: '엑셀 불러오기' }]);
+          const tz = tiersIn.filter(t => t.name.toLowerCase() === String(o.name).toLowerCase()); if (tz.length) rec.tiers = tz.map(({ qty, price, note }) => ({ qty, price, note }));
+          await put('products', rec); n++;
+        }
+        toast(`${n}개 품목을 불러왔어요`); if (S.route !== 'products') go('products'); return true;
+      };
+    }
+  });
+}
+/* typing a known product name in a quote / PO / invoice fills spec and price */
+function prFillItem(input) {
+  const p = prByName(input.value); if (!p) return;
+  const row = input.closest('.it-row'), ed = input.closest('.items-ed'); if (!row || !ed) return;
+  const panel = input.closest('.sheet-p'); const D = panel && panel.__docState ? panel.__docState.get() : null;
+  const form = input.closest('form'); const dirIn = form ? form.querySelector('input[name=dir]:checked') : null;
+  const buySide = D ? D.type === 'po' : (dirIn ? dirIn.value === 'import' : false);
+  const price = buySide ? p.buy : p.sell; const pc = $('[data-k=price]', row), sp = $('[data-k=spec]', row);
+  if (sp && !sp.value && p.spec) sp.value = p.spec;
+  if (pc && !pc.value && hasNum(price)) {
+    const want = ed.dataset.cur || 'USD', have = prCurOf(p.currency);
+    let v = num(price), note = '';
+    if (want !== have) { const b = toBase(v, have), r = toBase(1, want); if (b === null || !r) { toast(`단가가 ${have}라서 넣지 않았어요. 환율을 설정하면 바꿔 넣어 드려요.`); return; } v = Math.round(b / r * 1e4) / 1e4; note = ` (${have} ${price} 환산)`; }
+    pc.value = v; refreshItemTotals(ed); ed.dispatchEvent(new Event('input', { bubbles: true }));
+    toast(`${buySide ? '매입가' : '견적가'} ${v}${note}를 넣었어요`);
+  }
+}
+
+/* ---------- actions for schedule and price pages ---------- */
+Object.assign(ACT, {
+  'pl-new': () => openPlanEd(null), 'pl-edit': el => { const pl = plById(el.dataset.id) || plCur(); if (pl) openPlanEd(pl); },
+  'pl-tog': el => { const id = el.dataset.id; let ids = plSel().map(p => p.id); ids = ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id]; if (!ids.length) { toast('프로젝트를 하나 이상은 보여 줘야 해요'); return; } plSetSel(ids); S.planId = ids[0]; S.planDay = ''; render(); },
+  'pl-all': () => { plSetSel(S.plans.map(p => p.id)); S.planDay = ''; render(); },
+  'pl-share': () => openPlShare(),
+  'pl-view': el => { S.planView = el.dataset.v; render(); },
+  'pl-day': el => { S.planDay = el.dataset.d; render(); if (window.innerWidth < 760) requestAnimationFrame(() => { const p = $('#pl-dayp'); if (p) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }); },
+  'pl-add': el => { const pl = plCur(); if (pl) openTask(pl, null, { d: el.dataset.d || S.planDay || todayStr() }); },
+  'pl-task': el => { const pl = plById(el.dataset.pl) || plCur(); const t = pl && (pl.tasks || []).find(x => x.id === el.dataset.id); if (t) openTask(pl, t); },
+  'pl-note': el => { const pl = plById(el.dataset.id) || plCur(); if (pl) openPlNote(pl, S.planYm); },
+  'pl-shift': el => { const pl = plById(el.dataset.id) || plCur(); if (pl) openPlShift(pl); },
+  'pl-open': el => { const ids = plSel().map(p => p.id); if (!ids.includes(el.dataset.id)) plSetSel([...ids, el.dataset.id]); S.planId = el.dataset.id; if (el.dataset.d) { S.planYm = el.dataset.d.slice(0, 7); S.planDay = el.dataset.d; } closeSheet(); go('plan'); },
+  'pr-new': () => openProduct(null), 'pr-edit': el => { const p = S.products.find(x => x.id === el.dataset.id); if (p) openProduct(p); },
+  'pr-f': el => { S.prF = S.prF === el.dataset.v && (el.dataset.v === 'warn' || el.dataset.v === 'up') ? 'all' : el.dataset.v; render(); },
+  'pr-xlsx': el => prXlsx(el), 'pr-warn': () => openPrWarn()
+});
+document.addEventListener('input', e => { if (e.target.id === 'pr-q') { S.prQ = e.target.value; render(); } });
+document.addEventListener('change', e => {
+  const ds = e.target.dataset || {};
+  if (ds.plimport || ds.primport) { const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (writeBlocked()) return; (ds.plimport ? plImport : prImport)(f); return; }
+  if (ds.k === 'desc' && e.target.closest('.items-ed')) prFillItem(e.target);
+});
+
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-act]'); if (!el) return;
   const fn = ACT[el.dataset.act]; if (!fn) return;
