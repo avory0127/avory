@@ -703,7 +703,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-4';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-5';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -1156,7 +1156,11 @@ function fullAccount(account, currency, bank) {
 }
 function accountBalances(upto) {
   const acc = {}; const keyOf = acctKeyer(S.txns);
-  for (const t of S.txns.filter(t => !upto || (t.date || '') <= upto).sort(byDT)) {
+  // same day with no clear order (same minute, or a message without a time): the balances tell which came after which
+  const hasBal = t => t.balance !== null && t.balance !== undefined && t.balance !== '';
+  const follows = (a, b) => hasBal(a) && hasBal(b) && Math.abs(num(a.balance) + (b.dir === 'in' ? 1 : -1) * num(b.amount) - num(b.balance)) < 0.005;
+  const order = (a, b) => { if (a.date === b.date && (!a.time || !b.time || a.time === b.time)) { if (follows(a, b) && !follows(b, a)) return -1; if (follows(b, a) && !follows(a, b)) return 1; } return byDT(a, b); };
+  for (const t of S.txns.filter(t => !upto || (t.date || '') <= upto).sort(order)) {
     const key = keyOf(t);
     const a = acc[key] = acc[key] || { key, bank: '', account: '', cur: t.currency || 'KRW', bal: null, last: null };
     if (t.bank && !a.bank) a.bank = t.bank;
@@ -1463,7 +1467,7 @@ function viewHome(alerts) {
     </div>
     ${heroMark()}</section>
   <div class="qa-grid">
-    ${qa('smart', 'upload', '청구서·서류 올리기', 'data-kind="auto"')}${qa('paste-sms', 'chat', '은행 문자 넣기')}${qa('go', 'users', '거래처', 'data-to="partners"')}
+    ${qa('smart', 'upload', '청구서·서류 올리기', 'data-kind="auto"')}${co.smsAuto ? smsFileBtn('qa', '은행 문자 가져오기') : qa('paste-sms', 'chat', '은행 문자 넣기')}${qa('go', 'users', '거래처', 'data-to="partners"')}
     ${qa('go', 'docs', '서류 만들기', 'data-to="docs"')}${qa('new-po', 'po', 'PO 등록')}${qa('new-ship', 'ship', '출하 등록')}
   </div>
   ${hasSample() ? `<div class="banner info"><span>지금 보이는 기록 중 <b>예시</b> 표시가 있는 건 둘러보기용이에요.</span><button class="btn btn-s" data-act="clear-samples">예시 모두 지우기</button></div>` : ''}
@@ -1551,7 +1555,7 @@ function viewMoney() {
   const groups = {}; for (const t of rows) (groups[t.date] = groups[t.date] || []).push(t);
   return `
   <div class="page-head"><div><div class="eyebrow">Bank Transactions</div><h1>입출금 내역</h1></div>
-    <div class="actions"><button class="btn" data-act="import-file">엑셀·CSV 불러오기</button><button class="btn" data-act="ocr" data-kind="bank">캡처로 입력</button><button class="btn" data-act="new-txn">직접 입력</button><button class="btn btn-p" data-act="paste-sms">문자 붙여넣기</button></div></div>
+    <div class="actions"><button class="btn" data-act="import-file">엑셀·CSV 불러오기</button><button class="btn" data-act="ocr" data-kind="bank">캡처로 입력</button><button class="btn" data-act="new-txn">직접 입력</button><button class="btn btn-p" data-act="paste-sms">문자 붙여넣기</button>${smsFileBtn('btn', '문자 파일 가져오기')}<button class="btn" data-act="sms-help">문자 자동 모으기</button></div></div>
   <div class="filters">${moneySeg('money')}${monthNav('month', ym)}${m.unc ? `<button class="chip c-warn" data-act="classify" style="border:0">미분류 ${m.unc}건 · 분류하기</button>` : ''}${m.xfer ? `<span class="chip">내부 이체·정정 ${m.xfer}건은 합계에서 빠져요</span>` : ''}</div>
   <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
     <div class="tile"><div class="k">들어온 돈</div><div class="v" style="color:var(--s-in)">${money(m.inK)}</div><div class="s">${BASE()} 환산</div></div>
@@ -3878,7 +3882,7 @@ async function runPlan(P, files, attachOn) {
 function openSmart(opts = {}) {
   let kind = opts.kind || 'auto', files = [], sendFiles = [], result = null, plan = null, ctl = null, pending = null;
   const KINDS = [['auto', '자동 판별'], ['bill', '청구서 (줄 돈·받을 돈)'], ['order', 'PO·계약'], ['bank', '은행 내역'], ['receipt', '영수증·发票'], ['shipping', '출하 정보'], ['text', '읽기·번역만']];
-  const body = `<div class="f"><span>붙여넣기</span><textarea class="in" id="sm-text" rows="4" placeholder="은행 문자, 은행 앱 화면 글자, 주문 내용… 무엇이든 붙여넣으세요">${esc(opts.text || '')}</textarea>
+  const body = `${kind === 'bank' && !opts.text ? `<div class="banner info"><span>아이폰이 모아 둔 은행 문자 파일이 있으면 바로 가져와요. ${esc(smsLastLine())}</span><span class="actions">${smsFileBtn('btn btn-s', '파일 가져오기')}<button type="button" class="btn btn-s" data-act="sms-help">설정 방법</button></span></div>` : ''}<div class="f"><span>붙여넣기</span><textarea class="in" id="sm-text" rows="4" placeholder="은행 문자, 은행 앱 화면 글자, 주문 내용… 무엇이든 붙여넣으세요">${esc(opts.text || '')}</textarea>
       <small>${ocrHere() ? '사진은 아래에서 고르면 앱이 직접 글자를 읽어요. 일정표 사진은 생산 일정으로 바로 들어가요.' : '사진 속 글자는 아이폰에서 사진을 열고 글자를 길게 눌러 <b>모두 선택 → 복사</b>한 뒤 여기 붙여넣으면 앱이 바로 정리해요.'}</small></div>
     <div class="f"><span>PDF · 사진</span><input type="file" id="sm-file" class="in" accept="application/pdf,image/*" multiple style="padding:9px"><small>${ocrHere() ? '계약서·인보이스 PDF와 사진(청구서·은행 화면·일정표)을 앱이 직접 읽어요. 사진은 처음 한 번 글자 사전(약 15MB)을 받아요.' : '계약서·PO·인보이스 PDF는 앱이 직접 읽어요. 원본은 함께 보관돼요.'}</small><div class="thumbs" id="sm-thumbs"></div></div>
     ${F('덧붙일 말 (선택)', inp('sm-note', opts.note || '', { ph: '예: 이미 출하했고 목요일 웨이하이에서 출항' }))}
@@ -3994,6 +3998,91 @@ function undoToast(msg, onUndo) {
   $('#toast').appendChild(el); setTimeout(() => el.remove(), 9000);
 }
 
+/* ---------- bank messages collected by an iPhone Shortcuts automation ----------
+   The automation appends every bank message to one text file in iCloud Drive:
+     @@ <the time it arrived>
+     <the message>
+   Picking that file records only the messages the app has not seen before. */
+function parseStamp(s) {
+  s = String(s || '');
+  let y = 0, mo = 0, d = 0, rest = s;
+  const m = s.match(/(\d{4})\s*[-./년年]\s*(\d{1,2})\s*[-./월月]\s*(\d{1,2})/);
+  if (m) { y = +m[1]; mo = +m[2]; d = +m[3]; rest = s.slice(m.index + m[0].length); }
+  else {
+    const e = s.match(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})/i);
+    if (e) { y = +e[3]; mo = 'janfebmaraprmayjunjulaugsepoctnovdec'.indexOf(e[1].toLowerCase()) / 3 + 1; d = +e[2]; rest = s.slice(e.index + e[0].length); }
+  }
+  if (!y || !mo || !d) return null;
+  let time = '', hh = 12, mi = 0;
+  const t = rest.match(/(\d{1,2})\s*[:시]\s*(\d{2})/);
+  if (t) { hh = +t[1]; mi = +t[2]; if (/오후|PM|下午|晚上|中午/i.test(rest) && hh < 12) hh += 12; if (/오전|AM|上午|凌晨|早上/i.test(rest) && hh === 12) hh = 0; time = `${pad2(hh)}:${pad2(mi)}`; }
+  return { date: `${y}-${pad2(mo)}-${pad2(d)}`, time, d: new Date(y, mo - 1, d, hh, mi) };
+}
+function splitSmsLog(text) {
+  const t = String(text || '').replace(/\r/g, '').replace(/^﻿/, '');
+  if (!/^\s*@@/m.test(t)) return splitSmsBlocks(t).map(body => ({ at: null, body }));
+  const out = []; let cur = null;
+  for (const line of t.split('\n')) {
+    const m = line.match(/^\s*@@\s*(.*)$/);
+    if (m) { if (cur && cur.body.trim()) out.push(cur); cur = { at: parseStamp(m[1]), body: '' }; continue; }
+    if (cur) cur.body += line + '\n';
+  }
+  if (cur && cur.body.trim()) out.push(cur);
+  return out.map(x => ({ at: x.at, body: x.body.trim() }));
+}
+const smsHash = s => { const k = String(s || '').replace(/\s+/g, ''); let h = 5381; for (const ch of k) h = ((h * 33) ^ ch.codePointAt(0)) >>> 0; return h.toString(36) + '.' + k.length.toString(36); };
+const rawKey = s => String(s || '').replace(/\s+/g, '');
+/* already in the books: the same message, or the same amount and balance on that day */
+function smsDup(x) {
+  const rk = rawKey(x.raw);
+  return S.txns.some(t => (rk && rawKey(t.raw) === rk) || (t.date === x.date && t.dir === x.dir && Math.abs(num(t.amount) - num(x.amount)) < 0.005 && (t.currency || 'KRW') === (x.currency || 'KRW')
+    && (x.balance != null && t.balance != null && t.balance !== '' ? Math.abs(num(t.balance) - num(x.balance)) < 0.005 && (!t.time || !x.time || t.time === x.time) : (t.time || '') === (x.time || '') && !!t.time)));
+}
+async function importSmsFile(f) {
+  if (writeBlocked()) return;
+  let text = ''; try { text = await f.text(); } catch (e) { toast('파일을 열지 못했어요.', 'crit'); return; }
+  const entries = splitSmsLog(text);
+  if (!entries.length) { toast('파일이 비어 있어요. 은행 문자가 온 뒤에 다시 가져와 주세요.'); return; }
+  const stamped = entries.some(e => e.at);
+  const seen = new Set(S.co.smsSeen || []), fresh = [], newHashes = [];
+  for (const e of entries) { const h = smsHash(e.body); if (seen.has(h) || newHashes.includes(h)) continue; newHashes.push(h); fresh.push(e); }
+  const found = []; let notTxn = 0;
+  for (const e of fresh) {
+    const rs = parseBankSms(e.body, e.at ? e.at.d : new Date());
+    if (!rs.length) { notTxn++; continue; }
+    for (const r of rs) { if (e.at && !r.time && r.date === e.at.date) r.time = e.at.time; found.push(r); }
+  }
+  const list = prepTxns(found, 'sms');
+  const batch = [];
+  for (const x of list) { if (x.dup || smsDup(x) || batch.some(b => rawKey(b.raw) && rawKey(b.raw) === rawKey(x.raw))) x.dup = true; else batch.push(x); }
+  const ids = [];
+  try { for (const x of batch) { const row = Object.assign({}, x); delete row.dup; delete row.on; ids.push(await put('txns', row)); } } catch (e) { }
+  const keep = [...(S.co.smsSeen || []), ...newHashes].slice(-1500);
+  try { await saveCo({ smsSeen: keep, smsLast: new Date().toISOString(), smsAuto: S.co.smsAuto || stamped }); } catch (e) { }
+  closeSheet();
+  const dupN = list.length - batch.length;
+  const tail = [dupN ? `이미 있던 ${dupN}건` : '', notTxn ? `입출금 아닌 문자 ${notTxn}건` : ''].filter(Boolean).join(' · ');
+  if (!ids.length) { toast(fresh.length ? `새로 기록할 입출금이 없어요${tail ? ' · ' + tail : ''}` : '새 은행 문자가 없어요. 지난번에 모두 가져왔어요.'); return; }
+  undoToast(`${ids.length}건 기록 · ${batch.slice(0, 2).map(x => `${x.dir === 'in' ? '+' : '−'}${money(x.amount, x.currency)}`).join(', ')}${batch.length > 2 ? ' 외' : ''}${tail ? ' · ' + tail : ''}`, async () => { for (const id of ids) { try { await remove('txns', id); } catch (e) { } } toast('되돌렸어요'); });
+}
+const SMS_FILE = 'AVORY_은행문자.txt';
+const smsFileBtn = (cls, label) => `<label class="${cls}" style="cursor:pointer">${svg('upload')}<span>${label}</span><input type="file" class="sr" accept=".txt,text/plain" data-smsfile="1"></label>`;
+function smsLastLine() { const l = S.co.smsLast; return l ? `마지막으로 가져온 때: ${fmtDF(l.slice(0, 10))} ${new Date(l).toTimeString().slice(0, 5)}` : '아직 가져온 적 없어요'; }
+function openSmsHelp() {
+  const step = (n, t, d) => `<li style="display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start"><span class="mono" style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700">${n}</span><div style="min-width:0"><b style="font-size:14px">${t}</b><div class="muted" style="font-size:13px;line-height:1.6;margin-top:2px">${d}</div></div></li>`;
+  const body = `<p style="margin:0 0 12px;font-size:14px;line-height:1.6">아이폰은 앱이 문자를 직접 읽을 수 없어서, 아이폰 <b>단축어</b> 앱이 은행 문자를 받을 때마다 아이클라우드 파일 하나에 모아 두게 해요. 앱에서는 그 파일을 고르기만 하면 <b>새 문자만</b> 기록돼요. 한 번만 설정하면 돼요.</p>
+    <ol style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:14px">
+      ${step(1, '단축어 앱 → 자동화 → 새로운 자동화', '아이폰 기본 앱 <b>단축어</b>를 열고 아래 <b>자동화</b> 탭에서 오른쪽 위 <b>+</b>를 눌러요.')}
+      ${step(2, '‘메시지’ 고르기', '<b>메시지 포함</b>에 <span class="mono">中国银行</span> 을 적어요. (발신자를 <span class="mono">95566</span>으로 정해도 돼요.) 아래에서 <b>즉시 실행</b>을 고르고 다음으로 가요.')}
+      ${step(3, '‘새로운 빈 단축어’ → 동작 하나 넣기', '동작 검색에 <b>텍스트 파일</b>을 쳐서 <b>텍스트 파일에 추가</b>(영문 Append to Text File)를 넣어요.')}
+      ${step(4, '넣을 내용 적기', `텍스트 칸에 <span class="mono">@@</span> 와 빈칸 하나를 적고, 키보드 위 변수에서 <b>현재 날짜</b>를 넣어요. 줄을 바꾼 뒤 <b>단축어 입력</b>을 넣어요.<br>파일 경로는 <span class="mono">${SMS_FILE}</span>, <b>새로운 행 만들기</b>는 켜요. 완료를 누르면 끝이에요.`)}
+      ${step(5, '앱에서 가져오기', `은행 문자가 오면 파일에 저절로 쌓여요. 앱 홈의 <b>은행 문자 넣기 → 파일 가져오기</b>에서 <b>iCloud Drive → 단축어</b> 폴더의 <span class="mono">${SMS_FILE}</span>를 고르면 새 문자만 기록돼요. 한 번 가져온 뒤로는 홈 버튼이 <b>은행 문자 가져오기</b>로 바뀌어 바로 파일을 고를 수 있어요. 같은 파일을 여러 번 골라도 두 번 기록되지 않아요.`)}
+    </ol>
+    <div class="banner info" style="margin-top:14px"><span>한국 은행 문자도 모으려면 같은 자동화를 하나 더 만들어 <b>메시지 포함</b>에 <span class="mono">잔액</span>을 적으세요. 같은 파일에 쌓여도 괜찮아요. 아이폰은 자동화가 실행될 때마다 작은 알림을 띄워요.</span></div>
+    <div class="row-s" style="margin-top:10px">${smsLastLine()}</div>`;
+  openSheet('은행 문자 자동으로 모으기', body, `<span class="sp"></span><button type="button" class="btn" data-act="sheet-close">닫기</button>${smsFileBtn('btn btn-p', '문자 파일 가져오기')}`);
+}
+
 /* every stored original, newest first */
 function allFiles() {
   const out = [];
@@ -4051,7 +4140,7 @@ const ACT = {
   'new-po': () => openPo(null), 'edit-po': el => { const p = poById(el.dataset.id); if (p) openPo(p); },
   'new-ship': el => openShip(null, el.dataset.po), 'edit-ship': el => { const s = S.ships.find(x => x.id === el.dataset.id); if (s) openShip(s); },
   'new-txn': () => openTxn(null), 'edit-txn': el => { const t = S.txns.find(x => x.id === el.dataset.id); if (t) openTxn(t); },
-  'paste-sms': () => openSmart({ kind: 'bank' }), 'import-file': () => openImport(),
+  'paste-sms': () => openSmart({ kind: 'bank' }), 'sms-help': () => openSmsHelp(), 'import-file': () => openImport(),
   'smart': el => openSmart({ kind: el.dataset.kind }),
   'quick-go': () => { const q = $('#quick-in'); quickHandle(q ? q.value : ''); S.quick = ''; },
   'file-dl': el => downloadFile(el.dataset.fid, el.dataset.name),
@@ -5265,6 +5354,7 @@ Object.assign(ACT, {
 document.addEventListener('input', e => { if (e.target.id === 'pr-q') { S.prQ = e.target.value; render(); } });
 document.addEventListener('change', e => {
   const ds = e.target.dataset || {};
+  if (ds.smsfile) { const f = e.target.files[0]; e.target.value = ''; if (f) importSmsFile(f); return; }
   if (ds.plimport || ds.primport || ds.plphoto) { const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (writeBlocked()) return; (ds.plphoto ? planFromPhoto : ds.plimport ? plImport : prImport)(f); return; }
   if (ds.k === 'desc' && e.target.closest('.items-ed')) prFillItem(e.target);
 });
