@@ -703,7 +703,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-1';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-2';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -878,6 +878,24 @@ function openRestore(data) {
     }
   });
 }
+/* a newer build on the site? GitHub keeps an old copy for a few minutes, so ask a tiny file directly */
+let UPD_AT = 0;
+async function checkUpdate(force) {
+  if (!/^https?:$/.test(location.protocol) || (!force && Date.now() - UPD_AT < 5 * 60e3)) return; UPD_AT = Date.now();
+  try { const r = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' }); if (!r.ok) return; const v = await r.json(); if (v && v.build && v.build > APP_BUILD) { if (S.newBuild !== v.build) { S.newBuild = v.build; render(); } } } catch (e) { }
+}
+async function applyUpdate(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '받는 중…'; }
+  try {
+    const r = await fetch(`./index.html?t=${Date.now()}`, { cache: 'no-store' });
+    if (r.ok && 'caches' in window) { const body = await r.clone().text(); if (/APP_BUILD = '/.test(body)) for (const k of await caches.keys()) if (k.startsWith('avory-')) await (await caches.open(k)).put(new URL('./index.html', location.href).href, r.clone()); }
+    const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (reg) await reg.update().catch(() => { });
+  } catch (e) { }
+  location.replace(location.pathname + '?u=' + Date.now());
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-upd]'); if (b) applyUpdate(b); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkUpdate(); });
+window.addEventListener('load', () => { if (/[?&]u=\d/.test(location.search)) history.replaceState(null, '', location.pathname); setTimeout(() => checkUpdate(true), 1500); });
 
 /* ================= derived ================= */
 const poTotal = p => sumBy(p.items || [], it => num(it.qty) * num(it.price));
@@ -1360,6 +1378,7 @@ function render() {
   if (S.route === 'report') wireChart();
 }
 function statusBanner() {
+  if (S.newBuild) return `<div class="banner info"><span>새 버전 <b class="mono">${esc(S.newBuild)}</b>이 나왔어요. 지금 쓰는 버전은 ${esc(APP_BUILD)}예요.</span><button class="btn btn-s btn-p" data-upd="1">지금 업데이트</button></div>`;
   if (S.mode === 'error') return `<div class="banner crit"><span>이 기기의 저장소를 열지 못했어요. 사파리·크롬의 개인정보 보호(시크릿) 모드에서는 저장이 안 돼요. 일반 창에서 열어 주세요.</span></div>`;
   if (S.mode !== 'live' || S.route !== 'home') return '';
   const has = COLS.some(c => S[c].length); if (!has) return '';
@@ -1944,7 +1963,7 @@ function openPaste() {
 
 const XLSX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 const loaded = {};
-const CDN_ALT = { 'xlsx/0.18.5/xlsx.full.min.js': 'xlsx@0.18.5/dist/xlsx.full.min.js', 'jszip/3.10.1/jszip.min.js': 'jszip@3.10.1/dist/jszip.min.js', 'html2canvas/1.4.1/html2canvas.min.js': 'html2canvas@1.4.1/dist/html2canvas.min.js', 'jspdf/2.5.1/jspdf.umd.min.js': 'jspdf@2.5.1/dist/jspdf.umd.min.js', 'pdf.js/3.11.174/pdf.min.js': 'pdfjs-dist@3.11.174/build/pdf.min.js', 'pdf.js/3.11.174/pdf.worker.min.js': 'pdfjs-dist@3.11.174/build/pdf.worker.min.js' };
+const CDN_ALT = { 'xlsx/0.18.5/xlsx.full.min.js': 'xlsx@0.18.5/dist/xlsx.full.min.js', 'jszip/3.10.1/jszip.min.js': 'jszip@3.10.1/dist/jszip.min.js', 'html2canvas/1.4.1/html2canvas.min.js': 'html2canvas@1.4.1/dist/html2canvas.min.js', 'jspdf/2.5.1/jspdf.umd.min.js': 'jspdf@2.5.1/dist/jspdf.umd.min.js', 'pdf.js/3.11.174/pdf.min.js': 'pdfjs-dist@3.11.174/build/pdf.min.js', 'pdf.js/3.11.174/pdf.worker.min.js': 'pdfjs-dist@3.11.174/build/pdf.worker.min.js', 'tesseract.js@5.1.1/dist/tesseract.min.js': 'tesseract.js@5.1.1/dist/tesseract.min.js' };
 const addScript = u => new Promise((res, rej) => { const s = document.createElement('script'); s.src = u; s.onload = res; s.onerror = () => { s.remove(); rej(new Error('load')); }; document.head.appendChild(s); });
 function loadScript(src) {
   if (!loaded[src]) loaded[src] = (async () => {
@@ -2059,7 +2078,7 @@ function partnerData(pt) {
 }
 
 /* bank details printed on invoices, contracts, business cards */
-const BANK_LBL = '(?:HOLDER\\s*NAME|ACCOUNT\\s*HOLDER|BENEFICIARY\\s*BANK|BENEFICIARY(?:\\s*NAME)?|ACCOUNT\\s*NAME|A\\/C\\s*NAME|BANK\\s*NAME|BANK\\s*ADDRESS|A\\/C\\s*NO\\.?(?:\\s*\\([A-Z]{3}\\))?|ACCOUNT\\s*(?:NO\\.?|NUMBER)(?:\\s*\\([A-Z]{3}\\))?|ACCT\\.?\\s*NO\\.?|IBAN|SWIFT(?:\\s*\\/?\\s*BIC)?(?:\\s*CODE)?|收款人(?:名称|户名)?|收款单位|账户名称|户\\s*名|开户名称?|开户(?:银)?行(?:名称)?|银行名称|收款银行|银行地址|银行账号|收款账号|账\\s*号|帐\\s*号|银行卡号|卡\\s*号|예금주|은행\\s*명|계좌\\s*번호)';
+const BANK_LBL = '(?:HOLDER\\s*NAME|ACCOUNT\\s*HOLDER|BENEFICIARY\\s*BANK|BENEFICIARY(?:\\s*NAME)?|ACCOUNT\\s*NAME|A\\/C\\s*NAME|BANK\\s*NAME|BANK\\s*ADDRESS|A\\s*[/\\\\VNIl1|]\\s*C\\s*NO\\.?(?:\\s*\\([A-Z]{3}\\))?|ACCOUNT\\s*(?:NO\\.?|NUMBER)(?:\\s*\\([A-Z]{3}\\))?|ACCT\\.?\\s*NO\\.?|IBAN|SWIFT(?:\\s*\\/?\\s*BIC)?(?:\\s*CODE)?|收款人(?:名称|户名)?|收款单位|账户名称|户\\s*名|开户名称?|开户(?:银)?行(?:名称)?|银行名称|收款银行|银行地址|银行账号|收款账号|账\\s*号|帐\\s*号|银行卡号|卡\\s*号|예금주|은행\\s*명|계좌\\s*번호)';
 function normBankText(t) {
   const only = new RegExp('^' + BANK_LBL + '\\s*(?:\\/[^:：\\n]{0,24})?\\s*[:：]?$', 'i'), any = new RegExp(BANK_LBL, 'i'), split = new RegExp('\\s+(?=' + BANK_LBL + '\\s*[:：])', 'gi');
   const lines = String(t || '').replace(/\r/g, '').split('\n').flatMap(l => l.replace(/[ \t　]+/g, ' ').trim().split(split)).map(l => l.trim()).filter(Boolean);
@@ -2079,7 +2098,7 @@ function parseBanks(text) {
   for (const l of lines) {
     const combo = l.match(/(?:开户行及账号|开户银行及账号|开户行及帐号)\s*[:：]\s*(.+?)\s*([\d][\d \-]{6,}\d)\s*$/);
     if (combo) { push(); cur = { bankName: combo[1].trim(), account: combo[2].replace(/\s/g, '') }; push(); continue; }
-    const acc = l.match(/(?:A\/C\s*(?:No\.?|Number)?|ACCOUNT\s*(?:No\.?|NUMBER)|ACCT\.?\s*No\.?|账\s*号|帐\s*号|卡\s*号|收款账号|계좌\s*(?:번호)?)\s*(?:\(([A-Z]{3})\))?\s*[:：.]?\s*([\d][\d \-]{5,34}\d)/i);
+    const acc = l.match(/(?:A\s*[/\\VNIl1|]\s*C\s*(?:No\.?|Number)?|ACCOUNT\s*(?:No\.?|NUMBER)|ACCT\.?\s*No\.?|账\s*号|帐\s*号|卡\s*号|收款账号|계좌\s*(?:번호)?)\s*(?:\(([A-Z]{3})\))?\s*[:：.]?\s*([\d][\d \-]{5,34}\d)/i);
     if (acc) { if (cur.account) push(); cur.account = acc[2].replace(/\s/g, ''); const c = (acc[1] || '').toUpperCase(); if (c) cur.currency = c === 'RMB' ? 'CNY' : c; continue; }
     if (/(?:BENEFICIARY\s*(?:NAME)?|ACCOUNT\s*NAME|ACCOUNT\s*HOLDER|A\/C\s*NAME|HOLDER(?:\s*NAME)?|收款人(?:名称|户名)?|收款单位|账户名称|户\s*名|开户名称?|예금주)\s*[:：]\s*\S/i.test(l) && !/BANK/i.test(l.split(/[:：]/)[0])) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.holder) cur.holder = v.slice(0, 80); continue; }
     if (/(?:BENEFICIARY\s*BANK|BANK\s*NAME|^BANK\b[^:：]{0,14}|开户(?:银)?行(?:名称)?|银行名称|收款(?:银)?行|은행\s*(?:명)?)\s*[:：]\s*\S/i.test(l) && !/ADDRESS|地址/i.test(l.split(/[:：]/)[0])) { const v = val(l, /[:：]\s*(.+)$/); if (v && !cur.bankName) cur.bankName = v.slice(0, 80); continue; }
@@ -2092,6 +2111,8 @@ function parseBanks(text) {
   return out.filter(b => digits(b.account).length >= 6 && !ours.has(digits(b.account))).map(b => Object.assign({ currency: b.currency || (b.swift ? 'USD' : /[一-龥]/.test(b.bankName || '') ? 'CNY' : ''), bankName: '', holder: '', swift: '', bankAddress: '' }, b));
 }
 /* names, phones, addresses, bank accounts from any pasted text */
+const ocrTrim = n => String(n || '').replace(/^[^A-Za-z0-9\u4e00-\u9fff]*(?:[A-Za-z]{1,2}\s*[）)\]】」|:：,，.]\s*)?(?=[\u4e00-\u9fff])/, '').trim();
+const snapHolder = (banks, ...names) => (banks || []).forEach(b => { const h = String(b.holder || ''); if (!h) return; for (const n of names.filter(Boolean)) { if (h !== n && Math.abs(h.length - n.length) <= 1 && h.length >= 6 && levD(h, n) <= 2) { b.holder = n; return; } } });
 function parsePartnerText(text) {
   const t = String(text || '').replace(/\r/g, '');
   const lines = t.split('\n').map(s => s.replace(/[ \t　]+/g, ' ').trim()).filter(Boolean);
@@ -2109,7 +2130,7 @@ function parsePartnerText(text) {
   const cutCo = x => { x = String(x || '').trim(); const m = x.match(/^(.*?(?:LIMITED|LTD\.?|CO\.,?\s*LTD\.?|CORPORATION|CORP\.?|INC\.?|LLC|GMBH|有限责任公司|有限公司|股份公司|株式会社|주식회사))(?=\s|$|[,，|])/i); return m && /[:：|]|\b(PO|DATE|NO|TEL|FAX|DATED)\b|日期|编号|电话/i.test(x.slice(m[1].length)) ? m[1].trim() : x; };
   const nm = ([...t.matchAll(/(?:公司名称|单位名称|名\s*称|COMPANY(?:\s*NAME)?|상\s*호|회사명)\s*[:：]\s*([^\n]{3,80})/gi)].map(m => m[1].trim()).find(x => !isOurs(x))) || '';
   const nameLine = lines.findIndex(l => COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址)/i.test(l));
-  o.name = cutCo((nm && !isOurs(nm) ? nm : '') || (nameLine >= 0 ? lines[nameLine] : '').replace(/^(TO|FROM|致|BUYER|SELLER|买方|卖方)\s*(?:\/\s*\S+\s*)?[:：]?\s*/i, ''));
+  o.name = ocrTrim(cutCo((nm && !isOurs(nm) ? nm : '') || (nameLine >= 0 ? lines[nameLine] : '').replace(/^(TO|FROM|致|BUYER|SELLER|买方|卖方)\s*(?:\/\s*\S+\s*)?[:：]?\s*/i, '')));
   const hanOf = x => /[一-鿿]/.test(x || '');
   const alt = lines.find((l, k) => k !== nameLine && COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址|HOLDER|户名|^TO\b|^致)/i.test(l) && hanOf(l) !== hanOf(o.name));
   if (alt && o.name) o.nameAlt = cutCo(alt.replace(/^(名\s*称|公司名称)\s*[:：]\s*/, ''));
@@ -2118,7 +2139,7 @@ function parsePartnerText(text) {
   if (o.address && [S.co.addressZh, S.co.addressEn, S.co.regAddressZh].some(a => a && a.replace(/\s/g, '').slice(0, 12) === o.address.replace(/\s/g, '').slice(0, 12))) o.address = '';
   const blob = (o.address || '') + ' ' + lines.slice(Math.max(0, nameLine), Math.max(0, nameLine) + (o.address ? 3 : 6)).filter(l => !isOurs(l)).join(' ');
   o.country = /HONG ?KONG|香港|九龍|九龙/i.test(blob) ? 'Hong Kong' : /KOREA|대한민국|한국|SEOUL|서울|韩国/i.test(blob) ? 'Korea' : /CHINA|中国|广东|深圳|上海|浙江|江苏|东莞|广州/i.test(blob) ? 'China' : /JAPAN|日本/i.test(blob) ? 'Japan' : /U\.?S\.?A|UNITED STATES/i.test(blob) ? 'USA' : '';
-  o.banks = parseBanks(t);
+  o.banks = parseBanks(t); snapHolder(o.banks, o.name, o.nameAlt);
   if (o.name && !isOurs(o.name)) o.kindGuess = /(LOGISTICS|FORWARD|SHIPPING|FREIGHT|EXPRESS|货运|货代|物流|国际运输|报关|船务|물류|포워딩|통관)/i.test(o.name + ' ' + (o.nameAlt || '')) ? 'forwarder' : (BILL_TITLE.test(t) && o.banks.length) || /(SELLER|SUPPLIER|供方|卖方|供应商)/i.test(lines.slice(Math.max(0, nameLine - 2), nameLine + 1).join(' ').split(o.name)[0]) ? 'supplier' : /(BUYER|买方|需方|购买方)/i.test(lines.slice(Math.max(0, nameLine - 2), nameLine + 1).join(' ').split(o.name)[0]) ? 'buyer' : '';
   Object.keys(o).forEach(k => { if (o[k] === '' || (Array.isArray(o[k]) && !o[k].length)) delete o[k]; });
   return o;
@@ -2241,7 +2262,7 @@ function openPartner(p, opts = {}) {
   p = Object.assign({ kind: 'buyer', banks: [] }, p ? JSON.parse(JSON.stringify(p)) : {});
   const body = `${opts.banner ? `<div class="banner info"><span>${esc(opts.banner)}</span></div>` : ''}
     <div class="f"><span>붙여넣어 채우기</span><textarea class="in" id="pt-paste" rows="3" placeholder="명함, 위챗 메시지, 인보이스 머리글, 계좌 안내를 붙여넣으면 이름·연락처·계좌를 찾아 빈칸을 채워요">${esc(opts.paste || '')}</textarea>
-      <div class="actions"><button type="button" class="btn btn-s" id="pt-fill">빈칸 채우기</button><label class="btn btn-s">${svg('upload')}PDF에서 읽기<input type="file" class="sr" id="pt-file" accept="application/pdf,.pdf"></label><small class="muted" id="pt-fill-msg"></small></div></div>
+      <div class="actions"><button type="button" class="btn btn-s" id="pt-fill">빈칸 채우기</button><label class="btn btn-s">${svg('upload')}PDF·사진에서 읽기<input type="file" class="sr" id="pt-file" accept="application/pdf,.pdf,image/*"></label><small class="muted" id="pt-fill-msg"></small></div></div>
     <form class="fgrid" id="pt-form" autocomplete="off">
     ${F('거래처 이름', inp('name', p.name, { req: 1 }), 'full')}
     ${F('구분', sel('kind', p.kind || 'buyer', PT_KIND))}${F('국가', inp('country', p.country, { ph: 'China' }))}
@@ -2289,13 +2310,17 @@ function openPartner(p, opts = {}) {
 /* text out of a PDF the user picked */
 async function docText(f, msgEl) {
   const say = t => { if (msgEl) msgEl.textContent = t; };
-  if (!(/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name))) { say('사진은 사진 앱에서 글자를 길게 눌러 모두 선택 → 복사한 뒤 위 칸에 붙여넣어 주세요.'); return ''; }
+  if (!(/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name))) {
+    if (!ocrHere()) { say('사진은 사진 앱에서 글자를 길게 눌러 모두 선택 → 복사한 뒤 위 칸에 붙여넣어 주세요.'); return ''; }
+    try { const r = await readPhoto(f, say); say(r.text.trim() ? '사진에서 읽었어요. 틀린 글자는 고쳐 주세요.' : '사진에서 글자를 찾지 못했어요.'); return r.text; }
+    catch (e) { say('사진 읽기 엔진을 받지 못했어요. 인터넷 연결을 확인해 주세요.'); return ''; }
+  }
   say('PDF 읽는 중…');
   try { const r = await readPdf(f, 0); if (!r.text.trim()) { say('이 PDF에는 글자가 없어요(스캔본). 사진처럼 글자를 복사해 붙여넣어 주세요.'); return ''; } say('PDF에서 읽었어요.'); return r.text; }
   catch (e) { say('PDF를 읽지 못했어요.'); return ''; }
 }
 function openPtPaste() {
-  const body = `<div class="f"><span>서류 PDF</span><div class="actions"><label class="btn btn-p">${svg('upload')}인보이스·계약서 PDF 고르기<input type="file" class="sr" id="pp-file" accept="application/pdf,.pdf"></label></div>
+  const body = `<div class="f"><span>서류 PDF</span><div class="actions"><label class="btn btn-p">${svg('upload')}인보이스·계약서 PDF·사진 고르기<input type="file" class="sr" id="pp-file" accept="application/pdf,.pdf,image/*"></label></div>
     <small id="pp-msg">회사 이름(중문·영문), 주소, 전화, 세금번호, 계좌(开户行·账号·收款人)를 찾아 채워요. 인터넷 없이 앱이 직접 읽어요.</small></div>
     <div class="f"><span>또는 글자 붙여넣기</span><textarea class="in" id="pp-text" rows="5" placeholder="명함 사진의 글자, 위챗으로 받은 회사 정보·계좌 안내, 인보이스에서 복사한 글자"></textarea>
     <small>아이폰은 사진의 글자를 길게 눌러 <b>모두 선택 → 복사</b>하면 돼요.</small></div>`;
@@ -2845,6 +2870,7 @@ function parseBillText(text) {
   for (const l of lines) { const m = l.match(sellerRe); if (m && COMPANY_RE.test(m[1])) { issuer = m[1].replace(/^(名\s*称|상호)\s*[:：]?\s*/, '').trim().slice(0, 80); break; } }
   if (named.length >= 2) { if (!billTo) billTo = named[0]; if (!issuer) issuer = named[1]; }
   if (!issuer) { const top = lines.slice(0, 12).find(l => COMPANY_RE.test(l) && !toRe.test(l) && !(billTo && l.includes(billTo)) && l.length <= 80 && !/(BANK|银行)/i.test(l)); if (top) issuer = top.replace(/^(FROM|发自)\s*[:：]?\s*/i, '').trim(); }
+  issuer = ocrTrim(issuer);
   const usIssuer = isOurs(issuer), usTo = isOurs(billTo);
   const hanOf = x => /[一-鿿]/.test(x || '');
   const issuerAlt = issuer ? (lines.slice(0, 12).find(l => l !== issuer && COMPANY_RE.test(l) && !toRe.test(l) && !(billTo && l.includes(billTo)) && l.length <= 80 && !isOurs(l) && !/(BANK|银行)/i.test(l) && hanOf(l) !== hanOf(issuer)) || '').trim() : '';
@@ -2886,7 +2912,7 @@ function parseBillText(text) {
     poDate: date, payDue, payTerms: termsM ? termsM[1].trim() : '', currency, total, category,
     items: charges.length > 1 && Math.abs(sumBy(charges, c => c.amt) - total) <= Math.max(0.05, total * 0.005) ? charges.map(c => ({ desc: c.desc, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: c.amt })) : [{ desc: `${descWord}${no ? ' · ' + no : ''}${charges.length ? ' (' + charges.map(c => c.desc).slice(0, 4).join(', ') + ')' : ''}`, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: total }], issuerAlt,
     refPo: po ? po.no : (ship && ship.blNo) || refs[0] || '', poLink: po ? po.id : '', shipId: ship ? ship.id : '', supBank: bankLines.join('\n'), memo, status: 'open', source: 'ocr',
-    ptInfo: dir === 'import' ? Object.assign((() => { const o = parsePartnerText(head); delete o.name; delete o.banks; delete o.nameAlt; return o; })(), { banks: parseBanks(all) }, issuerAlt ? { nameAlt: issuerAlt } : {}) : {}
+    ptInfo: dir === 'import' ? Object.assign((() => { const o = parsePartnerText(head); delete o.name; delete o.banks; delete o.nameAlt; return o; })(), { banks: (bk => (snapHolder(bk, issuer, issuerAlt), bk))(parseBanks(all)) }, issuerAlt ? { nameAlt: issuerAlt } : {}) : {}
   };
 }
 
@@ -3830,8 +3856,8 @@ function openSmart(opts = {}) {
   let kind = opts.kind || 'auto', files = [], sendFiles = [], result = null, plan = null, ctl = null, pending = null;
   const KINDS = [['auto', '자동 판별'], ['bill', '청구서 (줄 돈·받을 돈)'], ['order', 'PO·계약'], ['bank', '은행 내역'], ['receipt', '영수증·发票'], ['shipping', '출하 정보'], ['text', '읽기·번역만']];
   const body = `<div class="f"><span>붙여넣기</span><textarea class="in" id="sm-text" rows="4" placeholder="은행 문자, 은행 앱 화면 글자, 주문 내용… 무엇이든 붙여넣으세요">${esc(opts.text || '')}</textarea>
-      <small>사진 속 글자는 아이폰에서 사진을 열고 글자를 길게 눌러 <b>모두 선택 → 복사</b>한 뒤 여기 붙여넣으면 앱이 바로 정리해요.</small></div>
-    <div class="f"><span>PDF · 사진</span><input type="file" id="sm-file" class="in" accept="application/pdf,image/*" multiple style="padding:9px"><small>계약서·PO·인보이스 PDF는 앱이 직접 읽어요. 원본은 함께 보관돼요.</small><div class="thumbs" id="sm-thumbs"></div></div>
+      <small>${ocrHere() ? '사진은 아래에서 고르면 앱이 직접 글자를 읽어요. 일정표 사진은 생산 일정으로 바로 들어가요.' : '사진 속 글자는 아이폰에서 사진을 열고 글자를 길게 눌러 <b>모두 선택 → 복사</b>한 뒤 여기 붙여넣으면 앱이 바로 정리해요.'}</small></div>
+    <div class="f"><span>PDF · 사진</span><input type="file" id="sm-file" class="in" accept="application/pdf,image/*" multiple style="padding:9px"><small>${ocrHere() ? '계약서·인보이스 PDF와 사진(청구서·은행 화면·일정표)을 앱이 직접 읽어요. 사진은 처음 한 번 글자 사전(약 15MB)을 받아요.' : '계약서·PO·인보이스 PDF는 앱이 직접 읽어요. 원본은 함께 보관돼요.'}</small><div class="thumbs" id="sm-thumbs"></div></div>
     ${F('덧붙일 말 (선택)', inp('sm-note', opts.note || '', { ph: '예: 이미 출하했고 목요일 웨이하이에서 출항' }))}
     <div class="f"><span>종류</span><div class="seg" id="sm-kind" role="group" aria-label="종류" style="flex-wrap:wrap">${KINDS.map(([k, l]) => `<button type="button" data-k="${k}" aria-pressed="${k === kind}">${l}</button>`).join('')}</div></div>
     <div id="sm-status"></div><div id="sm-out" style="display:flex;flex-direction:column;gap:12px"></div>`;
@@ -3870,12 +3896,19 @@ function openSmart(opts = {}) {
             try { const r = await readPdf(f, SAMPLE ? 3 : 0); pdfImgs.push(...r.images); pdfText += `\n${r.text}`; } catch (e) { pdfFail = true; }
           } else photos.push(f);
         }
+        let photoText = '', ocrFail = false;
+        if (photos.length && ocrHere()) for (const f of photos) {
+          busy('사진 글자 읽는 중…');
+          try { const r = await readPhoto(f, m => busy(m)); if (r.schedule && kind !== 'text' && (r.schedule.tasks.length || r.schedule.months.length)) { go.disabled = false; openPlanPhoto(r.schedule); return; } photoText += `\n${r.text}`; }
+          catch (e) { ocrFail = true; }
+        }
         st.innerHTML = '';
-        const all = [text, pdfText].filter(Boolean).join('\n\n');
+        const all = [text, pdfText, photoText.trim()].filter(Boolean).join('\n\n');
         pending = { text: all, note, imgs: [...pdfImgs, ...(await Promise.all(photos.map(f => toJpeg(f))))] };
         if (kind !== 'text') { const r = localRead(all, note, kind); if (r) { go.disabled = false; show(r, true); return; } }
         go.disabled = false;
-        const why = pdfFail ? '이 PDF는 앱이 열지 못했어요.' : photos.length && !all ? '사진 속 글자는 앱이 직접 읽지 못해요. 아이폰에서 사진의 글자를 길게 눌러 <b>모두 선택 → 복사</b>한 뒤 위에 붙여넣으면 무료로 바로 정리돼요.' : kind === 'text' ? '번역은 Claude가 해요.' : '이 형식은 앱이 스스로 정리하지 못했어요.';
+        const why = pdfFail ? '이 PDF는 앱이 열지 못했어요.' : ocrFail ? '사진 읽기 엔진을 받지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.' : photoText.trim() ? `사진 글자는 읽었는데 청구서·은행 내역 형식으로 정리하지 못했어요. 읽은 글자를 위 칸에 넣어 둘게요. 고쳐서 다시 정리하기를 누르세요.` : photos.length && !all ? '사진 속 글자는 앱이 직접 읽지 못해요. 아이폰에서 사진의 글자를 길게 눌러 <b>모두 선택 → 복사</b>한 뒤 위에 붙여넣으면 무료로 바로 정리돼요.' : kind === 'text' ? '번역은 Claude가 해요.' : '이 형식은 앱이 스스로 정리하지 못했어요.';
+        if (photoText.trim() && !text) ta.value = photoText.trim();
         st.innerHTML = `<div class="banner"><span>${why}${SAMPLE ? ' 필요하면 Claude로 읽을 수 있어요(Claude 사용량을 써요).' : ''}</span>${SAMPLE ? '<button type="button" class="btn btn-s" data-oact="claude">Claude로 읽기</button>' : ''}</div>`;
       });
       panel.addEventListener('change', e => {
@@ -4223,7 +4256,7 @@ function plHeadPanel(pl, multi) {
 function viewPlan() {
   const all = S.plans.slice().sort(plOrder);
   const segTop = `<div class="seg" role="group" aria-label="일정 메뉴"><button data-act="go" data-to="plan" aria-pressed="true">생산·개발 일정</button><button data-act="go" data-to="ship" aria-pressed="false">출하·선적</button></div>`;
-  const head = `<div class="page-head"><div><div class="eyebrow">Production · Development</div><h1>생산·개발 일정</h1></div><div class="actions"><label class="btn">엑셀 불러오기<input type="file" class="sr" accept=".xlsx" data-plimport="1"></label><button class="btn btn-p" data-act="pl-new">${svg('plus')}새 일정</button></div></div>`;
+  const head = `<div class="page-head"><div><div class="eyebrow">Production · Development</div><h1>생산·개발 일정</h1></div><div class="actions"><label class="btn">${svg('upload')}일정표 사진 읽기<input type="file" class="sr" accept="image/*" data-plphoto="1"></label><label class="btn">엑셀 불러오기<input type="file" class="sr" accept=".xlsx" data-plimport="1"></label><button class="btn btn-p" data-act="pl-new">${svg('plus')}새 일정</button></div></div>`;
   if (!all.length) return `${head}<div class="filters">${segTop}</div><section class="panel"><div class="empty">아직 일정이 없어요. 공장과 맞춘 생산 일정이나 개발 일정을 만들어 두면 달력으로 보고, 사진·PDF·엑셀로 바로 보낼 수 있어요.<span class="actions" style="justify-content:center"><button class="btn btn-s btn-p" data-act="pl-new">새 일정 만들기</button></span></div></section>`;
   const sel = plSel(), multi = sel.length > 1; S.planId = (plCur() || {}).id;
   const ym = S.planYm || curYm();
@@ -4832,6 +4865,363 @@ function prFillItem(input) {
   }
 }
 
+/* ================= reading photos on the phone (Tesseract OCR · Chinese + English · free, no Claude) ================= */
+const TESS_SRC = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+const ocrHere = () => !!window.__OCR_BACKEND || typeof APP_BUILD !== 'undefined';
+let OCR_P = null, OCR_SAY = null;
+function ocrEngine() {
+  if (window.__OCR_BACKEND) return Promise.resolve(window.__OCR_BACKEND);
+  if (!OCR_P) OCR_P = (async () => {
+    await loadScript(TESS_SRC);
+    const T = window.Tesseract; if (!T || !T.createWorker) throw new Error('ocr-load');
+    const viaUnpkg = [...document.scripts].some(s => /unpkg\.com\/tesseract\.js@/.test(s.src));
+    const opt = { logger: m => { if (OCR_SAY && m && m.status) OCR_SAY(m); } };
+    if (viaUnpkg) Object.assign(opt, { workerPath: 'https://unpkg.com/tesseract.js@5.1.1/dist/worker.min.js', corePath: 'https://unpkg.com/tesseract.js-core@5.1.0' });
+    const w = await T.createWorker(['chi_sim', 'eng'], 1, opt);
+    let cur = '';
+    return async (canvas, psm) => {
+      if (cur !== String(psm)) { await w.setParameters({ tessedit_pageseg_mode: String(psm), preserve_interword_spaces: '1' }); cur = String(psm); }
+      const r = await w.recognize(canvas, {}, { text: true, tsv: true, blocks: true });
+      const d = (r && r.data) || {};
+      if (d.tsv) return d.tsv;
+      // older/newer builds: rebuild the same table from the word boxes
+      const rows = []; (d.blocks || []).forEach((bl, bi) => (bl.paragraphs || []).forEach((pa, pi) => (pa.lines || []).forEach((ln, li) => (ln.words || []).forEach((wd, wi) => { const b = wd.bbox || {}; rows.push(['5', 1, bi + 1, pi + 1, li + 1, wi + 1, b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0, wd.confidence, wd.text].join('\t')); }))));
+      if (!rows.length && Array.isArray(d.words)) d.words.forEach((wd, wi) => { const b = wd.bbox || {}; const ln = wd.line && wd.line.bbox ? `${wd.line.bbox.y0}` : '1'; rows.push(['5', 1, 1, 1, ln, wi + 1, b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0, wd.confidence, wd.text].join('\t')); });
+      return rows.join('\n');
+    };
+  })().catch(e => { OCR_P = null; throw e; });
+  return OCR_P;
+}
+const OCR_CJK = '\\u4e00-\\u9fff\\u3000-\\u303f\\uff00-\\uffef';
+function ocrNorm(s) {
+  s = String(s || '');
+  if (new RegExp('[' + OCR_CJK + ']').test(s)) s = s.replace(/〈/g, '（').replace(/〉/g, '）').replace(/\(/g, '（').replace(/\)/g, '）');
+  const re = new RegExp('(?<=[' + OCR_CJK + '/])\\s+(?=[' + OCR_CJK + '/])', 'g');
+  for (let i = 0; i < 3; i++) s = s.replace(re, '');
+  return s.replace(/\s*\/\s*/g, '/').replace(/,\./g, ',').replace(/(?<=\d)\.(?=\d{3}\b)/g, ',').replace(/\s+/g, ' ').trim();
+}
+function tsvWords(tsv, k = 1, ox = 0, oy = 0) {
+  const out = [];
+  for (const ln of String(tsv || '').split('\n')) {
+    const f = ln.split('\t'); if (f.length < 12 || f[0] !== '5') continue;
+    const t = f.slice(11).join(' ').trim(); if (!t) continue;
+    out.push({ t, x: +f[6] / k + ox, y: +f[7] / k + oy, w: +f[8] / k, h: +f[9] / k, c: +f[10], key: `${f[2]}.${f[3]}.${f[4]}` });
+  }
+  return out;
+}
+function wordLines(words) {
+  const by = new Map(); for (const w of words) { if (!by.has(w.key)) by.set(w.key, []); by.get(w.key).push(w); }
+  return [...by.values()].map(ws => ({ x0: Math.min(...ws.map(w => w.x)), x1: Math.max(...ws.map(w => w.x + w.w)), y0: Math.min(...ws.map(w => w.y)), y1: Math.max(...ws.map(w => w.y + w.h)), t: ocrNorm(ws.sort((a, b) => a.x - b.x).map(w => w.t).join(' ')) }))
+    .sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
+}
+async function imgCanvas(file, max = 2600) {
+  const url = URL.createObjectURL(file);
+  try {
+    const im = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('img')); i.src = url; });
+    const s = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+    const c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * s); c.height = Math.round(im.naturalHeight * s);
+    const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height); return c;
+  } finally { URL.revokeObjectURL(url); }
+}
+/* crop → grey, contrast stretched, enlarged, white border: what Tesseract reads best */
+function ocrCrop(src, x0, y0, x1, y1, scale = 3, invert = false) {
+  x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0)); x1 = Math.min(src.width, Math.ceil(x1)); y1 = Math.min(src.height, Math.ceil(y1));
+  const w = Math.max(1, x1 - x0), h = Math.max(1, y1 - y0), pad = 12, W = Math.round(w * scale), H = Math.round(h * scale);
+  const c = document.createElement('canvas'); c.width = W + pad * 2; c.height = H + pad * 2;
+  const g = c.getContext('2d', { willReadFrequently: true }); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+  g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(src, x0, y0, w, h, pad, pad, W, H);
+  const d = g.getImageData(pad, pad, W, H), a = d.data, n = a.length / 4, L = new Float32Array(n), hist = new Uint32Array(256);
+  for (let i = 0; i < n; i++) { let v = 0.299 * a[i * 4] + 0.587 * a[i * 4 + 1] + 0.114 * a[i * 4 + 2]; if (invert) v = 255 - v; L[i] = v; hist[v | 0]++; }
+  const pct = p => { let acc = 0; const lim = n * p; for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc >= lim) return v; } return 255; };
+  const mode = window.__OCR_MODE || OCR_MODE;
+  let lo = pct(0.02), hi = pct(0.98);
+  if (mode === 'gray') { lo = 0; hi = 255; }
+  if (mode === 'soft') { hi = Math.max(hi, 245); lo = Math.min(lo, pct(0.005)); }
+  const k = 255 / Math.max(1, hi - lo);
+  for (let i = 0; i < n; i++) { const v = Math.max(0, Math.min(255, (L[i] - lo) * k)); a[i * 4] = a[i * 4 + 1] = a[i * 4 + 2] = v; a[i * 4 + 3] = 255; }
+  g.putImageData(d, pad, pad); return c;
+}
+const OCR_MODE = 'gray';
+const ocrLine = async (ocr, src, box, o = {}) => ocrNorm(tsvWords(await ocr(ocrCrop(src, box[0], box[1], box[2], box[3], o.scale || 3, o.invert), o.psm || 7)).map(w => w.t).join(' '));
+
+/* ---------- a production calendar picture (this app's picture, or the same layout) → plan ---------- */
+const OCR_STEPS = ['在制料复核', '校准版本复核', '物料入库', '物料到货', 'IQC/核版', 'SMT/AOI', '组装烧录', '调焦固化', '复焦检查', '测试/品质', '余量测试', '清尾复测', '余量补验', '包装入库', '方案评审', '打样', '样品确认', '开模', '试模', '试产', '小批量试产', '认证测试', '客户确认'];
+function levD(a, b) { let p = Array.from({ length: b.length + 1 }, (_, i) => i); for (let i = 1; i <= a.length; i++) { const q = [i]; for (let j = 1; j <= b.length; j++) q.push(Math.min(p[j] + 1, q[j - 1] + 1, p[j - 1] + (a[i - 1] !== b[j - 1] ? 1 : 0))); p = q; } return p[b.length]; }
+function schedStructure(src) {
+  const W = src.width, H = src.height, P = src.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, W, H).data;
+  const at = (x, y) => { const i = (y * W + x) * 4; return [P[i], P[i + 1], P[i + 2]]; };
+  const lum = (x, y) => { const i = (y * W + x) * 4; return 0.299 * P[i] + 0.587 * P[i + 1] + 0.114 * P[i + 2]; };
+  const xa = Math.floor(W * 0.02), xb = Math.floor(W * 0.98), bars = []; let on = -1;
+  for (let y = 0; y <= H; y++) {
+    let v = false;
+    if (y < H) { let n = 0, m = 0; for (let x = xa; x < xb; x += 2) { const i = (y * W + x) * 4, r = P[i], g = P[i + 1], b = P[i + 2]; m++; if (0.299 * r + 0.587 * g + 0.114 * b < 120 && b - r > 12) n++; } v = n / m > 0.6; }
+    if (v && on < 0) on = y; if (!v && on >= 0) { if (y - on >= 6) bars.push([on, y - 1]); on = -1; }
+  }
+  const secs = [];
+  for (let i = 0; i < bars.length - 1; i++) { const t = bars[i], h = bars[i + 1]; if ((t[1] - t[0]) > (h[1] - h[0]) * 1.3 && h[0] - t[1] < H * 0.4) { secs.push({ tb: t, hb: h }); i++; } }
+  for (const s of secs) {
+    const { hb } = s; let x0 = -1, x1 = -1;
+    for (let x = 0; x < W; x++) { let n = 0, m = 0; for (let y = hb[0] + 2; y < hb[1] - 1; y++) { m++; if (lum(x, y) < 165) n++; } if (m && n / m > 0.8) { if (x0 < 0) x0 = x; x1 = x; } }
+    s.gx0 = x0; s.gx1 = x1; s.cw = (x1 - x0 + 1) / 7;
+    const cl = [0, 1, 2, 3, 4, 5, 6].map(c => { let t = 0, m = 0; for (let y = hb[0] + 3; y < hb[1] - 2; y += 2) for (let x = Math.round(x0 + c * s.cw + s.cw * 0.1); x < x0 + (c + 1) * s.cw - s.cw * 0.1; x += 3) { t += lum(x, y); m++; } return m ? t / m : 0; });
+    const mn = Math.min(...cl); s.rest = cl.map((v, i) => v > mn + 12 ? i : -1).filter(i => i >= 0);
+  }
+  return { W, H, P, at, lum, secs };
+}
+async function readSchedule(src, st, full, ocr, say) {
+  const { W, H, P, lum, secs } = st;
+  const ORANGE = (r, g, b) => r > 210 && g > 165 && g < 230 && b < 195 && r - b > 45;
+  const GREEN = (r, g, b) => g - r > 35 && g - b > 5 && 0.299 * r + 0.587 * g + 0.114 * b < 175;
+  const res = { name: '', title: '', batches: [], tasks: [], notes: [], months: [], shipStated: {}, restDays: null, legend: '' };
+  const lines = (y0, y1) => {
+    const ws = full.filter(w => w.y >= y0 && w.y < y1 && w.h > 4).sort((a, b) => (a.y + a.h / 2) - (b.y + b.h / 2)); const out = [];
+    for (const w of ws) { const cy = w.y + w.h / 2, l = out[out.length - 1]; if (l && cy - l.cy < Math.max(6, Math.min(l.h, w.h) * 0.6)) { l.ws.push(w); l.y0 = Math.min(l.y0, w.y); l.y1 = Math.max(l.y1, w.y + w.h); l.x0 = Math.min(l.x0, w.x); l.x1 = Math.max(l.x1, w.x + w.w); l.cy = (l.y0 + l.y1) / 2; l.h = Math.max(l.h, w.h); } else out.push({ ws: [w], y0: w.y, y1: w.y + w.h, x0: w.x, x1: w.x + w.w, cy, h: w.h }); }
+    return out.map(l => Object.assign(l, { t: ocrNorm(l.ws.sort((a, b) => a.x - b.x).map(w => w.t).join(' ')) }));
+  };
+  let jobs = 0, done = 0; const tick = () => { done++; if (say) say(`일정표 읽는 중… ${Math.min(99, Math.round(done / Math.max(jobs, 1) * 100))}%`); };
+  const plan = [];
+  for (let si = 0; si < secs.length; si++) {
+    const { tb, hb, gx0, gx1, cw } = secs[si]; if (gx0 < 0 || cw < 20) continue;
+    const yEnd = si + 1 < secs.length ? secs[si + 1].tb[0] - 2 : H;
+    const tries = [await ocrLine(ocr, src, [gx0, tb[0], gx1, tb[1] + 1], { invert: true, scale: 2 }), ocrNorm(full.filter(w => w.y + w.h / 2 >= tb[0] && w.y + w.h / 2 <= tb[1]).sort((a, b) => a.x - b.x).map(w => w.t).join(' '))];
+    let m = null;
+    for (const t of tries) { m = t.match(/(20\d\d)\s*年\s*(\d{1,2})\s*月\s*(.*)$/); if (m) break; }
+    if (!m) { const t = await ocrLine(ocr, src, [gx0, tb[0], gx1, tb[1] + 1], { invert: true, scale: 2, psm: 13 }); tries.push(t); m = t.match(/(20\d\d)\s*年\s*(\d{1,2})\s*月\s*(.*)$/); }
+    if (!m) for (const t of tries) { m = t.match(/(20\d\d)\s*[年4]?\s*(\d{1,2})\s*[月H]\s*\*?(.*)$/); if (m && +m[2] >= 1 && +m[2] <= 12) break; m = null; }
+    let yy, mm, rest;
+    if (m) { yy = +m[1]; mm = +String(m[2]).replace(/\s/g, ''); rest = m[3].trim(); }
+    const prevYm = res.months[res.months.length - 1];
+    if (prevYm) { const nx = addMonths(prevYm, 1); if (!m || `${yy}-${pad2(mm)}` !== nx) { yy = +nx.slice(0, 4); mm = +nx.slice(5); rest = rest || ''; } }
+    if (!yy || mm < 1 || mm > 12) continue;
+    rest = String(rest || '').replace(/\s*更\s*新.*$/, '').trim();
+    const tm = rest.match(/(生产日历|开发日程|生产计划|开发计划|日历|计划|排程)$/);
+    if (!res.name || /^[^A-Za-z0-9]*$/.test(res.name)) { res.name = (tm ? rest.slice(0, tm.index) : rest).trim().replace(/^[*|]\s*/, '').replace(/\s*\+\s*/g, ' + ').replace(/(?<=[A-Z0-9])l\b/g, 'I'); res.title = tm ? tm[1] : ''; }
+    const ym = `${yy}-${pad2(mm)}`; res.months.push(ym); if (secs[si].rest.length && secs[si].rest.length < 4 && !res.restDays) res.restDays = secs[si].rest;
+    const lead = (new Date(yy, mm - 1, 1).getDay() + 6) % 7, nd = new Date(yy, mm, 0).getDate(), nw = Math.ceil((lead + nd) / 7);
+    const ys = {}, hs = [], minH = (hb[1] - hb[0]) * 0.3;
+    for (const w of full) {
+      if (!(w.y > hb[1] && w.y < yEnd && /^\d{1,2}$/.test(w.t) && +w.t >= 1 && +w.t <= nd && w.h >= minH)) continue;
+      const c = Math.floor((w.x - gx0) / cw); if (c < 0 || c > 6 || (w.x - gx0 - c * cw) > cw * 0.35) continue;
+      const idx = lead + +w.t - 1; if (idx % 7 !== c) continue;
+      (ys[Math.floor(idx / 7)] = ys[Math.floor(idx / 7)] || []).push(w.y); hs.push(w.h);
+    }
+    const med = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[s.length >> 1] : 0; };
+    const dh = hs.length ? med(hs) : (hb[1] - hb[0]) * 0.5;
+    const rows = Array.from({ length: nw }, (_, k) => ys[k] ? med(ys[k]) : null);
+    if (rows[0] === null) rows[0] = hb[1] + 8;
+    for (let k = 1; k < nw; k++) if (rows[k] === null) { let a = k - 1; while (rows[a] === null) a--; let b = k + 1; while (b < nw && rows[b] === null) b++; rows[k] = b < nw ? rows[a] + (rows[b] - rows[a]) * (k - a) / (b - a) : rows[a] + (k - a) * Math.max(60, dh * 5); }
+    // the grid ends where the column lines stop
+    let gb = yEnd; { const last = Math.round(rows[nw - 1] + dh + 6); let quiet = 0, seen = 0;
+      for (let y = last; y < yEnd; y++) {
+        let n = 0; for (let k = 1; k <= 6; k++) { const x = Math.round(gx0 + k * cw); if (x < 3 || x > W - 4) continue; const l = Math.min(lum(x - 1, y), lum(x, y), lum(x + 1, y)), side = (lum(x - 4, y) + lum(x + 4, y)) / 2; if (side - l > 6) n++; }
+        if (n >= 4) { quiet = 0; seen++; } else if (++quiet >= 8 && seen >= 6) { gb = y - 8; break; }
+      } }
+    // header bands: shipping total, batches, legend, empty-month note
+    const hlines = lines(tb[1] + 2, hb[0] - 2), cells = [];
+    for (let wi = 0; wi < nw; wi++) {
+      const yA = Math.round(rows[wi] + dh + 5), yB = Math.round(wi + 1 < nw ? rows[wi + 1] - 4 : gb);
+      for (let c = 0; c < 7; c++) { const day = wi * 7 + c - lead + 1; if (day < 1 || day > nd || yB - yA < 8) continue; cells.push({ date: `${ym}-${pad2(day)}`, x0: Math.round(gx0 + c * cw + 3), x1: Math.round(gx0 + (c + 1) * cw - 3), yA, yB }); }
+    }
+    const segs = [];
+    for (const cel of cells) {
+      const { x0, x1, yA, yB } = cel, n = yB - yA, wv = x1 - x0;
+      const ob = new Uint8Array(n), gr = new Uint8Array(n), ink = new Uint8Array(n);
+      for (let y = 0; y < n; y++) { let o = 0, g2 = 0, k = 0; for (let x = x0; x < x1; x++) { const i = ((yA + y) * W + x) * 4, r = P[i], g = P[i + 1], b = P[i + 2]; if (ORANGE(r, g, b)) o++; if (GREEN(r, g, b)) g2++; if (0.299 * r + 0.587 * g + 0.114 * b < 175) k++; } ob[y] = o / wv > 0.3; gr[y] = g2 / wv > 0.3; ink[y] = k / wv > 0.004; }
+      let y = 0;
+      while (y < n) {
+        if (ob[y] || gr[y]) { const kind = ob[y] ? 'inspect' : 'ship'; let y2 = y, gap = 0; while (y2 < n && gap <= 4) { if (ob[y2] || gr[y2]) gap = 0; else gap++; y2++; } y2 -= gap; if (y2 - y > 10) segs.push({ cel, kind, a: yA + y, b: yA + y2 }); y = y2; continue; }
+        if (ink[y]) { let y2 = y; while (y2 < n && ink[y2] && !ob[y2] && !gr[y2]) y2++; if (y2 - y >= 6) { let green = 0; for (let yy2 = yA + y; yy2 < yA + y2; yy2++) for (let x = x0; x < x0 + wv * 0.45; x++) { const i = (yy2 * W + x) * 4; if (GREEN(P[i], P[i + 1], P[i + 2])) green++; } segs.push({ cel, kind: 'task', a: yA + y, b: yA + y2, st: green > 6 ? '排' : '拟' }); } y = y2; continue; }
+        y++;
+      }
+    }
+    jobs += 1 + hlines.length + segs.length + 2;
+    for (const l of hlines) {
+      const txt = await ocrLine(ocr, src, [gx0, l.y0 - 4, gx1, l.y1 + 4], { scale: 2 }); tick();
+      if (/计划出货/.test(txt)) { const q = (txt.split('出货')[1] || '').match(/\d[\d,]*/); let v = q ? q[0] : ''; if (/^\d{1,3}(,\d{3})+\d$/.test(v)) v = v.slice(0, -1); res.shipStated[ym] = v ? +v.replace(/,/g, '') : 0; }
+      else if (/(^|\s)[A-Z]\s*\S{0,3}批/.test(txt) || /批.*批/.test(txt)) {
+        // one band per batch: read each coloured part on its own
+        const yS = Math.max(0, Math.round(l.y0 - 5)), parts = []; let s0 = gx0, prev = null;
+        for (let x = gx0; x <= gx1; x++) { const c = x <= gx1 ? st.at(x, yS) : null; if (prev && (!c || Math.abs(c[0] - prev[0]) + Math.abs(c[1] - prev[1]) + Math.abs(c[2] - prev[2]) > 10)) { if (x - s0 > (gx1 - gx0) * 0.15) parts.push([s0, x]); s0 = x; } prev = c; }
+        if (gx1 - s0 > (gx1 - gx0) * 0.15) parts.push([s0, gx1]);
+        const junk = t => (t.match(/[A-Za-z]{2,}/g) || []).length * 3 - (t.match(/[\u4e00-\u9fff]/g) || []).length * 0.2;
+        const texts = []; if (parts.length >= 2) { for (const [a, b] of parts) { const t1 = await ocrLine(ocr, src, [a, l.y0 - 4, b, l.y1 + 4], { scale: 3 }); const t2 = ocrNorm(l.ws.filter(w => w.x + w.w / 2 > a && w.x + w.w / 2 < b).sort((x, y) => x.x - y.x).map(w => w.t).join(' ')); texts.push(junk(t2) < junk(t1) && /^[A-Z]/.test(t2) ? t2 : t1); } } else texts.push(txt);
+        for (const t of texts) for (const mb of t.matchAll(new RegExp('(?:^|\\s)([A-Z])\\s*([' + OCR_CJK + ']{0,4}批|[' + OCR_CJK + ']{1,4})\\s*(\\d[\\d,]*)\\s*套?\\s*(.*?)(?=\\s[A-Z]\\s*[' + OCR_CJK + ']{0,4}批|$)', 'g'))) {
+          let q = mb[3]; if (/^\d{1,3}(,\d{3})+\d$/.test(q)) q = q.slice(0, -1);
+          if (!res.batches.some(b => b.k === mb[1])) res.batches.push({ k: mb[1], name: mb[2], qty: +q.replace(/,/g, '') || '', note: ocrNorm(mb[4]).replace(/^[,，、\s]+/, '') });
+        }
+      }
+      else if (/工厂排期|建议排程|跨日工序|目标日期/.test(txt)) { if (!res.legend && !/[A-Za-z]{3,}/.test(txt)) res.legend = txt; }
+      else if (/暂无/.test(txt)) res.notes.push({ ym, text: txt });
+    }
+    // each line of each day
+    for (const sg of segs) {
+      const { cel } = sg;
+      if (sg.kind !== 'task') {
+        const t = await ocrLine(ocr, src, [cel.x0, sg.a, cel.x1, sg.b], { invert: sg.kind === 'ship' }); tick();
+        const mb = t.match(/([A-Z](?:\s*\+\s*[A-Z])*)/), qs = t.match(/\d[\d,]{2,}/g) || [];
+        let q = qs.length ? qs[qs.length - 1] : ''; if (/^\d{1,3}(,\d{3})+\d$/.test(q)) q = q.slice(0, -1);
+        plan.push({ b: mb ? mb[1].replace(/\s/g, '') : '', type: sg.kind, st: '排', name: '', start: cel.date, end: '', qty: q ? +q.replace(/,/g, '') : '', mark: '', raw: t });
+      } else {
+        const box = [cel.x0, sg.a - 2, cel.x1, sg.b + 2];
+        const pre = ocrNorm(full.filter(w => w.x + w.w / 2 > box[0] && w.x + w.w / 2 < box[2] && w.y + w.h / 2 > box[1] && w.y + w.h / 2 < box[3]).sort((a, b) => a.x - b.x).map(w => w.t).join(' '));
+        plan.push({ type: 'task', st: sg.st, start: cel.date, raw: pre, box, pre: true });
+      }
+    }
+    // notes under the grid
+    if (gb < yEnd - 8) {
+      // note lines straight from the picture: rows with ink across the width, one strip per line
+      const nl = []; let y = Math.max(0, gb), on2 = -1, quiet = 0;
+      for (; y < yEnd && nl.length < 14; y++) {
+        let k = 0, m = 0; for (let x = gx0; x < gx1; x += 2) { m++; if (lum(x, y) < 160) k++; }
+        const ink2 = k / m > 0.003;
+        if (ink2) { quiet = 0; if (on2 < 0) on2 = y; } else { if (on2 >= 0 && y - on2 >= 6) nl.push({ y0: on2, y1: y }); on2 = -1; if (++quiet > 60 && nl.length) break; }
+      }
+      const txts = []; jobs += nl.length;
+      for (const l of nl) { const t = await ocrLine(ocr, src, [gx0, l.y0 - 3, gx1, l.y1 + 3], { scale: 2.5 }); tick(); if (t.replace(/[^\u4e00-\u9fffA-Za-z0-9]/g, '').length >= 3) txts.push(t); }
+      const merged = []; for (const t of txts.filter(Boolean)) { if (merged.length && !/^\d+\s*[.、．]/.test(t) && !/^[¹²³⁴⁵*※]/.test(t)) merged[merged.length - 1] += t; else merged.push(t); }
+      if (merged.length) res.notes.push({ ym, text: merged.join('\n') });
+    }
+  }
+  // words → tasks, with a second look at lines that did not come out clean
+  const vocab = [...new Set([...OCR_STEPS, ...S.plans.flatMap(p => (p.tasks || []).map(t => t.name)).filter(Boolean)])];
+  const snap = nm => { const base = nm.replace(/（[^）]*）$/, ''), tail = nm.slice(base.length); let best = '', d = 99; for (const v of vocab) { const k = levD(base.toUpperCase(), v.toUpperCase()); if (k < d) { d = k; best = v; } } return d <= Math.max(1, Math.floor(best.length / 3)) ? { name: best + tail, d } : { name: nm, d }; };
+  const parseTask = (t, start) => {
+    const m = t.match(/^([A-Z](?:\s*[+＋]\s*[A-Z])*)\s*(.*)$/); if (!m) return null;
+    const b = m[1].replace(/＋/g, '+').replace(/\s/g, ''); let rest = m[2];
+    if (/^✓/.test(rest)) return Object.assign(parseTask(`${b} ${rest.slice(1)}`, start) || {}, { done: true });
+    rest = rest.replace(new RegExp('^(排|拟|(?![A-Z]{2,}/)[^\\s' + OCR_CJK + ']{1,3}|[' + OCR_CJK + '])\\s+(?=\\S)'), '').replace(/^(排|拟)(?=[一-鿿A-Z])/, '');
+    let end = ''; const me = rest.match(/\s*(?:至|到|Z|2)\s*(\d{1,2})\s*\/\s*(\d{1,2})\s*$/);
+    if (me) { const mo = +me[1], dd = +me[2], y0 = +start.slice(0, 4), cand = `${mo < +start.slice(5, 7) - 6 ? y0 + 1 : y0}-${pad2(mo)}-${pad2(dd)}`; if (mo >= 1 && mo <= 12 && dd >= 1 && dd <= 31 && isYmd(cand) && cand > start) { end = cand; rest = rest.slice(0, me.index); } }
+    let qty = ''; const mq = rest.match(/\s*((?:约|%|4)?\s*\d[\d,]{2,})\s*$/);
+    if (mq) { let q = mq[1].replace(/\s/g, ''); if (/^[%4]\d,\d{3}$/.test(q)) q = '约' + q.slice(1); qty = q; rest = rest.slice(0, mq.index); }
+    rest = rest.replace(/[\s£€$|®©™'"`~^_]+$/, '');
+    let mark = ''; const mk = rest.match(/([¹²³⁴⁵])$/); if (mk) { mark = mk[1]; rest = rest.slice(0, -1); }
+    const sn = snap(ocrNorm(rest));
+    return { b, name: sn.name, end, qty, mark, d: sn.d };
+  };
+  const out = [];
+  const clean = p => p && p.d === 0 && p.name && (!p.qty || /^约?\d{1,3}(,\d{3})*$/.test(p.qty));
+  const better = (a, b) => !a ? b : !b ? a : (b.d < a.d || (b.d === a.d && clean(b) && !clean(a))) ? b : a;
+  for (const t of plan) {
+    if (t.type !== 'task') { out.push(t); continue; }
+    let p = t.pre ? parseTask(t.raw, t.start) : null;
+    if (!clean(p)) { const t1 = await ocrLine(ocr, src, t.box); tick(); const p1 = parseTask(t1, t.start); if (p1) t.raw = t1; p = better(p1, p); }
+    for (const o of [{ psm: 13 }, { mode: 'stretch' }]) {
+      if (clean(p)) break;
+      const prevMode = window.__OCR_MODE; if (o.mode) window.__OCR_MODE = o.mode;
+      try { const t2 = await ocrLine(ocr, src, t.box, { psm: o.psm || 7 }); const p2 = parseTask(t2, t.start); const nb = better(p, p2); if (nb !== p) { p = nb; t.raw2 = t2; } } finally { window.__OCR_MODE = prevMode; }
+    }
+    if (!p || !p.name || (p.name.length < 2 && !/[\u4e00-\u9fff]/.test(p.name))) continue;
+    out.push({ b: p.b, type: 'task', st: p.done ? 'done' : t.st, name: p.name, start: t.start, end: p.end, qty: p.qty, mark: p.mark, raw: t.raw, unsure: p.d > Math.max(1, Math.floor((p.name || '').length / 3)) || !p.name });
+  }
+  // same-name test lines: a stray digit in front of the usual quantity is the 约 mark
+  const byName = {}; out.forEach(t => { if (t.type === 'task' && t.qty) (byName[t.name] = byName[t.name] || []).push(t.qty); });
+  out.forEach(t => { const qs = byName[t.name]; if (t.type !== 'task' || !t.qty || !qs || qs.length < 3) return; const cnt = {}; qs.forEach(q => cnt[q] = (cnt[q] || 0) + 1); const mode = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0]; const md = mode.replace(/^约/, ''); if (t.qty !== mode && t.qty.endsWith(md) && cnt[mode] >= 2) t.qty = mode; });
+  // batch codes must be ones the picture uses; a lone letter on a band that belongs to a merged batch (B → B+C)
+  const known = new Set([...res.batches.map(b => b.k), ...out.filter(t => t.type === 'task').map(t => t.b)].filter(Boolean));
+  const combos = [...known].filter(k => k.includes('+'));
+  for (const t of out) {
+    if (t.type === 'task' && t.b && !t.b.includes('+')) { const mo = t.start.slice(0, 7); const used = out.some(x => x !== t && x.type === 'task' && x.b === t.b && x.start.slice(0, 7) === mo); const cb = combos.find(k => k.split('+').includes(t.b) && out.some(x => x.type === 'task' && x.b === k && x.start.slice(0, 7) === mo)); if (!used && cb) t.b = cb; }
+  }
+  for (const t of out) {
+    if (t.type !== 'task' && t.b && !t.b.includes('+')) { const mo = t.start.slice(0, 7); const used = out.some(x => x.type === 'task' && x.b === t.b && x.start.slice(0, 7) === mo); const cb = combos.find(k => k.split('+').includes(t.b) && out.some(x => x.type === 'task' && x.b === k && x.start.slice(0, 7) === mo)); if (!used && cb) t.b = cb; }
+  }
+  const okB = b => !b || known.has(b) || b.split('+').every(x => res.batches.some(y => y.k === x));
+  // a target printed on two days in a row is one target
+  out.sort((a, b) => a.start.localeCompare(b.start));
+  for (const t of out) {
+    if (!okB(t.b) && res.batches.length) continue;
+    if (t.type === 'task') { res.tasks.push(t); continue; }
+    const prev = [...res.tasks].reverse().find(p => p.type === t.type && p.b === t.b && (p.qty === t.qty || num(p.qty) < 100 || num(t.qty) < 100));
+    if (prev && Math.round((parseYmd(t.start) - parseYmd(prev.end || prev.start)) / 864e5) === 1) { prev.end = t.start; if (num(prev.qty) < 100) prev.qty = t.qty; continue; }
+    res.tasks.push(t);
+  }
+  return res.months.length ? res : null;
+}
+/* any photo → text (and a schedule when the picture is a production calendar) */
+async function readPhoto(file, say) {
+  const src = await imgCanvas(file);
+  OCR_SAY = m => { if (!say) return; if (/load|initializ/i.test(m.status)) say(`사진 읽기 준비 중${m.progress ? ` ${Math.round(m.progress * 100)}%` : ''} · 처음 한 번은 글자 사전(약 15MB)을 받아요`); };
+  const ocr = await ocrEngine();
+  if (say) say('사진 글자 읽는 중…');
+  const s = src.width < 1500 ? 1.5 : Math.min(1, 2600 / src.width);
+  const big = ocrCrop(src, 0, 0, src.width, src.height, s); const pad = 12;
+  const full = tsvWords(await ocr(big, 3)).map(w => Object.assign(w, { x: (w.x - pad) / s, y: (w.y - pad) / s, w: w.w / s, h: w.h / s }));
+  const text = wordLines(full).map(l => l.t).join('\n');
+  const st = schedStructure(src);
+  if (st.secs.length) { const sc = await readSchedule(src, st, full, ocr, say); if (sc && (sc.tasks.length || sc.months.length)) return { text, schedule: sc }; }
+  return { text, schedule: null };
+}
+/* the Claude page cannot run the reader; Claude reads the calendar there */
+async function scheduleByClaude(file) {
+  const img = await toJpeg(file);
+  const prompt = `This image is a factory production/development calendar (Chinese). Read every month in it and return JSON only:
+{"name": product/project name in the title bar (e.g. "FH8333 + SC235HAI"), "title": the words after it (e.g. "生产日历"),
+ "months": ["YYYY-MM", ...], "restDays": weekday indexes marked 休 (0=Monday … 6=Sunday),
+ "batches": [{"k":"A","name":"在制批","qty":15000,"note":"11/13 出货"}],
+ "notes": [{"ym":"YYYY-MM","text":"numbered footnotes under that month, one per line"}],
+ "shipStated": {"YYYY-MM": number in 本月计划出货 or 0},
+ "tasks": [{"b":"A" or "B+C","type":"task"|"inspect"|"ship","st":"排"|"拟","name":"SMT/AOI","start":"YYYY-MM-DD","end":"YYYY-MM-DD or empty","qty":"约3,000" for tasks or a number for 验货/出货,"mark":"¹ or empty"}]}
+Rules: a coloured 验货 band is type inspect, a 出货 band is type ship; when the same band appears on consecutive days give one item with start and end. A line "A 拟 SMT/AOI 至11/9" written in the 5th is start 5th, end 9th. Keep Chinese text exactly.`;
+  const r = await SAMPLE.json(prompt, { images: [img] });
+  if (!r || !Array.isArray(r.tasks)) throw new Error('read');
+  r.batches = Array.isArray(r.batches) ? r.batches : []; r.notes = Array.isArray(r.notes) ? r.notes : []; r.months = Array.isArray(r.months) ? r.months : [...new Set(r.tasks.map(t => String(t.start || '').slice(0, 7)))];
+  r.tasks = r.tasks.filter(t => isYmd(t.start)).map(t => ({ b: String(t.b || '').toUpperCase().replace(/\s/g, ''), type: ['inspect', 'ship', 'mile'].includes(t.type) ? t.type : 'task', st: t.st === '排' ? '排' : t.st === 'done' ? 'done' : '拟', name: String(t.name || ''), start: t.start, end: isYmd(t.end) && t.end > t.start ? t.end : '', qty: t.qty ?? '', mark: String(t.mark || '') }));
+  return r;
+}
+
+/* ---------- preview: check what was read, then put it into a schedule ---------- */
+function openPlanPhoto(res) {
+  const months = [...new Set(res.months)].sort();
+  const norm = s => String(s || '').toUpperCase().replace(/[\s+·]/g, '');
+  const target = S.plans.find(p => norm(p.name) === norm(res.name)) || S.plans.find(p => res.name && (norm(p.name).includes(norm(res.name)) || norm(res.name).includes(norm(p.name)))) || null;
+  const unit = target ? plUnit(target) : '套';
+  const tmp = { batches: res.batches.length ? res.batches : (target ? target.batches : []), unit };
+  const shipRead = {}; res.tasks.forEach(t => { if (t.type === 'ship') shipRead[t.start.slice(0, 7)] = (shipRead[t.start.slice(0, 7)] || 0) + num(t.qty); });
+  const checks = months.map(ym => { const a = res.shipStated[ym], b = shipRead[ym] || 0; return a === undefined ? '' : `<li>${ymLabel(ym)} 本月计划出货: 사진 ${a ? a.toLocaleString('en-US') : '暂无'} · 읽은 出货 합계 ${b ? b.toLocaleString('en-US') : '0'} ${a === b ? '<b style="color:var(--good)">일치</b>' : '<b style="color:var(--crit)">다름 · 확인해 주세요</b>'}</li>`; }).join('');
+  const nUnsure = res.tasks.filter(t => t.unsure).length;
+  const byDay = {}; res.tasks.forEach((t, i) => (byDay[t.start] = byDay[t.start] || []).push([t, i]));
+  const body = `<div class="banner info"><span><b>${esc(res.name || '일정표')}</b> ${esc(res.title || '')} · ${months.map(ymLabel).join(', ')} · 작업 ${res.tasks.filter(t => t.type === 'task').length}개 · 验货 ${res.tasks.filter(t => t.type === 'inspect').length} · 出货 ${res.tasks.filter(t => t.type === 'ship').length}</span></div>
+    ${checks ? `<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.7">${checks}</ul>` : ''}
+    ${nUnsure ? `<div class="banner"><span>글자가 흐려 확실하지 않은 줄이 ${nUnsure}개 있어요(‘확인’ 표시). 저장한 뒤 달력에서 눌러 고칠 수 있어요.</span></div>` : ''}
+    <div class="f"><span>어디에 넣을까요?</span>${radios('pp-mode', target ? 'replace' : 'new', [...(target ? [['replace', `‘${target.name}’ 일정의 ${months.map(m => +m.slice(5) + '월').join('·')}을 사진대로 바꾸기`]] : []), ['new', '새 일정으로 만들기']])}</div>
+    ${res.batches.length ? `<label class="check"><input type="checkbox" id="pp-bat" checked>배치 정보도 사진대로 (${res.batches.map(b => `${esc(b.k)} ${esc(b.name || '')} ${esc(qtyStr(b.qty, unit))}${b.note ? ' · ' + esc(b.note) : ''}`).join(' / ')})</label>` : ''}
+    ${res.notes.length ? `<label class="check"><input type="checkbox" id="pp-notes" checked>달 메모(각주)도 사진대로</label>` : ''}
+    <div class="list" style="max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:var(--r-sm)">${Object.keys(byDay).sort().map(d => `<div class="day-h">${fmtD(d, true)}</div>${byDay[d].map(([t, i]) => `<label class="row" style="cursor:pointer;justify-content:flex-start;gap:12px;text-align:left"><input type="checkbox" data-pp="${i}" checked style="width:18px;height:18px;accent-color:var(--accent);flex:none"><div style="min-width:0;flex:1;text-align:left"><div class="row-t" style="justify-content:flex-start">${t.b ? `<span class="bk" style="background:${bCol(tmp, t.b)}">${esc(t.b)}</span>` : ''}${isMile(t) ? `<span class="chip ${t.type === 'ship' ? 'c-good' : 'c-warn'}">${esc(mileWord(t))}</span>` : `<span class="chip ${t.st === '排' ? 'c-steel' : t.st === 'done' ? 'c-good' : ''}">${esc(t.st === 'done' ? '완료' : t.st)}</span>`}<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(isMile(t) ? qtyStr(t.qty, unit) : (t.name || '') + (t.mark || ''))}</span>${t.unsure ? '<span class="chip c-crit">확인</span>' : ''}</div>
+      <div class="row-s">${tEnd(t) !== t.start ? `→ ${fmtD(tEnd(t), true)} ` : ''}${!isMile(t) && t.qty ? esc(qtyStr(t.qty)) : ''}${t.unsure && t.raw ? ` · 읽은 글자: ${esc(t.raw)}` : ''}</div></div></label>`).join('')}`).join('')}</div>`;
+  openSheet('일정표 사진 읽기', body, footStd(false, '일정에 넣기'), {
+    mount: panel => {
+      sheetSave = async () => {
+        const mode = ($('input[name=pp-mode]:checked', panel) || {}).value || 'new';
+        const keep = new Set($$('[data-pp]', panel).filter(i => i.checked).map(i => +i.dataset.pp));
+        const ms = new Set(months);
+        const fresh = res.tasks.filter((t, i) => keep.has(i)).map(t => ({ id: 't' + uid(), b: t.b || '', type: t.type, st: t.st || '拟', name: t.name || '', start: t.start, end: t.end || '', qty: t.qty ?? '', note: '', mark: t.mark || '' }));
+        let rec;
+        if (mode === 'replace' && target) { rec = JSON.parse(JSON.stringify(plById(target.id) || target)); rec.tasks = (rec.tasks || []).filter(t => !ms.has(String(t.start).slice(0, 7))).concat(fresh); }
+        else rec = { kind: /开发/.test(res.title || '') ? 'dev' : 'prod', name: res.name || '사진 일정', title: res.title || '生产日历', unit: '套', status: 'active', legend: res.legend && res.legend.length > 10 ? res.legend : PL_LEGEND, restDays: [6], batches: [], tasks: fresh, notes: [] };
+        if (res.restDays) rec.restDays = res.restDays;
+        const bt = $('#pp-bat', panel); if (res.batches.length && (!bt || bt.checked)) { const old = rec.batches || []; rec.batches = res.batches.map(b => Object.assign({}, old.find(o => o.k === b.k) || {}, b)).concat(old.filter(o => !res.batches.some(b => b.k === o.k))); }
+        if (!rec.batches.length) rec.batches = [...new Set(fresh.map(t => t.b).filter(b => b && !/[+&]/.test(b)))].map(k => ({ k, name: '', qty: '' }));
+        const nt = $('#pp-notes', panel); if (res.notes.length && (!nt || nt.checked)) { rec.notes = (rec.notes || []).filter(n => !res.notes.some(r => r.ym === n.ym)).concat(res.notes); }
+        const id = await put('plans', rec); S.planId = id; const ids = plSel().map(p => p.id); if (!ids.includes(id)) plSetSel([...ids, id]);
+        S.planYm = months[0] || S.planYm; S.planDay = ''; toast(`일정에 넣었어요 · ${fresh.length}건`); if (S.route !== 'plan') go('plan'); else render(); return true;
+      };
+    }
+  });
+}
+/* plan page button: picture of a schedule → preview */
+async function planFromPhoto(file) {
+  if (!ocrHere() && !SAMPLE) { toast('이 화면에서는 사진을 읽을 수 없어요.', 'crit'); return; }
+  openSheet('사진 읽는 중', `<div class="busy"><span class="spin" aria-hidden="true"></span><span id="ocr-busy">${ocrHere() ? '사진 읽기 준비 중…' : 'Claude가 일정표를 읽는 중이에요. 30초~1분 걸려요.'}</span></div><small class="muted">일정표 사진은 날짜 칸마다 한 줄씩 읽어서 30초쯤 걸려요. 화면을 켜 둔 채 기다려 주세요.</small>`, '<span class="sp"></span><button type="button" class="btn" data-act="sheet-close">닫기</button>');
+  const say = t => { const el = $('#ocr-busy'); if (el) el.textContent = t; };
+  try {
+    const sc = ocrHere() ? (await readPhoto(file, say)).schedule : await scheduleByClaude(file);
+    if (!$('#ocr-busy')) return;
+    if (sc && sc.tasks.length + sc.months.length) { openPlanPhoto(sc); return; }
+    closeSheet(); toast('이 사진에서 일정표 모양(年·月 머리글과 星期 줄)을 찾지 못했어요.', 'crit');
+  } catch (e) { if (!$('#ocr-busy')) return; closeSheet(); toast(/load/.test(String(e && e.message)) ? '사진 읽기 엔진을 받지 못했어요. 인터넷 연결을 확인해 주세요.' : '사진을 읽지 못했어요.', 'crit'); }
+}
+
 /* ---------- actions for schedule and price pages ---------- */
 Object.assign(ACT, {
   'pl-new': () => openPlanEd(null), 'pl-edit': el => { const pl = plById(el.dataset.id) || plCur(); if (pl) openPlanEd(pl); },
@@ -4852,7 +5242,7 @@ Object.assign(ACT, {
 document.addEventListener('input', e => { if (e.target.id === 'pr-q') { S.prQ = e.target.value; render(); } });
 document.addEventListener('change', e => {
   const ds = e.target.dataset || {};
-  if (ds.plimport || ds.primport) { const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (writeBlocked()) return; (ds.plimport ? plImport : prImport)(f); return; }
+  if (ds.plimport || ds.primport || ds.plphoto) { const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (writeBlocked()) return; (ds.plphoto ? planFromPhoto : ds.plimport ? plImport : prImport)(f); return; }
   if (ds.k === 'desc' && e.target.closest('.items-ed')) prFillItem(e.target);
 });
 
