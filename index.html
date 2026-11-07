@@ -668,7 +668,7 @@ const TPL_DEF = {
   ci: { title: '', remarks: '', showBank: false, showStamp: true, showHs: true },
   pl: { title: '', remarks: '', showBank: false, showStamp: true, showHs: true }
 };
-const DEF_CO = { billDays: 7, poDays: 30, docStyle: 'classic', brand: '', regAddressZh: '', contactZh: '', contactEn: '', telKr: '', legalRep: '', nameKo: '', nameEn: '', bizNo: '', ceoKo: '', ceoEn: '', bizType: '도소매', bizItem: '무역', addressKo: '', addressEn: '', tel: '', email: '', web: '', entity: '법인', hasEmployees: false, alertDays: 3, defCurrency: 'USD', banks: [{ bankName: '', account: '', holder: '', swift: '', bankAddress: '' }], logo: '', stamp: '', tpl: {}, nameZh: '', addressZh: '', baseCur: 'KRW', fx: {}, taxRegion: 'KR', fixed: [] };
+const DEF_CO = { aliases: '', billDays: 7, poDays: 30, docStyle: 'classic', brand: '', regAddressZh: '', contactZh: '', contactEn: '', telKr: '', legalRep: '', nameKo: '', nameEn: '', bizNo: '', ceoKo: '', ceoEn: '', bizType: '도소매', bizItem: '무역', addressKo: '', addressEn: '', tel: '', email: '', web: '', entity: '법인', hasEmployees: false, alertDays: 3, defCurrency: 'USD', banks: [{ bankName: '', account: '', holder: '', swift: '', bankAddress: '' }], logo: '', stamp: '', tpl: {}, nameZh: '', addressZh: '', baseCur: 'KRW', fx: {}, taxRegion: 'KR', fixed: [] };
 const tplOf = t => Object.assign({}, TPL_DEF[t], (S.co.tpl || {})[t] || {});
 
 /* ================= icons ================= */
@@ -703,7 +703,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.06-5';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.07-1';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -956,6 +956,7 @@ function computeAlerts(opts = {}) {
   }
   for (const e of taxEvents()) { const d = dday(e.date); if (d <= Math.max(10, H)) push(d <= 3 ? 'warn' : 'info', `${e.title} ${dlabel(d)}`, `${fmtD(e.date, true)} · ${e.sub}`, d, 'tax', e.title, e.date); else break; }
   for (const x of plMilestones(H, 7)) { const w = mileWord(x.t), what = `${x.pl.name || ''} · ${tText(x.pl, x.t)}`; if (x.d < 0) push('crit', `${w} 예정일 지남 · 끝났는지 확인`, what, x.d, 'plan', x.pl.id + '~' + x.t.id, x.t.start); else push(x.d <= 1 ? 'warn' : 'info', `${w} ${dlabel(x.d)}`, what, x.d, 'plan', x.pl.id + '~' + x.t.id, x.t.start); }
+  for (const pt of S.partners) if (pt.name && oursHit(pt.name, true) >= 0.8) push('warn', '우리 회사가 거래처 목록에 있어요', pt.name, 98, 'self-pt', pt.id, '');
   const unc = S.txns.filter(t => !t.category).length;
   if (unc) push('info', `분류 안 된 입출금 ${unc}건`, '눌러서 바로 분류하면 월간 리포트가 정확해져요', 99, 'unc', '', '');
   const rank = { crit: 0, warn: 1, info: 2 };
@@ -1005,6 +1006,11 @@ function openAlert(key) {
     const { pl, t } = plTaskOf(ref);
     info = kv([['일정', esc(`${pl.name || ''} ${pl.title || ''}`)], ['내용', esc(tText(pl, t))], ['목표일', fmtDF(t.start) + (tEnd(t) !== t.start ? ' ~ ' + fmtDF(tEnd(t)) : '')], ['공장', esc(pl.partnerName || '')], ['메모', esc(t.note || '')]]);
     main = B(t.type === 'ship' ? '출하 끝났어요' : t.type === 'inspect' ? '验货 끝났어요' : '끝났어요', 'data-aact="plan-done"', 'btn-p') + B('달력에서 보기', `data-act="pl-open" data-id="${esc(pl.id)}" data-d="${esc(t.start)}"`) + (t.type === 'ship' ? B('선적 등록', 'data-act="new-ship"') : '');
+  } else if (kind === 'self-pt' && ptById(ref)) {
+    const pt = ptById(ref);
+    info = kv([['거래처 이름', esc(pt.name)], ['왜', '우리 회사 이름과 같거나 거의 같아요. 서류·사진을 읽을 때 잘못 들어갔을 수 있어요. 거래처를 열어 ‘정보 수정 → 삭제’로 지울 수 있어요.']]);
+    main = B('거래처 열기', `data-act="open-partner" data-id="${esc(pt.id)}"`, 'btn-p');
+    doneLabel = '다른 회사가 맞아요 · 알림 끄기';
   } else if (kind === 'tax') {
     const e = taxEvents().find(x => x.title === ref && x.date === date);
     info = kv([['일정', esc(ref)], ['기한', fmtDF(date)], ['내용', esc(e ? e.sub : '')]]);
@@ -1194,7 +1200,7 @@ function guessCategory(t) {
   const s = `${t.counterparty || ''} ${t.memo || ''} ${t.raw || ''}`;
   const cp = String(t.counterparty || '').replace(/\s/g, '').toLowerCase();
   const own = [S.co.nameZh, S.co.nameKo, S.co.nameEn].filter(Boolean).map(x => x.replace(/\s/g, '').toLowerCase());
-  if (cp && own.some(o => cp === o || (o.length >= 6 && cp.includes(o)))) return 'transfer';
+  if (cp && (own.some(o => cp === o || (o.length >= 6 && cp.includes(o))) || isOurs(t.counterparty))) return 'transfer';
   if (/冲正|撤销|退汇|정정|취소/.test(s)) return 'reversal';
   if (t.dir === 'out' && !p && /收费|手续费|汇费|工本费|年费|수수료/.test(s) && !/货款|运费/.test(s)) return 'bankfee';
   if (t.dir === 'in') {
@@ -1223,6 +1229,9 @@ function matchPartner(name) {
     const keys = [p.name, ...(String(p.alias || '').split(','))].map(k => String(k || '').replace(/\s|\(주\)|㈜|주식회사|CO\.?|LTD\.?|INC\.?|,|\./gi, '').toLowerCase()).filter(k => k.length >= 2);
     if (keys.some(k => n.includes(k) || k.includes(n))) return p;
   }
+  // a name the camera misread by a character or two
+  const ck = coKey(name);
+  if (ck.length >= 6) for (const p of S.partners) for (const key of [p.name, ...String(p.alias || '').split(',')].map(coKey)) if (key.length >= 6 && Math.abs(key.length - ck.length) <= 2 && levD(ck, key) <= (ck.length >= 10 ? 2 : 1)) return p;
   return null;
 }
 function guessPo(t) {
@@ -1679,7 +1688,7 @@ function viewCompany() {
       ${c === 'CNY' ? '' : F('은행 주소', inp(k('bankAddress'), b.bankAddress), 'full')}`; };
     body = `<section class="panel"><div class="panel-b" style="padding-top:16px"><form id="co-form" class="fgrid" autocomplete="off">
       <div class="fsec full">사업자 정보</div>
-      ${F('상호 (한글)', inp('nameKo', co.nameKo, { ph: '(주)한빛무역' }))}${F('상호 (영문)', inp('nameEn', co.nameEn, { ph: 'HANBIT TRADING CO., LTD.' }))}${F('상호 (중문)', inp('nameZh', co.nameZh, { ph: '上海韩光贸易有限公司' }), 'full', '중문 서류·对账单에 써요')}
+      ${F('상호 (한글)', inp('nameKo', co.nameKo, { ph: '(주)한빛무역' }))}${F('상호 (영문)', inp('nameEn', co.nameEn, { ph: 'HANBIT TRADING CO., LTD.' }))}${F('상호 (중문)', inp('nameZh', co.nameZh, { ph: '上海韩光贸易有限公司' }), 'full', '중문 서류·对账单에 써요')}${F('우리 회사 다른 이름 (인식용)', inp('aliases', co.aliases, { ph: '艾沃瑞, AVORY KOREA' }), 'full', '서류·사진에서 이 이름이 보이면 우리 회사로 알아보고 거래처로 넣지 않아요. 쉼표로 여러 개')}
       ${F('사업자등록번호', inp('bizNo', co.bizNo, { ph: '123-45-67890', mono: 1 }))}${F('사업자 구분', sel('entity', co.entity, [['법인', '법인'], ['개인', '개인사업자']]))}
       ${F('대표자 (한글)', inp('ceoKo', co.ceoKo))}${F('대표자 (영문)', inp('ceoEn', co.ceoEn))}
       ${F('업태', inp('bizType', co.bizType))}${F('종목', inp('bizItem', co.bizItem))}
@@ -2007,18 +2016,41 @@ function cellDate(v) {
   if (/^\d{5}(\.\d+)?$/.test(s)) { const d = new Date(Math.round((Number(s) - 25569) * 864e5)); return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`; }
   return '';
 }
-const cellNum = v => { const n = Number(String(v ?? '').replace(/[,\s원₩]/g, '')); return Number.isFinite(n) ? n : 0; };
+const cellNum = v => { let s = String(v ?? '').trim(); let neg = false; if (/^\(.*\)$/.test(s)) { neg = true; s = s.slice(1, -1); } if (/^[^\d\-]*[\d,.]+\s*-$/.test(s)) { neg = true; s = s.replace(/-\s*$/, ''); } const n = Number(s.replace(/[,\s원₩¥￥$]|RMB|CNY|USD|元/gi, '')); return Number.isFinite(n) ? (neg ? -Math.abs(n) : n) : 0; };
+/* a CSV saved by a Chinese (GBK) or Korean (EUC-KR) bank site */
+function decodeText(buf) {
+  const u = new TextDecoder('utf-8').decode(buf); if (!u.includes('�')) return u.replace(/^﻿/, '');
+  const score = s => (s.match(/[交易日期金额余额摘要账户收入支出借贷币种对方]/g) || []).length * 3 + (s.match(/[거래일자입출금잔액적요내용]/g) || []).length * 3 - (s.match(/�/g) || []).length * 5;
+  const c = ['gb18030', 'euc-kr'].map(e => { try { return new TextDecoder(e).decode(buf); } catch (er) { return ''; } }).filter(Boolean);
+  return c.sort((a, b) => score(b) - score(a))[0] || u;
+}
+/* header cells compared without spaces, brackets ([Transaction Date], (元)) or colons */
+const hdrCell = c => zhs(String(c ?? '')).replace(/\s/g, '').replace(/[\[［(（【][^\]］)）】]*[\]］)）】]/g, '').replace(/[:：*]/g, '');
 function mapSheet(rows) {
   for (let i = 0; i < Math.min(rows.length, 40); i++) {
-    const r = rows[i].map(c => String(c ?? '').replace(/\s/g, ''));
+    const r = (rows[i] || []).map(hdrCell);
     const find = re => r.findIndex(c => re.test(c));
-    const dateC = find(/거래일|거래일시|거래일자|^일자|^날짜|^일시|交易日期|交易时间|记账日期|入账日期|^日期/);
-    const inC = find(/^(입금|맡기신|입금액|입금금액|받은금액|입금\(원\)|收入|收入金额|贷方|贷方金额|贷方发生额|存入)/);
-    const outC = find(/^(출금|찾으신|출금액|출금금액|지급|지급액|출금\(원\)|보낸금액|支出|支出金额|借方|借方金额|借方发生额|支取)/);
-    const amtC = find(/^(거래금액|금액|交易金额|发生额|金额)$/); const typeC = find(/^(구분|입출금구분|거래구분|입출금|收支|借贷|借贷标志|收支类型)$/);
+    const dateC = [/^(交易日期|记账日期|入账日期|交易日|会计日期|거래일자|거래일|거래일시)$/, /交易日期|记账日期|入账日期|交易时间|^日期|^날짜|^일자|^일시|거래일|^DATE|TRANSACTIONDATE/i].map(find).find(x => x >= 0) ?? -1;
+    const inC = find(/^(입금|맡기신|입금액|입금금액|받은금액|收入|收入金额|贷方|贷方金额|贷方发生额|存入|存入金额|转入|转入金额|入账金额|收款金额|CREDIT|DEPOSIT)/i);
+    const outC = find(/^(출금|찾으신|출금액|출금금액|지급|지급액|보낸금액|支出|支出金额|借方|借方金额|借方发生额|支取|支取金额|转出|转出金额|出账金额|付款金额|DEBIT|WITHDRAWAL)/i);
+    const amtC = find(/^(거래금액|금액|交易金额|发生额|金额|交易额|AMOUNT|TRADEAMOUNT)$/i);
+    const typeC = find(/^(구분|입출금구분|거래구분|입출금|收支|借贷|借\/贷|借贷标志|借贷方向|收支方向|交易方向|方向|收\/支|收支类型)$/);
     if (dateC < 0 || !((inC >= 0 && outC >= 0) || amtC >= 0)) continue;
-    const descC = r.map((c, j) => /적요|내용|기재내용|거래내용|보낸분|받는분|의뢰인|수취인|상대|메모|비고|摘要|对方|用途|附言|备注|交易对手/.test(c) ? j : -1).filter(j => j >= 0 && j !== inC && j !== outC);
-    return { header: i, dateC, inC, outC, amtC, typeC, balC: find(/잔액|余额/), timeC: find(/^(시간|거래시간|거래시각|交易时间|时间)$/), descC, bankGuess: '' };
+    const descC = r.map((c, j) => /적요|내용|기재내용|거래내용|메모|비고|摘要|用途|附言|备注|交易类型|业务类型|业务摘要|交易摘要|REMARK|MEMO|PURPOSE/i.test(c) ? j : -1);
+    const cpC = find(/^(对方户名|对方名称|对方账户名称|对方账户名|对方单位名称|对方单位|交易对手名称|交易对手|收\/付方名称|对方户名称|상대방|상대계좌명|받는분|보낸분|입금자명|의뢰인|수취인|COUNTERPARTY)/i);
+    const payerC = find(/^(付款人|付款方|付款单位|付方)(名称|户名|全称)?$|^PAYER'?S?NAME$|^PAYER$/i), payeeC = find(/^(收款人|收款方|收款单位|收方)(名称|户名|全称)?$|^PAYEE'?S?NAME$|^PAYEE$/i);
+    const payerAcctC = find(/^(付款人|付款方|付方)(账号|帐号|账户)$/), payeeAcctC = find(/^(收款人|收款方|收方)(账号|帐号|账户)$/);
+    const old = [/적요|내용|기재내용|거래내용|보낸분|받는분|의뢰인|수취인|상대|메모|비고|摘要|对方|用途|附言|备注|交易对手/];
+    // what is printed above the table: our account number, currency, bank
+    const above = rows.slice(0, i).map(x => (x || []).join(' ')).join('\n');
+    const acct = (above.match(/(?:账号|帳號|账户|卡号|계좌번호|계좌|ACCOUNT\s*NO\.?)\s*[:：]?\s*([\d\- ]{8,30}\d)/i) || [])[1];
+    const curW = (above.match(/(?:币种|货币|통화)\s*[:：]?\s*(人民币|美元|港币|港元|欧元|日元|韩元|CNY|RMB|USD|HKD|EUR|JPY|KRW)/i) || [])[1];
+    const bankW = (above.match(/(中国银行|工商银行|建设银行|农业银行|招商银行|交通银行|浦发银行|平安银行|中信银行|兴业银行|民生银行|光大银行|华夏银行|广发银行|邮储银行|[가-힣]{2,6}은행)/) || [])[1];
+    const skip = [inC, outC, amtC, cpC, payerC, payeeC, dateC];
+    const rawHead = (rows[i] || []).join(' ');
+    const curHint = /\(원\)|（원）|₩|[가-힣]{2}/.test(rawHead) ? 'KRW' : /美元|USD/i.test(rawHead) ? 'USD' : /人民币|\(元\)|（元）|RMB|CNY/i.test(rawHead) ? 'CNY' : '';
+    return { header: i, dateC, inC, outC, amtC, typeC, balC: find(/잔액|余额|BALANCE/i), timeC: find(/^(시간|거래시간|거래시각|交易时间|时间|交易时间戳)$/), curC: find(/^(币种|币别|货币|交易货币|货币类型|통화|CURRENCY)$/i), cpC, payerC, payeeC, cpAcctC: find(/^(对方账号|对方账户|收\/付方帐号|收\/付方账号|对方卡号|상대계좌)/),
+      descC: (cpC >= 0 || payerC >= 0 || payeeC >= 0 ? descC : r.map((c, j) => old[0].test(c) ? j : -1)).filter(j => j >= 0 && !skip.includes(j)), acct: acct ? acct.replace(/\D/g, '') : '', cur: curW ? normCur(CUR_WORD[curW] || curW) : curHint, bankGuess: bankW || '', payerAcctC, payeeAcctC };
   }
   return null;
 }
@@ -2028,17 +2060,106 @@ function rowsToTxns(rows, map, bank) {
     if (!r || !r.length) continue;
     const date = cellDate(r[map.dateC]); if (!date) continue;
     let dir = '', amount = 0;
-    if (map.inC >= 0 && map.outC >= 0) { const a = cellNum(r[map.inC]), b = cellNum(r[map.outC]); if (a > 0) { dir = 'in'; amount = a; } else if (b > 0) { dir = 'out'; amount = b; } }
-    else { const ty = map.typeC >= 0 ? String(r[map.typeC] ?? '') : ''; const raw = cellNum(r[map.amtC]); amount = Math.abs(raw); dir = ty ? (/입금|맡기신|IN|收|贷|入/i.test(ty) ? 'in' : /출금|지급|찾으신|OUT|支|借|出/i.test(ty) ? 'out' : '') : raw < 0 ? 'out' : raw > 0 ? 'in' : ''; }
+    if (map.inC >= 0 && map.outC >= 0) { const a = cellNum(r[map.inC]), b = cellNum(r[map.outC]); if (a > 0) { dir = 'in'; amount = a; } else if (b > 0) { dir = 'out'; amount = b; } else if (b < 0) { dir = 'in'; amount = -b; } else if (a < 0) { dir = 'out'; amount = -a; } }
+    else { const ty = map.typeC >= 0 ? String(r[map.typeC] ?? '') : ''; const raw = cellNum(r[map.amtC]); amount = Math.abs(raw); dir = ty ? (/입금|맡기신|IN|收|贷|入|CR/i.test(ty) ? 'in' : /출금|지급|찾으신|OUT|支|借|出|DR/i.test(ty) ? 'out' : '') : raw < 0 ? 'out' : raw > 0 ? 'in' : ''; }
     if (!dir || !(amount > 0)) continue;
     let time = ''; const tsrc = String(map.timeC >= 0 ? r[map.timeC] : r[map.dateC] ?? ''); const tm = tsrc.match(/(\d{1,2}):(\d{2})/); if (tm) time = pad2(tm[1]) + ':' + tm[2];
-    const desc = map.descC.map(j => String(r[j] ?? '').trim()).filter(Boolean);
-    const uniq = [...new Set(desc)];
-    const t = { dir, amount, currency: BASE(), date, time, bank, account: '', counterparty: (uniq[0] || '').slice(0, 40), memo: uniq.slice(1).join(' / ').slice(0, 80), balance: map.balC >= 0 && String(r[map.balC] ?? '').trim() !== '' ? cellNum(r[map.balC]) : null, source: 'import' };
+    const cell = j => j >= 0 ? String(r[j] ?? '').trim() : '';
+    // the other side: its own column, or whichever of payer / payee is not us
+    let cp = cell(map.cpC);
+    let cpAcct = cell(map.cpAcctC);
+    if (!cp && (map.payerC >= 0 || map.payeeC >= 0)) { const a = cell(map.payerC), b = cell(map.payeeC); const first = dir === 'in' ? [[a, map.payerAcctC], [b, map.payeeAcctC]] : [[b, map.payeeAcctC], [a, map.payerAcctC]]; const hit = first.find(([x]) => x && !isOurs(x)); if (hit) { cp = hit[0]; if (!cpAcct) cpAcct = cell(hit[1]); } }
+    const desc = [...new Set(map.descC.map(cell).filter(Boolean))];
+    const hasCp = map.cpC >= 0 || map.payerC >= 0 || map.payeeC >= 0;
+    const curCell = cell(map.curC);
+    const t = { dir, amount, currency: curCell ? normCur(CUR_WORD[curCell] || ({ '156': 'CNY', '840': 'USD', '344': 'HKD', '978': 'EUR', '410': 'KRW' })[curCell] || curCell) : (map.cur || BASE()), date, time, bank: bank || map.bankGuess || '', account: map.acct || '', counterparty: (cp || (hasCp ? '' : desc[0]) || '').slice(0, 40), memo: [...(cp || hasCp ? desc : desc.slice(1)), cpAcct].filter(Boolean).join(' / ').slice(0, 80), balance: map.balC >= 0 && String(r[map.balC] ?? '').trim() !== '' ? cellNum(r[map.balC]) : null, source: 'import' };
     t.category = guessCategory(t); t.poId = guessPo(t); { const b = poById(t.poId); if (isBill(b) && b.category) t.category = b.category; }
     out.push(t);
   }
   return out;
+}
+/* CSV text → rows (quotes, ="0123" text cells, tab or comma) */
+function csvRows(text) {
+  const head = String(text).split('\n').slice(0, 12); const sep = head.reduce((a, l) => a + (l.match(/\t/g) || []).length, 0) > head.reduce((a, l) => a + (l.match(/,/g) || []).length, 0) ? '\t' : ',';
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; continue; }
+    if (c === '"' && /^=?$/.test(cell)) { cell = ''; q = true; continue; }
+    if (c === sep) { row.push(cell); cell = ''; continue; }
+    if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; continue; }
+    cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim()));
+}
+/* .xlsx cells as the sheet shows them (23,400.00 · 2026-09-24), read without the Excel library */
+async function xlsxText(buf) {
+  await loadScript(JSZIP_URL);
+  const zip = await window.JSZip.loadAsync(buf);
+  const P = s => new DOMParser().parseFromString(s, 'application/xml');
+  const tags = (node, name) => [...node.getElementsByTagNameNS('*', name)];
+  const txt = async p => { const f = zip.file(p); return f ? (await f.async('string')).replace(/^\uFEFF/, '') : ''; };
+  const ss = []; const ssx = await txt('xl/sharedStrings.xml');
+  if (ssx) for (const si of tags(P(ssx), 'si')) ss.push(tags(si, 't').filter(t => { const pn = t.parentNode && t.parentNode.localName; return pn === 'si' || pn === 'r'; }).map(t => t.textContent).join(''));
+  const fmts = {}, xfs = []; const st = await txt('xl/styles.xml');
+  if (st) { const d = P(st); for (const nf of tags(d, 'numFmt')) fmts[nf.getAttribute('numFmtId')] = nf.getAttribute('formatCode') || ''; const cx = tags(d, 'cellXfs')[0]; if (cx) for (const xf of [...cx.children].filter(e => e.localName === 'xf')) xfs.push(+xf.getAttribute('numFmtId') || 0); }
+  const BUILTIN = { 1: '0', 2: '0.00', 3: '#,##0', 4: '#,##0.00', 9: '0%', 10: '0.00%', 14: 'yyyy-mm-dd', 15: 'yyyy-mm-dd', 16: 'yyyy-mm-dd', 17: 'yyyy-mm', 18: 'h:mm', 19: 'h:mm:ss', 20: 'h:mm', 21: 'h:mm:ss', 22: 'yyyy-mm-dd h:mm', 37: '#,##0', 38: '#,##0', 39: '#,##0.00', 40: '#,##0.00', 44: '#,##0.00', 45: 'mm:ss', 46: 'h:mm:ss', 47: 'mm:ss', 49: '@' };
+  const show = (n, id) => {
+    const fc = String(fmts[id] ?? BUILTIN[id] ?? '').split(';')[0].replace(/"[^"]*"|\[[^\]]*\]|\\./g, '');
+    if (!fc || /^general$/i.test(fc) || fc === '@') return String(Math.round(n * 1e10) / 1e10);
+    if (/[yd]/i.test(fc) || (/m/i.test(fc) && !/[0#]/.test(fc) && !/[hs]/i.test(fc))) { const d = new Date(Math.round((n - 25569) * 864e5)); const ymd = `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`; return /h/i.test(fc) ? `${ymd} ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}` : ymd; }
+    if (/h/i.test(fc) && !/[0#]/.test(fc)) { const t = Math.round((n % 1) * 86400); return `${pad2(Math.floor(t / 3600))}:${pad2(Math.floor(t / 60) % 60)}`; }
+    const dec = ((fc.match(/\.([0#]+)/) || [])[1] || '').length, pct = fc.includes('%'), v = pct ? n * 100 : n;
+    return (fc.includes(',') ? v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : v.toFixed(dec)) + (pct ? '%' : '');
+  };
+  const wb = P(await txt('xl/workbook.xml')); const rels = P(await txt('xl/_rels/workbook.xml.rels') || '<x/>');
+  const relMap = {}; for (const r of tags(rels, 'Relationship')) relMap[r.getAttribute('Id')] = r.getAttribute('Target');
+  const out = [];
+  for (const sh of tags(wb, 'sheet')) {
+    const rid = sh.getAttribute('r:id') || sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+    let t = String(relMap[rid] || '').replace(/^\//, ''); if (!t.startsWith('xl/')) t = 'xl/' + t;
+    const x = await txt(t); if (!x) continue;
+    const rows = [];
+    for (const row of tags(P(x), 'row')) {
+      const r = (+row.getAttribute('r') || rows.length + 1) - 1; const arr = rows[r] = rows[r] || [];
+      let ci = 0;
+      for (const c of tags(row, 'c')) {
+        const ref = c.getAttribute('r'); const col = ref ? XW.colIdx(ref.replace(/\d+/g, '')) : ci; ci = col + 1;
+        const tp = c.getAttribute('t'), v = tags(c, 'v')[0]; let val = '';
+        if (tp === 's') val = v ? (ss[+v.textContent] ?? '') : '';
+        else if (tp === 'inlineStr') val = tags(c, 't').map(z => z.textContent).join('');
+        else if (tp === 'b') val = v && v.textContent === '1' ? 'TRUE' : 'FALSE';
+        else if (v) { const n = Number(v.textContent); val = (tp === 'str' || tp === 'e' || !Number.isFinite(n)) ? v.textContent : show(n, xfs[+c.getAttribute('s') || 0] ?? 0); }
+        arr[col] = val;
+      }
+    }
+    for (let i = 0; i < rows.length; i++) rows[i] = Array.from(rows[i] || [], c => c ?? '');
+    out.push({ name: sh.getAttribute('name') || '', rows });
+  }
+  return out;
+}
+/* any spreadsheet the user picks → sheets of text cells: xlsx and CSV read here, old .xls (or HTML saved as .xls) by the Excel library */
+async function sheetRows(f) {
+  const buf = await f.arrayBuffer(), u8 = new Uint8Array(buf);
+  if (/\.(csv|txt)$/i.test(f.name || '') || /text\/csv/i.test(f.type || '')) return [{ name: f.name, rows: csvRows(decodeText(buf)) }];
+  if (u8[0] === 0x50 && u8[1] === 0x4B) { try { return await xlsxText(buf); } catch (e) { } }
+  if (u8[0] !== 0xD0 && u8[0] !== 0x50) { const t = decodeText(buf); if (!/<table/i.test(t)) return [{ name: f.name, rows: csvRows(t) }]; }
+  await loadScript(XLSX_URL);
+  let wb; try { wb = XLSX.read(buf, { type: 'array' }); } catch (e) { wb = XLSX.read(decodeText(buf), { type: 'string' }); }
+  return wb.SheetNames.map(n => ({ name: n, rows: XLSX.utils.sheet_to_json(wb.Sheets[n], { header: 1, raw: false, defval: '' }) }));
+}
+/* an Excel / CSV file for the smart input: a bank statement becomes transactions, any other sheet becomes text rows for the readers */
+const isSheetFile = f => /\.(xlsx|xlsm|xls|csv)$/i.test(f.name || '') || /spreadsheet|ms-excel|text\/csv/i.test(f.type || '');
+async function readSheetFile(f) {
+  const txns = [], texts = [];
+  for (const sh of (await sheetRows(f)).slice(0, 6)) {
+    const rows = sh.rows;
+    const m = mapSheet(rows); if (m) { const tx = rowsToTxns(rows, m, ''); if (tx.length) { txns.push(...tx); continue; } }
+    const tx = rows.map(r => (r || []).map(c => String(c ?? '').replace(/\s*\n\s*/g, ' ').trim()).filter(Boolean).filter((c, k, a) => c !== a[k - 1]).join('  ')).filter(Boolean).join('\n');
+    if (tx.trim()) texts.push(tx);
+  }
+  return { txns, text: texts.join('\n\n') };
 }
 function openImport() {
   let list = [];
@@ -2056,18 +2177,14 @@ function openImport() {
         list = rowsToTxns(rows, map, $('[name="imp-bank"]', panel).value.trim()).map(t => Object.assign(t, { dup: keys.has(txnKey(t)) }));
         const fresh = list.filter(t => !t.dup);
         btn.disabled = !fresh.length; btn.textContent = fresh.length ? `${fresh.length}건 기록하기` : '기록하기';
-        out.innerHTML = `<div class="rel"><div class="rel-h"><span>읽은 내역 ${list.length}건</span><span class="muted" style="font-weight:500">새로 기록 ${fresh.length} · 중복 ${list.length - fresh.length}</span></div>${list.slice(0, 8).map(t => `<div class="row" style="cursor:default"><div style="min-width:0"><div class="row-t">${esc(t.counterparty || '-')}${t.category ? `<span class="chip">${esc(CAT_LABEL[t.category])}</span>` : ''}${t.dup ? '<span class="chip c-warn">이미 기록됨</span>' : ''}</div><div class="row-s">${fmtDF(t.date)} ${esc(t.time)}</div></div><div class="row-r"><span class="amt ${t.dir === 'in' ? 'amt-in' : ''}">${t.dir === 'in' ? '+' : '−'}${money(t.amount)}</span></div></div>`).join('')}${list.length > 8 ? `<div class="row-s" style="padding:8px 12px">외 ${list.length - 8}건</div>` : ''}</div>`;
+        out.innerHTML = `<div class="rel"><div class="rel-h"><span>읽은 내역 ${list.length}건</span><span class="muted" style="font-weight:500">새로 기록 ${fresh.length} · 중복 ${list.length - fresh.length}</span></div>${list.slice(0, 8).map(t => `<div class="row" style="cursor:default"><div style="min-width:0"><div class="row-t">${esc(t.counterparty || '-')}${t.category ? `<span class="chip">${esc(CAT_LABEL[t.category])}</span>` : ''}${t.dup ? '<span class="chip c-warn">이미 기록됨</span>' : ''}</div><div class="row-s">${fmtDF(t.date)} ${esc(t.time)}</div></div><div class="row-r"><span class="amt ${t.dir === 'in' ? 'amt-in' : ''}">${t.dir === 'in' ? '+' : '−'}${money(t.amount, t.currency)}</span></div></div>`).join('')}${list.length > 8 ? `<div class="row-s" style="padding:8px 12px">외 ${list.length - 8}건</div>` : ''}</div>`;
       };
       fileIn.addEventListener('change', async () => {
         const f = fileIn.files[0]; if (!f) return; out.innerHTML = '<div class="muted">읽는 중…</div>';
         try {
-          await loadScript(XLSX_URL);
-          const buf = await f.arrayBuffer();
-          let wb;
-          if (/\.(csv|txt)$/i.test(f.name)) { let text = new TextDecoder('utf-8').decode(buf); if (text.includes('\uFFFD')) text = new TextDecoder('euc-kr').decode(buf); wb = XLSX.read(text, { type: 'string' }); }
-          else { try { wb = XLSX.read(buf, { type: 'array', cellDates: false }); } catch (e) { let text = new TextDecoder('utf-8').decode(buf); if (text.includes('\uFFFD')) text = new TextDecoder('euc-kr').decode(buf); wb = XLSX.read(text, { type: 'string' }); } }
+          const books = await sheetRows(f);
           rows = null; map = null;
-          for (const name of wb.SheetNames) { const r = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: false, defval: '' }); const m = mapSheet(r); if (m) { rows = r; map = m; break; } }
+          for (const bk of books) { const m = mapSheet(bk.rows); if (m) { rows = bk.rows; map = m; break; } }
           if (!rows) { out.innerHTML = '<div class="banner"><span>입금·출금 열을 찾지 못했어요. 거래일자, 입금, 출금(또는 금액·구분) 열이 있는 파일인지 확인해 주세요.</span></div>'; return; }
           redraw();
         } catch (e) { out.innerHTML = `<div class="banner crit"><span>파일을 읽지 못했어요${e.message === 'load' ? ' (엑셀 도구를 불러오지 못함)' : ''}. 다른 형식(xlsx 또는 csv)으로 저장해서 다시 올려 주세요.</span></div>`; }
@@ -2135,39 +2252,347 @@ function parseBanks(text) {
   }
   push();
   const ours = ourAccounts();
-  return out.filter(b => digits(b.account).length >= 6 && !ours.has(digits(b.account))).map(b => Object.assign({ currency: b.currency || (b.swift ? 'USD' : /[一-龥]/.test(b.bankName || '') ? 'CNY' : ''), bankName: '', holder: '', swift: '', bankAddress: '' }, b));
+  return out.filter(b => digits(b.account).length >= 6 && !ours.has(digits(b.account)) && !(b.holder && isOurs(b.holder))).map(b => Object.assign({ currency: b.currency || (b.swift ? 'USD' : /[一-龥]/.test(b.bankName || '') ? 'CNY' : ''), bankName: '', holder: '', swift: '', bankAddress: '' }, b));
+}
+/* ================= reading documents: who is us, who is the other side ================= */
+/* traditional → simplified for the characters that show up in company names, labels and addresses (matching only; names are kept as written) */
+const T2S = (() => { const m = {}; '電电 貿贸 實实 業业 國国 際际 開开 發发 東东 廣广 華华 灣湾 號号 區区 縣县 鎮镇 樓楼 廈厦 門门 龍龙 聯联 興兴 達达 機机 氣气 設设 備备 製制 產产 銷销 貨货 運运 輸输 務务 創创 億亿 豐丰 寶宝 匯汇 滙汇 環环 賽赛 爾尔 責责 團团 進进 協协 會会 銀银 層层 價价 檢检 測测 試试 驗验 學学 圖图 視视 動动 體体 個个 單单 項项 錢钱 費费 額额 總总 計计 稅税 證证 碼码 帳账 賬账 戶户 員员 絡络 話话 傳传 郵邮 編编 購购 買买 賣卖 應应 訂订 簽签 約约 條条 數数 規规 標标 準准 據据 時时 間间 處处 廠厂 莊庄 蘇苏 漢汉 陽阳 島岛 嶺岭 順顺 鋼钢 鐵铁 鋁铝 銅铜 膠胶 紙纸 裝装 飾饰 藝艺 術术 軟软 語语 訊讯 網网 絲丝 線线 錶表 鐘钟 醫医 藥药 農农 軍军 優优 質质 麗丽 歐欧 亞亚 遠远 鴻鸿 騰腾 鳳凤 義义 勝胜 倉仓 儲储 範范 圍围 潔洁 淨净 燈灯 熱热 綠绿 紅红 藍蓝 黃黄 齊齐 濟济 貴贵 澤泽 濱滨 潤润 陳陈 張张 劉刘 楊杨 趙赵 孫孙 鄭郑 謝谢 韓韩 馮冯 羅罗 葉叶 鄧邓 蕭萧 瑪玛 麥麦 經经 營营 銷销 備备 際际 處处 戶户 號号 碼码 稱称 據据 匯汇 齡龄 雲云 傑杰 豐丰 開开 啟启 盛盛'.split(' ').forEach(p => { if (p.length === 2 && p[0] !== p[1]) m[p[0]] = p[1]; }); return m; })();
+const zhs = s => String(s || '').replace(/[！-～]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/　/g, ' ').replace(/[㐀-鿿]/g, c => T2S[c] || c);
+const CO_SYN = [[/&/g, ' AND '], [/\bLIMITED\b/g, 'LTD'], [/\bLDT\b/g, 'LTD'], [/\bCOMPANY\b/g, 'CO'], [/\bCORPORATION\b/g, 'CORP'], [/\bINCORPORATED\b/g, 'INC'], [/\bELECTRONICS\b/g, 'ELECTRONIC'], [/\bTECHNOLOGIES\b/g, 'TECHNOLOGY'], [/\bTECH\b/g, 'TECHNOLOGY'], [/\bINT'?L\b/g, 'INTERNATIONAL']];
+/* one comparable key: simplified Chinese, upper case, the usual English abbreviations, no spaces or punctuation */
+function coKey(s) { let t = zhs(s).toUpperCase(); for (const [re, v] of CO_SYN) t = t.replace(re, v); return t.replace(/[^A-Z0-9㐀-鿿가-힣]/g, ''); }
+/* the smallest edit distance between pat and any part of text (OCR misreads a character or two) */
+function approxIn(text, pat, maxErr) {
+  const m = pat.length; if (!m) return true; if (!text || text.length < m - maxErr) return false;
+  let prev = new Array(m + 1); for (let j = 0; j <= m; j++) prev[j] = j;
+  for (let i = 1; i <= text.length; i++) {
+    const cur = [0]; const c = text[i - 1];
+    for (let j = 1; j <= m; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (c === pat[j - 1] ? 0 : 1));
+    if (cur[m] <= maxErr) return true; prev = cur;
+  }
+  return false;
+}
+const ZH_REGION = /^(?:中国)?(?:[一-鿿]{2,3}(?:省|自治区))?(?:深圳市|东莞市|广州市|上海市|北京市|天津市|重庆市|香港|澳门|[一-鿿]{2}市|深圳|东莞|广州|上海|北京|天津|重庆|惠州|佛山|中山|珠海|江门|苏州|杭州|宁波|厦门|青岛|威海|烟台|南京|武汉|成都|西安|长沙|郑州|合肥|无锡|常州|温州|台州|嘉兴|绍兴|金华|义乌|泉州|福州|汕头|昆山|大连|沈阳|济南)?/;
+const ZH_SUFFIX = /(?:股份有限公司|有限责任公司|有限公司|责任公司|分公司|公司|集团|总厂|工厂|厂|商行|工作室|事务所|经营部|商店)$/;
+const ZH_TRADE = /(?:电子科技|科技发展|实业发展|国际货运代理|货运代理|科技|电子|贸易|实业|国际|发展|技术|信息|智能|光电|光学|精密|机械|设备|自动化|工业|进出口|供应链|物流|商贸|网络|软件|新材料|材料|五金|塑胶|塑料|模具|制品|制造|控股|投资|咨询|服务|传媒|文化|环球|工程|新能源|能源|医疗|生物|化工|仪器|仪表|通讯|通信|半导体|微电子|照明|显示|视觉|检测|测试|治具|货运|报关|税务|会计|财务|代理|电器|电气|包装|印刷|金属)$/;
+const EN_GEO = new Set('SHENZHEN DONGGUAN GUANGZHOU SHANGHAI BEIJING HONG KONG HK CHINA SEOUL KOREA FOSHAN HUIZHOU ZHUHAI NINGBO XIAMEN SUZHOU HANGZHOU TIANJIN QINGDAO WEIHAI ZHONGSHAN JIANGMEN'.split(' '));
+const EN_SUFFIX = new Set('CO LTD LIMITED INC CORP CORPORATION COMPANY LLC GMBH GROUP HOLDINGS HOLDING PTE PLC SA AG BV KK'.split(' '));
+const EN_TRADE = new Set('ELECTRONIC ELECTRONICS TECHNOLOGY TECHNOLOGIES TECH TRADING TRADE INDUSTRIAL INDUSTRY INDUSTRIES INTERNATIONAL INTL DEVELOPMENT LOGISTICS PRECISION MACHINERY EQUIPMENT AUTOMATION OPTICAL OPTOELECTRONIC OPTOELECTRONICS OPTICS SCIENCE SUPPLY CHAIN ENTERPRISE ENTERPRISES SOLUTIONS SYSTEMS SERVICES SERVICE MANUFACTURING MFG IMPORT EXPORT AND GLOBAL SMART INTELLIGENT DIGITAL MATERIALS PRODUCTS'.split(' '));
+/* 深圳市艾沃瑞电子科技有限公司 → mid 艾沃瑞电子科技, core 艾沃瑞;  SHENZHEN AVORY ELECTRONIC TECHNOLOGY CO., LTD. → AVORYELECTRONICTECHNOLOGY, AVORY */
+function coreName(n) {
+  const s = zhs(n);
+  if (/[一-鿿]{3}/.test(s)) {
+    let k = s.replace(/[^一-鿿]/g, '').replace(ZH_REGION, '');
+    for (let i = 0; i < 3 && ZH_SUFFIX.test(k); i++) k = k.replace(ZH_SUFFIX, '');
+    const mid = k; for (let i = 0; i < 4 && ZH_TRADE.test(k) && k.replace(ZH_TRADE, '').length >= 2; i++) k = k.replace(ZH_TRADE, '');
+    return { zh: true, mid, core: k.length >= 2 ? k : '' };
+  }
+  const tk = s.toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim().split(' ').filter(Boolean);
+  while (tk.length > 1 && EN_GEO.has(tk[0])) tk.shift();
+  while (tk.length > 1 && EN_SUFFIX.has(tk[tk.length - 1])) tk.pop();
+  const mid = coKey(tk.join(' '));
+  while (tk.length > 1 && EN_TRADE.has(tk[tk.length - 1])) tk.pop();
+  const core = tk.join(' ');
+  return { zh: false, mid, core: core.replace(/\s/g, '').length >= 4 ? core : '' };
+}
+const PUBLIC_MAIL = /@(gmail|qq|163|126|yeah|sina|sohu|foxmail|aliyun|hotmail|outlook|live|yahoo|icloud|me|naver|daum|hanmail|kakao|nate)\./i;
+let OURS_C = null;
+function ourProfile() {
+  const co = S.co || {};
+  const sig = JSON.stringify([co.nameZh, co.nameEn, co.nameKo, co.brand, co.aliases, co.bizNo, co.tel, co.telKr, co.fax, co.email, (co.banks || []).map(b => [b.account, b.holder]), co.addressZh, co.addressEn, co.regAddressZh, co.addressKo, co.contactZh, co.contactEn, co.legalRep, co.ceoKo]);
+  if (OURS_C && OURS_C.sig === sig) return OURS_C;
+  const names = [co.nameZh, co.nameEn, co.nameKo, ...(co.banks || []).map(b => b && b.holder), ...String(co.aliases || '').split(/[,，;；\n]/)].map(s => String(s || '').trim()).filter(s => s.length >= 2);
+  const full = [...new Set(names.map(coKey).filter(k => k.length >= 4))];
+  const cores = [], mids = new Set();
+  const addCore = (k, zh) => { if (k && (zh ? k.length >= 3 : k.replace(/\s/g, '').length >= 4) && !cores.some(c => c.k === k)) cores.push({ k, zh }); };
+  if (co.brand && String(co.brand).trim().length >= 4) addCore(zhs(co.brand).toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim(), false);
+  for (const n of names) { const c = coreName(n); if (c.mid && c.mid.length >= 5) mids.add(c.mid); addCore(c.core, c.zh); }
+  // a short alias the user typed (艾沃瑞, AVORY) is a core of its own
+  for (const a of String(co.aliases || '').split(/[,，;；\n]/).map(s => s.trim()).filter(Boolean)) { const z = /[一-鿿]/.test(a); addCore(z ? coKey(a) : zhs(a).toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim(), z); }
+  const addrKey = a => { let k = coKey(a); k = k.replace(ZH_REGION, '').replace(/^(?:[一-鿿]{2}区)/, m => m); return k.length >= 8 ? k.slice(0, 18) : ''; };
+  const mails = []; const em = String(co.email || '').toLowerCase().trim(); if (em) { mails.push(em); const dm = em.split('@')[1]; if (dm && !PUBLIC_MAIL.test(em)) mails.push('@' + dm); }
+  OURS_C = {
+    sig, full, cores, mids: [...mids],
+    tax: coKey(co.bizNo || '').length >= 8 ? coKey(co.bizNo) : '',
+    tels: [co.tel, co.telKr, co.fax].map(x => String(x || '').replace(/\D/g, '')).filter(x => x.length >= 7),
+    accts: (co.banks || []).map(b => String((b && b.account) || '').replace(/\D/g, '')).filter(x => x.length >= 6),
+    mails, addrs: [co.addressZh, co.addressEn, co.regAddressZh, co.addressKo].map(addrKey).filter(Boolean),
+    people: [co.contactZh, co.contactEn, co.legalRep, co.ceoKo, co.ceoEn].map(x => String(x || '').trim()).filter(x => x.length >= 2)
+  };
+  return OURS_C;
+}
+/* how sure we are that this name is our own company: 1 exact, .9 our short name, .8 a misread copy, 0 not us */
+function oursHit(s, anyName) {
+  const raw = String(s || ''); const k = coKey(raw); if (k.length < 2) return 0;
+  const P = ourProfile(); if (!P.full.length && !P.cores.length) return 0;
+  if (P.full.some(f => k.includes(f))) return 1;
+  if (!anyName && (S.partners || []).some(p => coKey(p.name) === k && !P.full.includes(k))) return 0;   // a partner already on file, however close its name is to ours
+  if (k.length >= 5 && P.full.some(f => f.includes(k)) && P.cores.some(c => c.zh ? k.includes(c.k.slice(0, 2)) || k.includes(c.k.slice(-2)) : k.includes(c.k.replace(/\s/g, '').slice(0, 4)))) return 0.9;
+  const lat = ' ' + zhs(raw).toUpperCase().replace(/[^A-Z0-9]+/g, ' ') + ' ';
+  for (const c of P.cores) if (c.zh ? k.includes(c.k) : lat.includes(' ' + c.k + ' ')) return 0.9;
+  for (const m of P.mids) if (approxIn(k, m, Math.floor(m.length / 6))) return 0.8;
+  for (const f of P.full) if (f.length >= 8 && k.length >= f.length * 0.7 && approxIn(k, f, Math.max(1, Math.floor(f.length / 7)))) return 0.8;
+  return 0;
+}
+/* our tax number, phone, account, e-mail, address or people in a piece of text */
+function oursIdHit(s) {
+  const raw = String(s || ''); if (!raw.trim()) return ''; const P = ourProfile(); const k = coKey(raw);
+  if (P.tax && (k.includes(P.tax) || (P.tax.length >= 15 && k.length >= 15 && approxIn(k, P.tax, 2)))) return 'tax';
+  const nums = (raw.match(/\+?\d[\d \-()]{5,}\d/g) || []).map(x => x.replace(/\D/g, ''));
+  if (nums.some(n => n.length >= 7 && P.tels.some(t => n.slice(-8) === t.slice(-8)))) return 'tel';
+  if (nums.some(n => n.length >= 8 && P.accts.some(a => a === n || (n.length >= 10 && a.length >= 10 && a.slice(-10) === n.slice(-10))))) return 'acct';
+  const low = raw.toLowerCase(); if (P.mails.some(m => low.includes(m))) return 'mail';
+  if (k.length >= 10 && P.addrs.some(a => approxIn(k, a, Math.floor(a.length / 6)))) return 'addr';
+  if (P.people.some(p => p.length >= 2 && raw.includes(p))) return 'person';
+  return '';
+}
+
+/* ---------- the parties named in a document ---------- */
+const ROLE_WORDS = [
+  ['B', '买方 買方 需方 采购方 採購方 采购单位 購買方 购买方 购方 購方 购货方 購貨方 购货单位 購貨單位 订货方 訂貨方 订购方 订货单位 定作方 委托方 客户名称 客戶名稱 客户 客戶 收货单位 收貨單位 收货方 收货人 付款方 付款单位 付款人 汇款人 匯款人 공급받는자 구매자 매수인'],
+  ['S', '卖方 賣方 供方 供应方 供應方 供货方 供貨方 供应商 供應商 供货单位 销售方 銷售方 销方 銷方 销货单位 銷貨單位 出卖人 承揽方 受托方 报价方 报价单位 報價單位 发货单位 發貨單位 发货方 收款方 收款單位 收款单位 收款人 开票方 开票单位 공급자 판매자 매도인'],
+  ['N', '甲方 乙方 丙方'],
+  ['X', '公司名称 公司名稱 单位名称 單位名稱 企业名称 客商名称 상호 회사명']
+];
+const ROLE_EN = [['B', 'BUYER|PURCHASER|CUSTOMER|BILL\\s*TO|SOLD\\s*TO|INVOICE\\s*TO|CONSIGNEE|MESSRS\\.?|PAYER'], ['S', 'SELLER|SUPPLIER|VENDOR|SHIPPER|EXPORTER|BENEFICIARY|MANUFACTURER|PAYEE'], ['N', 'PARTY\\s*[AB]'], ['X', 'COMPANY\\s*NAME'], ['TO', 'TO|ATTN\\.?'], ['FROM', 'FROM']];
+const ROLE_OF = {}; ROLE_WORDS.forEach(([r, w]) => w.split(' ').forEach(x => { ROLE_OF[x] = r; }));
+const ROLE_ZH_ALT = Object.keys(ROLE_OF).sort((a, b) => b.length - a.length).join('|') + '|致';
+const ROLE_EN_ALT = ROLE_EN.map(x => x[1]).join('|');
+const LAB_RE = new RegExp(`(${ROLE_ZH_ALT})|\\b(${ROLE_EN_ALT})\\b`, 'gi');
+const LAB_TAIL = new RegExp(`^(\\s*[（(]([^）)\\n]{1,12})[）)])?(\\s*\\/\\s*(?:(?:${ROLE_ZH_ALT})|(?:${ROLE_EN_ALT})|[A-Za-z]{2,12}(?:\\s+[A-Za-z]{2,12})?))?(\\s*(?:信息|名\\s*称|名稱|户名|戶名|全称|NAME))?\\s*([:：])?`, 'i');
+const FIELD_RE = /(地\s*址|电\s*话|電\s*話|手\s*机|TEL\b|FAX\b|传\s*真|税\s*号|纳税人|统一社会|信用代码|开户|開戶|账\s*号|帳\s*號|账\s*户|帳\s*戶|联系人|聯絡人|单据编号|关联订单|订单号|合同编号|编\s*号|日\s*期|开单|NO\.|DATE\b|ATTN|ADD(?:RESS)?\b|E-?MAIL|邮\s*箱|PO\s*NO|INVOICE\s*NO|（盖章）|\(盖章\)|盖章|签字|签章|签名|确认|PAGE\b)/i;
+const CO_END = /^(.*?(?:股份有限公司|有限责任公司|有限公司|公司|集团|商行|株式会社|주식회사|\(주\)|㈜|(?<![A-Za-z])(?:CO\.?\s*,?\s*LTD\.?|CO\.?,?\s*LIMITED|LIMITED|LTD\.?|CORPORATION|CORP\.?|INC\.?|LLC|GMBH)(?![A-Za-z])))/i;
+const hanOf = x => /[一-鿿]/.test(x || '');
+/* a party's name out of what follows its label */
+function partyName(v) {
+  v = String(v || '').replace(/^[\s:：|│/,，、\-—]+/, '').replace(/^(?:公司名称|单位名称|名\s*称|名稱|全称|户名|戶名|NAME)\s*[:：]?\s*/i, '');
+  v = v.split(/\s{2,}|\s*[|│]\s*|\s+\/\s+/)[0];
+  const cut = v.search(FIELD_RE); if (cut === 0) return ''; if (cut > 0) v = v.slice(0, cut);
+  const m = v.match(CO_END); if (m) v = m[1];
+  v = v.replace(/[\s,，;；:：|/（(]+$/, '').trim();
+  return v.length >= 2 ? v.slice(0, 80) : '';
+}
+/* every company name in a line, in order (a signature row: 深圳市艾沃瑞电子科技有限公司  深圳市原图光电科技有限公司) */
+function namesIn(l) {
+  const out = [];
+  for (let c of String(l || '').split(/\s{2,}|\s*[|│]\s*/)) for (let k = 0; k < 4 && c; k++) { const m = c.match(CO_END); if (!m) break; const n = partyName(m[1]); if (n && COMPANY_RE.test(n)) out.push(n); c = c.slice(m[0].length); }
+  return out;
+}
+const HEADING_WORDS =/^(?:DOCUMENT|REFERENCE|INFORMATION|DETAILS?|CONFIRMATION|NOTICE|INVOICE|ORDER|CONTRACT|ADDRESS|BANK|PAYMENT|TERMS?|REMARKS?|NOTES?|CHARGES?|DESCRIPTION|TOTAL|AMOUNT|SIGNATURE|STAMP|DATE|THE|AND|OF|AS|BELOW|ABOVE|NAME)$/i;
+function looksCompany(n, labeled) {
+  n = String(n || '').trim(); if (n.length < 2 || /[，。！？!?]/.test(n) || /^(您好|你好|我们|我司|贵司|谢谢|请|如下|以下)/.test(n)) return false;
+  if (/(BANK|银行|銀行)/i.test(n) && !COMPANY_RE.test(n.replace(/BANK|银行|銀行/gi, ''))) return false;
+  if (COMPANY_RE.test(n)) return true;
+  if (!labeled) return false;
+  if (hanOf(n)) return (n.match(/[一-鿿]/g) || []).length >= 4 && !/\d{4,}/.test(n) && !/[\/／]/.test(n) && !/^(?:及|和|与|的|之|确认|信息|方式|条件|签|盖|账|帐|开户|地址|电话)/.test(n);
+  const w = n.toUpperCase().replace(/[^A-Z ]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+  return w.length >= 1 && w.some(x => x.length >= 4) && !w.every(x => HEADING_WORDS.test(x)) && (n.match(/[A-Za-z]/g) || []).length >= 4;
+}
+/* lines ready for reading: spaced-out OCR Chinese joined, the vertical 购/销 of VAT invoices spelled out */
+function docLines(text) {
+  return String(text || '').replace(/\r/g, '').split('\n').map(l => {
+    l = l.replace(/\t/g, '  ').replace(/　/g, ' ');
+    const cj = (l.match(/[一-鿿]/g) || []).length, sp = (l.match(/[一-鿿] (?=[一-鿿])/g) || []).length;
+    if (cj >= 4 && sp >= cj * 0.4) l = l.replace(/(?<=[一-鿿]) (?=[一-鿿])/g, '');
+    return l.replace(/^\s*([购購])\s+(?=名\s*称|名稱|纳税人)/, '购买方 ').replace(/^\s*([销銷])\s+(?=名\s*称|名稱|纳税人)/, '销售方 ').replace(/[ ]{3,}/g, '  ').trim();
+  }).filter(Boolean);
+}
+/* every role label in a line: 需方：…  供方：…  BUYER / 买方  甲方（买方）： */
+function findLabels(l) {
+  const out = []; LAB_RE.lastIndex = 0; let m;
+  while ((m = LAB_RE.exec(l))) {
+    const word = m[0], zh = !!m[1], at = m.index;
+    const before = l.slice(Math.max(0, at - 1), at);
+    const tail = l.slice(at + word.length).match(LAB_TAIL) || [''];
+    const colon = !!tail[5], end = at + word.length + tail[0].length;
+    const bound = !before || /[\s|│,，;；:：()（）\[\]【】0-9.、]/.test(before);
+    let role = zh ? (word === '致' ? 'TO' : ROLE_OF[zhs(word)] || ROLE_OF[word]) : (ROLE_EN.find(([, re]) => new RegExp(`^(?:${re})$`, 'i').test(word)) || [''])[0];
+    if (!role) continue;
+    if (zh && !bound && !colon) continue;                              // 付款条件付款方收到… is not a label
+    if (!zh && !colon && !(at === 0 || /^\s*$/.test(l.slice(0, at)))) continue;   // English labels need a colon unless they start the line
+    if (!zh && /^(TO|FROM|ATTN\.?)$/i.test(word) && !colon && !/^\s+\S/.test(l.slice(at + word.length))) continue;
+    if (word === '致' && !colon && at !== 0) continue;
+    const paren = tail[2] ? zhs(tail[2]) : '';
+    const pr = /买方|需方|采购|购买|购方|订货|BUYER/i.test(paren) ? 'B' : /卖方|供方|供应|供货|销售|SELLER|SUPPLIER/i.test(paren) ? 'S' : '';
+    out.push({ at, end, word, role, paren: pr, side: role === 'N' ? (/甲|PARTY\s*A/i.test(word) ? 'A' : /乙|PARTY\s*B/i.test(word) ? 'B' : 'C') : '' });
+    LAB_RE.lastIndex = end > LAB_RE.lastIndex ? end : LAB_RE.lastIndex;
+  }
+  return out;
+}
+const SELLER_DOC = /(报价单|報價單|报价|QUOTATION|\bQUOTE\b|PROFORMA|形式发票|COMMERCIAL\s*INVOICE|\bINVOICE\b|发票|發票|送货单|送貨單|出货单|出貨單|发货单|DELIVERY\s*NOTE|对账单|對賬單|\bSTATEMENT\b|请款单|請款單|付款通知|PAYMENT\s*NOTICE|PAYMENT\s*REQUEST|DEBIT\s*NOTE|收据|收據|\bRECEIPT\b|销售合同|銷售合同|SALES\s*CONTRACT|结算单|청구서|견적서|거래명세서|세금계산서)/i;
+const BUYER_DOC = /(采购订单|採購訂單|采购单|採購單|订购单|訂購單|订货单|訂貨單|PURCHASE\s*ORDER|采购合同|採購合同|委托加工|발주서|구매\s*주문)/i;
+/* who issued the document, who it is for, which one is us, and whether we buy or sell */
+function docParties(text) {
+  const lines = docLines(text); const parties = [];
+  const labsOf = lines.map(findLabels);
+  lines.forEach((l, i) => {
+    const labs = labsOf[i];
+    labs.forEach((lb, j) => {
+      const v = l.slice(lb.end, j + 1 < labs.length ? labs[j + 1].at : l.length);
+      let name = partyName(v), at = i, alt = '';
+      if (!name && !/[A-Za-z0-9一-鿿]{2}/.test(v.replace(/(?:信息|名称|名稱|确认|確認|签章|盖章|信息|PAYEE|PAYER|DOCUMENT|INFORMATION|DETAILS)/gi, ''))) {
+        for (let k = i + 1; k < Math.min(lines.length, i + 3); k++) {
+          if (labsOf[k].length) break;
+          const ns = namesIn(lines[k]);   // labels side by side take the names below them in the same order
+          const n = labs.length > 1 ? (ns.length >= labs.length ? ns[j] : '') : ns.length > 1 ? '' : (ns[0] || partyName(lines[k]));
+          if (n) { name = n; at = k; } if (n || ns.length) break;
+        }
+      }
+      if (!name || !looksCompany(name, lb.role !== 'TO' && lb.role !== 'FROM' || /[:：]/.test(l.slice(lb.at, lb.end)))) return;
+      const rest = v.split(/\s+\/\s+/)[1]; if (rest) { const n2 = partyName(rest); if (n2 && hanOf(n2) !== hanOf(name) && looksCompany(n2, true)) alt = n2; }
+      const nx = lines[at + 1]; if (!alt && nx && !labsOf[at + 1].length) { const n2 = namesIn(nx)[0] || partyName(nx); if (n2 && COMPANY_RE.test(n2) && hanOf(n2) !== hanOf(name)) alt = n2; }
+      parties.push({ role: lb.role, paren: lb.paren, side: lb.side, name, alt, line: at, multi: labs.length > 1 });
+    });
+  });
+  // the title, and the issuer's name in the heading
+  const titleAt = (re) => { for (let i = 0; i < Math.min(lines.length, 14); i++) { const m = zhs(lines[i]).match(re); if (m) return i * 1000 + m.index; } return -1; };
+  const sAt = titleAt(SELLER_DOC), bAt = titleAt(BUYER_DOC);
+  const issuerRole = bAt >= 0 && (sAt < 0 || bAt <= sAt) ? 'B' : sAt >= 0 ? 'S' : '';
+  const ti = Math.floor(Math.max(sAt, bAt) / 1000);
+  let issuer = null;
+  for (let i = 0; i < Math.min(lines.length, Math.max(4, Math.min(ti + 1, 8))); i++) {
+    if (labsOf[i].length || /(BANK|银行|銀行|开户|账号|地址|ADDRESS|TEL|电话)/i.test(lines[i])) continue;
+    const n = namesIn(lines[i])[0] || partyName(lines[i]); if (!n || !COMPANY_RE.test(n) || !looksCompany(n)) continue;
+    const nx = lines[i + 1]; let alt = ''; if (nx && !labsOf[i + 1].length) { const n2 = namesIn(nx)[0] || partyName(nx); if (n2 && COMPANY_RE.test(n2) && hanOf(n2) !== hanOf(n)) alt = n2; }
+    issuer = { role: issuerRole, name: n, alt, line: i, issuer: true }; break;
+  }
+  // a VAT invoice lists 名称 twice: buyer first, seller second
+  const xs = parties.filter(p => p.role === 'X');
+  if (xs.length === 2 && !parties.some(p => p.role === 'B' || p.role === 'S') && /发票|發票|INVOICE/i.test(lines.slice(0, 6).join(' '))) { xs[0].role = 'B'; xs[1].role = 'S'; }
+  // 甲方 / 乙方: who buys
+  const all = zhs(lines.join('\n'));
+  const jiaBuys = /甲方[^。\n]{0,10}(?:采购|购买|订购|订货|委托乙方)|向乙方(?:采购|购买|订购)/.test(all) ? true : /乙方[^。\n]{0,10}(?:采购|购买|订购|订货|委托甲方)|向甲方(?:采购|购买|订购)/.test(all) ? false : /甲方[^。\n]{0,8}(?:供货|供应|销售|出售)/.test(all) ? false : /乙方[^。\n]{0,8}(?:供货|供应|销售|出售)/.test(all) ? true : BUYER_DOC.test(all.slice(0, 400)) || /购销合同|加工合同|采购/.test(all.slice(0, 200)) ? true : null;
+  for (const p of parties) {
+    if (p.role === 'N') p.role = p.paren || (jiaBuys === null ? '' : p.side === 'A' ? (jiaBuys ? 'B' : 'S') : p.side === 'B' ? (jiaBuys ? 'S' : 'B') : '');
+    else if (p.role === 'TO') p.role = issuerRole === 'B' ? 'S' : issuerRole === 'S' ? 'B' : '';
+    else if (p.role === 'FROM') p.role = issuerRole;
+    else if (p.role === 'X') p.role = '';
+  }
+  const list = issuer && !parties.some(p => coKey(p.name) === coKey(issuer.name)) ? [issuer, ...parties] : parties;
+  // any other company named somewhere (a signature row, a remark), used only when nothing better is found
+  const seen = new Set(list.map(p => coKey(p.name)));
+  lines.forEach((l, i) => { if (/(BANK|银行|銀行|开户|開戶|户名|戶名|账户名称|账号|帳號|BENEFICIARY|HOLDER)/i.test(l)) return; for (const n of namesIn(l)) { const k = coKey(n); if (!seen.has(k) && looksCompany(n)) { seen.add(k); list.push({ role: '', name: n, alt: '', line: i, loose: true }); } } });
+  for (const p of list) p.ours = oursHit(p.name) >= 0.5 || (!!p.alt && oursHit(p.alt) >= 0.5);
+  if (!list.some(p => p.ours)) for (const p of list) {   // a misread name: its own lines carry our tax number, phone, account or address
+    if (p.multi) continue; let blk = lines[p.line]; for (let k = p.line + 1; k < Math.min(lines.length, p.line + 4) && !labsOf[k].length; k++) blk += ' ' + lines[k];
+    if (/tax|acct|addr/.test(oursIdHit(blk))) { p.ours = true; break; }
+  }
+  const us = list.find(p => p.ours && p.role) || list.find(p => p.ours) || null;
+  const opp = r => r === 'B' ? 'S' : r === 'S' ? 'B' : '';
+  const others = list.filter(p => !p.ours && !/(BANK|银行|銀行)/i.test(p.name));
+  const want = us && us.role ? opp(us.role) : '';
+  // with us nowhere in it (a forwarder's bill to our buyer), the side that issued the paper is the one we deal with
+  const rank = p => (want && p.role === want ? 0 : 4) + (p.issuer ? (us ? 1 : -0.5) : p.role ? 0 : p.loose ? 3 : 2) + p.line / 1000;
+  const them = others.sort((a, b) => rank(a) - rank(b))[0] || null;
+  const ourRole = (us && us.role) || (them && opp(them.role)) || '';
+  return { us, them, ourRole: ourRole === 'B' ? 'buyer' : ourRole === 'S' ? 'seller' : '', issuer, issuerRole, parties: list, lines };
+}
+/* one known name for an OCR-misread one: 东劳视德自动化… → 东莞视德自动化科技有限公司 */
+function snapName(name, extra) {
+  const n = String(name || '').trim(); const k = coKey(n); if (k.length < 5) return n;
+  const pool = [];
+  for (const p of S.partners || []) { pool.push(p.name); String(p.alias || '').split(',').forEach(a => a.trim() && pool.push(a.trim())); }
+  [S.co.nameZh, S.co.nameEn].forEach(x => x && pool.push(x)); (extra || []).forEach(x => x && pool.push(x));
+  let best = null, bd = 99;
+  for (const c of pool) {
+    const ck = coKey(c); if (ck.length < 5) continue; if (ck === k) return c;
+    if (Math.abs(ck.length - k.length) > 2) continue;
+    const d = levD(k, ck); const lim = k.length >= 10 ? 2 : 1;
+    if (d <= lim && d < bd) { bd = d; best = c; }
+  }
+  return best || n;
+}
+/* 人民币贰万柒仟肆佰元整 → 27400 */
+function cnUpperNum(s) {
+  const D = { 零: 0, 〇: 0, 壹: 1, 一: 1, 贰: 2, 貳: 2, 二: 2, 两: 2, 兩: 2, 叁: 3, 參: 3, 三: 3, 肆: 4, 四: 4, 伍: 5, 五: 5, 陆: 6, 陸: 6, 六: 6, 柒: 7, 七: 7, 捌: 8, 八: 8, 玖: 9, 九: 9 };
+  const U = { 拾: 10, 十: 10, 佰: 100, 百: 100, 仟: 1000, 千: 1000 };
+  const m = String(s || '').match(/[零〇壹一贰貳二两兩叁參三肆四伍五陆陸六柒七捌八玖九拾十佰百仟千万萬亿億元圆圓角分整正]{2,}/g); if (!m) return NaN;
+  const t = m.sort((a, b) => b.length - a.length)[0];
+  if (!/[元圆圓]/.test(t)) return NaN;
+  const [yuan, frac = ''] = t.split(/[元圆圓]/);
+  const part = str => { let total = 0, sec = 0, d = 0; for (const c of str) { if (c in D) d = D[c]; else if (c in U) { sec += (d || 1) * U[c]; d = 0; } else if (c === '万' || c === '萬') { total += (sec + d) * 1e4; sec = 0; d = 0; } else if (c === '亿' || c === '億') { total = (total + sec + d) * 1e8; sec = 0; d = 0; } else return NaN; } return total + sec + d; };
+  const y = part(yuan); if (!Number.isFinite(y)) return NaN;
+  const j = (frac.match(/([零〇壹一贰貳二两兩叁參三肆四伍五陆陸六柒七捌八玖九])角/) || [])[1], f = (frac.match(/([零〇壹一贰貳二两兩叁參三肆四伍五陆陸六柒七捌八玖九])分/) || [])[1];
+  return Math.round((y + (j ? D[j] / 10 : 0) + (f ? D[f] / 100 : 0)) * 100) / 100;
+}
+/* a table's numbered rows that end in an amount: "1 技术服务费 … 23,400.00" */
+function rowAmounts(lines) {
+  const rows = []; let want = 1;
+  for (const l of lines) {
+    const m = l.match(/^\s*(\d{1,2})\s*[.、。|)\]]?\s*[|，,]?\s+(.*?)\s+[¥￥$]?\s*(-?\d{1,3}(?:,\d{3})*\.\d{2}|-?\d+\.\d{2})\s*(?:RMB|CNY|USD|元|HKD|EUR)?\s*$/i);
+    if (!m || +m[1] !== want) continue;
+    rows.push({ n: +m[1], desc: m[2].split(/\s+\d/)[0].replace(/^[\s|，,。.]+/, '').trim(), amt: parseNum(m[3]) }); want++;
+  }
+  return rows;
+}
+
+/* the other side's part of a document: our own block (收款方 深圳市艾沃瑞… 地址… 联系人…) left out, and of rows printed in two columns (需方 … 供方 …, 地址：… 地址：…) only their column */
+const COL_FIELDS = /(地\s*址|电\s*话|電\s*話|手\s*机|传\s*真|开户(?:银)?行|開戶行|账\s*号|帳\s*號|税\s*号|纳税人识别号|统一社会信用代码|联系人|聯絡人|法定代表人|委托代理人|邮\s*编|E-?MAIL|TEL|FAX|ADDRESS|户\s*名)\s*[:：]/gi;
+function partnerView(dp) {
+  const lines = dp.lines, them = dp.them, us = dp.us;
+  const isUsPart = s => oursHit(s) >= 0.5 || /tax|tel|acct|addr|mail/.test(oursIdHit(s));
+  let themCol = -1;
+  const rows = lines.map(l => {
+    const labs = findLabels(l); let cut = -1;
+    if (labs.length >= 2) cut = labs[1].at;
+    else { const seen = new Set(); for (const m of l.matchAll(COL_FIELDS)) { const w = zhs(m[1]).replace(/\s/g, '').toUpperCase(); if (seen.has(w)) { cut = m.index; break; } seen.add(w); } }
+    if (cut <= 0) return { l };
+    const a = l.slice(0, cut).trim(), b = l.slice(cut).trim();
+    if (labs.length >= 2 && them && themCol < 0) { const k = coKey(them.name); if (coKey(b).includes(k)) themCol = 1; else if (coKey(a).includes(k)) themCol = 0; }
+    return { l, a, b };
+  });
+  if (themCol < 0) for (const r of rows) if (r.a !== undefined) { const ka = isUsPart(r.a), kb = isUsPart(r.b); if (ka && !kb) { themCol = 1; break; } if (kb && !ka) { themCol = 0; break; } }
+  // our block: from our name to the next party label (or 6 lines)
+  const drop = new Set();
+  if (us && !us.multi && !(them && them.line === us.line)) {
+    let end = Math.min(lines.length, us.line + 7);
+    for (let i = us.line + 1; i < end; i++) if (findLabels(lines[i]).length || (them && i === them.line)) { end = i; break; }
+    for (let i = us.line; i < end; i++) drop.add(i);
+  }
+  return rows.map((r, i) => drop.has(i) ? '' : r.a === undefined ? r.l : themCol === 0 ? r.a : themCol === 1 ? r.b : r.a + '\n' + r.b).filter(Boolean).join('\n');
 }
 /* names, phones, addresses, bank accounts from any pasted text */
-const ocrTrim = n => String(n || '').replace(/^[^A-Za-z0-9\u4e00-\u9fff]*(?:[A-Za-z]{1,2}\s*[）)\]】」|:：,，.]\s*)?(?=[\u4e00-\u9fff])/, '').trim();
+const ocrTrim = n => String(n || '').replace(/^[^A-Za-z0-9一-鿿]*(?:[A-Za-z]{1,2}\s*[）)\]】」|:：,，.]\s*)?(?=[一-鿿])/, '').trim();
 const snapHolder = (banks, ...names) => (banks || []).forEach(b => { const h = String(b.holder || ''); if (!h) return; for (const n of names.filter(Boolean)) { if (h !== n && Math.abs(h.length - n.length) <= 1 && h.length >= 6 && levD(h, n) <= 2) { b.holder = n; return; } } });
 function parsePartnerText(text) {
-  const t = String(text || '').replace(/\r/g, '');
+  const dp = docParties(text);
+  const t = partnerView(dp);
   const lines = t.split('\n').map(s => s.replace(/[ \t　]+/g, ' ').trim()).filter(Boolean);
   const g = re => { const m = t.match(re); return m ? String(m[1]).trim() : ''; };
-  const o = {};
-  const ourTel = [S.co.tel, S.co.telKr, S.co.fax].map(x => digits(x || '')).filter(x => x.length >= 7), ourMail = String(S.co.email || '').toLowerCase();
-  const notOurTel = x => { const d = digits(x); return d.length >= 7 && !ourTel.some(o => o.endsWith(d.slice(-9)) || d.endsWith(o.slice(-9))); };
-  o.email = ([...t.matchAll(/[\w.+-]+@[\w-]+\.[\w.]+/g)].map(m => m[0]).find(x => x.toLowerCase() !== ourMail)) || '';
-  o.tel = ([...t.matchAll(/(?:TEL|电话|手机|MOBILE|PHONE|H\.?P\.?|전화|휴대폰)\s*[:：.]?\s*(\+?\d[\d \-()]{6,}\d)/gi)].map(m => m[1].trim()).find(notOurTel)) || ([...t.matchAll(/\+\d{2}[\d \-]{8,}\d|(?<!\d)1[3-9]\d{9}(?!\d)/g)].map(m => m[0]).find(notOurTel)) || '';
+  const o = {}; const P = ourProfile();
+  const notOurTel = x => { const d = digits(x); return d.length >= 7 && !P.tels.some(o => o.endsWith(d.slice(-9)) || d.endsWith(o.slice(-9))); };
+  o.email = ([...t.matchAll(/[\w.+-]+@[\w-]+\.[\w.]+/g)].map(m => m[0]).find(x => !P.mails.some(m => x.toLowerCase().includes(m)))) || '';
+  o.tel = ([...t.matchAll(/(?:TEL|电话|電話|手机|手機|MOBILE|PHONE|H\.?P\.?|전화|휴대폰)\s*[:：.]?\s*(\+?\d[\d \-()]{6,}\d)/gi)].map(m => m[1].trim()).find(notOurTel)) || ([...t.matchAll(/\+\d{2}[\d \-]{8,}\d|(?<!\d)1[3-9]\d{9}(?!\d)/g)].map(m => m[0]).find(notOurTel)) || '';
   o.wechat = g(/(?:微信|WECHAT|위챗)\s*(?:号|ID)?\s*[:：]?\s*([A-Za-z][\w\-]{4,29})/i);
-  const ourTax = String(S.co.bizNo || '').toUpperCase();
-  o.taxId = ([...t.matchAll(/(?:统一社会信用代码|纳税人识别号|税\s*号|USCC|TAX\s*ID|VAT\s*NO\.?|사업자\s*(?:등록)?\s*번호)\s*(?:\/[^:：\n]*)?\s*[:：]?\s*([A-Z0-9][A-Z0-9\-]{8,20})/gi)].map(m => m[1].toUpperCase()).find(x => x !== ourTax)) || '';
-  o.contact = g(/(?:联系人|CONTACT(?:\s*PERSON)?|ATTN\.?|담당자?)\s*[:：.]?\s*([^\n,，|:：]{2,30})/i);
-  o.address = (([...t.matchAll(/(^|[^A-Za-z银行\/ ]\s*|\n)(?:地\s*址|ADDRESS|ADD\.|주\s*소)\s*[:：]\s*([^\n]{6,140})/gi)].map(m => m[2]).find(a => !/^\s*$/.test(a))) || '').replace(/\s*(TEL|电话|FAX|传真)\b.*$/i, '').replace(/\s*\|.*$/, '').trim();
-  const cutCo = x => { x = String(x || '').trim(); const m = x.match(/^(.*?(?:LIMITED|LTD\.?|CO\.,?\s*LTD\.?|CORPORATION|CORP\.?|INC\.?|LLC|GMBH|有限责任公司|有限公司|股份公司|株式会社|주식회사))(?=\s|$|[,，|])/i); return m && /[:：|]|\b(PO|DATE|NO|TEL|FAX|DATED)\b|日期|编号|电话/i.test(x.slice(m[1].length)) ? m[1].trim() : x; };
-  const nm = ([...t.matchAll(/(?:公司名称|单位名称|名\s*称|COMPANY(?:\s*NAME)?|상\s*호|회사명)\s*[:：]\s*([^\n]{3,80})/gi)].map(m => m[1].trim()).find(x => !isOurs(x))) || '';
-  const nameLine = lines.findIndex(l => COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址)/i.test(l));
-  o.name = ocrTrim(cutCo((nm && !isOurs(nm) ? nm : '') || (nameLine >= 0 ? lines[nameLine] : '').replace(/^(TO|FROM|致|BUYER|SELLER|买方|卖方)\s*(?:\/\s*\S+\s*)?[:：]?\s*/i, '')));
-  const hanOf = x => /[一-鿿]/.test(x || '');
-  const alt = lines.find((l, k) => k !== nameLine && COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址|HOLDER|户名|^TO\b|^致)/i.test(l) && hanOf(l) !== hanOf(o.name));
-  if (alt && o.name) o.nameAlt = cutCo(alt.replace(/^(名\s*称|公司名称)\s*[:：]\s*/, ''));
-  if (!o.address && nameLine >= 0) for (const nx of lines.slice(nameLine + 1, nameLine + 3).filter(x => !COMPANY_RE.test(x)).slice(0, 1)) { if (/\d/.test(nx) && !/(识别号|信用代码|税\s*号|TEL|电话|FAX|传真|E-?MAIL|@|账号|帐号|开户|A\/C|ACCOUNT)/i.test(nx) && /(ROAD|RD\b|R\/D|STREET|ST\.|AVE|AVENUE|BLOCK|ROOM|RM\b|FLOOR|\bF\b|BUILDING|B\/D|DISTRICT|路|号|區|区|市|大厦|大廈|栋|楼|동|로|길)/i.test(nx) && nx.length <= 140) o.address = nx; }
-  if (o.address && (Array.isArray(S.co.banks) ? S.co.banks : []).some(b => b.bankAddress && b.bankAddress.replace(/\s/g, '').slice(0, 14).toLowerCase() === o.address.replace(/\s/g, '').slice(0, 14).toLowerCase())) o.address = '';
-  if (o.address && [S.co.addressZh, S.co.addressEn, S.co.regAddressZh].some(a => a && a.replace(/\s/g, '').slice(0, 12) === o.address.replace(/\s/g, '').slice(0, 12))) o.address = '';
-  const blob = (o.address || '') + ' ' + lines.slice(Math.max(0, nameLine), Math.max(0, nameLine) + (o.address ? 3 : 6)).filter(l => !isOurs(l)).join(' ');
+  o.taxId = ([...t.matchAll(/(?:统一社会信用代码|纳税人识别号|税\s*号|USCC|TAX\s*ID|VAT\s*NO\.?|사업자\s*(?:등록)?\s*번호)\s*(?:\/[^:：\n]*)?\s*[:：]?\s*([A-Z0-9][A-Z0-9\-]{8,20})/gi)].map(m => m[1].toUpperCase()).find(x => !(P.tax && (coKey(x) === P.tax || (x.length >= 15 && levD(coKey(x), P.tax) <= 2))))) || '';
+  o.contact = ([...t.matchAll(/(?:联系人|聯絡人|CONTACT(?:\s*PERSON)?|ATTN\.?|담당자?)\s*[:：.]?\s*([^\n,，|:：]{2,30})/gi)].map(m => m[1].replace(/\s*(TEL|电话|手机|\+?\d[\d\s\-]{6,}).*$/i, '').trim()).find(x => x && !P.people.some(p => x.includes(p)))) || '';
+  const addrs = [];
+  for (const l of lines) for (const m of l.matchAll(/(?:^|[^A-Za-z银行\/ ]\s*|\s)(?:地\s*址(?:\s*[、及和]?\s*电\s*话)?|ADDRESS|ADD\.|주\s*소)\s*[:：]\s*([^\n]{6,140})/gi)) addrs.push(m[1].split(/\s(?:地\s*址|ADDRESS)\s*[:：]/i)[0]);
+  const ourAddr = a => /addr/.test(oursIdHit(a)) || [S.co.addressZh, S.co.addressEn, S.co.regAddressZh].some(x => x && x.replace(/\s/g, '').slice(0, 12) === a.replace(/\s/g, '').slice(0, 12)) || (Array.isArray(S.co.banks) ? S.co.banks : []).some(b => b.bankAddress && b.bankAddress.replace(/\s/g, '').slice(0, 14).toLowerCase() === a.replace(/\s/g, '').slice(0, 14).toLowerCase());
+  o.address = (addrs.map(a => a.replace(/\s*(TEL|电话|FAX|传真)\b.*$/i, '').replace(/\s*\|.*$/, '').replace(/\s+\+?\d[\d\-() ]{6,}$/, '').trim()).find(a => a && !ourAddr(a))) || '';
+  // the name: the other party the document names; otherwise the first company line that is not us
+  let nameLine = -1;
+  if (dp.them) { o.name = snapName(ocrTrim(dp.them.name)); if (dp.them.alt && !isOurs(dp.them.alt)) o.nameAlt = dp.them.alt; }
+  else {
+    const cutCo = x => { x = String(x || '').trim(); const m = x.match(/^(.*?(?:LIMITED|LTD\.?|CO\.,?\s*LTD\.?|CORPORATION|CORP\.?|INC\.?|LLC|GMBH|有限责任公司|有限公司|股份公司|株式会社|주식회사))(?=\s|$|[,，|])/i); return m && /[:：|]|\b(PO|DATE|NO|TEL|FAX|DATED)\b|日期|编号|电话/i.test(x.slice(m[1].length)) ? m[1].trim() : x; };
+    nameLine = lines.findIndex(l => COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址|户名|HOLDER)/i.test(l) && !/[，。！？]/.test(l));
+    const nm = nameLine >= 0 ? partyName(lines[nameLine].replace(/^(TO|FROM|致|BUYER|SELLER|买方|卖方)\s*(?:\/\s*\S+\s*)?[:：]?\s*/i, '')) || cutCo(lines[nameLine]) : '';
+    if (nm && !isOurs(nm)) o.name = snapName(ocrTrim(nm));
+    const alt = lines.find((l, k) => k !== nameLine && COMPANY_RE.test(l) && l.length <= 70 && !isOurs(l) && !/(BANK|银行|BENEFICIARY|收款|开户|ADDRESS|地址|HOLDER|户名|^TO\b|^致)/i.test(l) && hanOf(l) !== hanOf(o.name) && !findLabels(l).length);
+    if (alt && o.name) o.nameAlt = partyName(alt) || alt;
+  }
+  if (o.name) nameLine = lines.findIndex(l => coKey(l).includes(coKey(o.name)));
+  if (!o.address && nameLine >= 0) for (const nx of lines.slice(nameLine + 1, nameLine + 3).filter(x => !COMPANY_RE.test(x)).slice(0, 1)) { if (/\d/.test(nx) && !/(识别号|信用代码|税\s*号|TEL|电话|FAX|传真|E-?MAIL|@|账号|帐号|开户|A\/C|ACCOUNT)/i.test(nx) && /(ROAD|RD\b|R\/D|STREET|ST\.|AVE|AVENUE|BLOCK|ROOM|RM\b|FLOOR|\bF\b|BUILDING|B\/D|DISTRICT|路|号|區|区|市|大厦|大廈|栋|楼|동|로|길)/i.test(nx) && nx.length <= 140 && !ourAddr(nx)) o.address = nx; }
+  const blob = (o.address || '') + ' ' + (o.name || '') + ' ' + (o.nameAlt || '') + ' ' + (nameLine >= 0 ? lines.slice(nameLine, nameLine + (o.address ? 3 : 6)).filter(l => !isOurs(l)).join(' ') : '');
   o.country = /HONG ?KONG|香港|九龍|九龙/i.test(blob) ? 'Hong Kong' : /KOREA|대한민국|한국|SEOUL|서울|韩国/i.test(blob) ? 'Korea' : /CHINA|中国|广东|深圳|上海|浙江|江苏|东莞|广州/i.test(blob) ? 'China' : /JAPAN|日本/i.test(blob) ? 'Japan' : /U\.?S\.?A|UNITED STATES/i.test(blob) ? 'USA' : '';
   o.banks = parseBanks(t); snapHolder(o.banks, o.name, o.nameAlt);
-  if (o.name && !isOurs(o.name)) o.kindGuess = /(LOGISTICS|FORWARD|SHIPPING|FREIGHT|EXPRESS|货运|货代|物流|国际运输|报关|船务|물류|포워딩|통관)/i.test(o.name + ' ' + (o.nameAlt || '')) ? 'forwarder' : (BILL_TITLE.test(t) && o.banks.length) || /(SELLER|SUPPLIER|供方|卖方|供应商)/i.test(lines.slice(Math.max(0, nameLine - 2), nameLine + 1).join(' ').split(o.name)[0]) ? 'supplier' : /(BUYER|买方|需方|购买方)/i.test(lines.slice(Math.max(0, nameLine - 2), nameLine + 1).join(' ').split(o.name)[0]) ? 'buyer' : '';
+  if (o.name) {
+    const near = nameLine >= 0 ? lines.slice(Math.max(0, nameLine - 2), nameLine + 1).join(' ').split(o.name)[0] : '';
+    o.kindGuess = /(LOGISTICS|FORWARD|SHIPPING|FREIGHT|EXPRESS|货运|货代|物流|国际运输|报关|船务|물류|포워딩|통관)/i.test(o.name + ' ' + (o.nameAlt || '')) ? 'forwarder'
+      : dp.ourRole === 'buyer' ? 'supplier' : dp.ourRole === 'seller' ? 'buyer'
+      : /(收款账户|收款账号|收款信息|开票资料|开票信息|请付款|请安排付款|PLEASE\s*REMIT|REMIT\s*TO)/i.test(t) && o.banks.length ? 'supplier'
+      : (BILL_TITLE.test(t) && o.banks.length) || /(SELLER|SUPPLIER|供方|卖方|供应商)/i.test(near) ? 'supplier' : /(BUYER|买方|需方|购买方)/i.test(near) ? 'buyer' : '';
+  }
   Object.keys(o).forEach(k => { if (o[k] === '' || (Array.isArray(o[k]) && !o[k].length)) delete o[k]; });
   return o;
 }
@@ -2289,7 +2714,7 @@ function openPartner(p, opts = {}) {
   p = Object.assign({ kind: 'buyer', banks: [] }, p ? JSON.parse(JSON.stringify(p)) : {});
   const body = `${opts.banner ? `<div class="banner info"><span>${esc(opts.banner)}</span></div>` : ''}
     <div class="f"><span>붙여넣어 채우기</span><textarea class="in" id="pt-paste" rows="3" placeholder="명함, 위챗 메시지, 인보이스 머리글, 계좌 안내를 붙여넣으면 이름·연락처·계좌를 찾아 빈칸을 채워요">${esc(opts.paste || '')}</textarea>
-      <div class="actions"><button type="button" class="btn btn-s" id="pt-fill">빈칸 채우기</button><label class="btn btn-s">${svg('upload')}PDF·사진에서 읽기<input type="file" class="sr" id="pt-file" accept="application/pdf,.pdf,image/*"></label><small class="muted" id="pt-fill-msg"></small></div></div>
+      <div class="actions"><button type="button" class="btn btn-s" id="pt-fill">빈칸 채우기</button><label class="btn btn-s">${svg('upload')}PDF·사진·엑셀에서 읽기<input type="file" class="sr" id="pt-file" accept="application/pdf,.pdf,image/*,.xlsx,.xls,.csv"></label><small class="muted" id="pt-fill-msg"></small></div></div>
     <form class="fgrid" id="pt-form" autocomplete="off">
     ${F('거래처 이름', inp('name', p.name, { req: 1 }), 'full')}
     ${F('구분', sel('kind', p.kind || 'buyer', PT_KIND))}${F('국가', inp('country', p.country, { ph: 'China' }))}
@@ -2337,6 +2762,7 @@ function openPartner(p, opts = {}) {
 /* text out of a PDF the user picked */
 async function docText(f, msgEl) {
   const say = t => { if (msgEl) msgEl.textContent = t; };
+  if (isSheetFile(f)) { say('엑셀 읽는 중…'); try { const r = await readSheetFile(f); say(r.text.trim() ? '엑셀에서 읽었어요.' : '엑셀에서 회사 정보를 찾지 못했어요.'); return r.text; } catch (e) { say('엑셀을 읽지 못했어요.'); return ''; } }
   if (!(/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name))) {
     if (!ocrHere()) { say('사진은 사진 앱에서 글자를 길게 눌러 모두 선택 → 복사한 뒤 위 칸에 붙여넣어 주세요.'); return ''; }
     try { const r = await readPhoto(f, say); say(r.text.trim() ? '사진에서 읽었어요. 틀린 글자는 고쳐 주세요.' : '사진에서 글자를 찾지 못했어요.'); return r.text; }
@@ -2347,7 +2773,7 @@ async function docText(f, msgEl) {
   catch (e) { say('PDF를 읽지 못했어요.'); return ''; }
 }
 function openPtPaste() {
-  const body = `<div class="f"><span>서류 PDF</span><div class="actions"><label class="btn btn-p">${svg('upload')}인보이스·계약서 PDF·사진 고르기<input type="file" class="sr" id="pp-file" accept="application/pdf,.pdf,image/*"></label></div>
+  const body = `<div class="f"><span>서류 PDF</span><div class="actions"><label class="btn btn-p">${svg('upload')}인보이스·계약서 PDF·사진·엑셀 고르기<input type="file" class="sr" id="pp-file" accept="application/pdf,.pdf,image/*,.xlsx,.xls,.csv"></label></div>
     <small id="pp-msg">회사 이름(중문·영문), 주소, 전화, 세금번호, 계좌(开户行·账号·收款人)를 찾아 채워요. 인터넷 없이 앱이 직접 읽어요.</small></div>
     <div class="f"><span>또는 글자 붙여넣기</span><textarea class="in" id="pp-text" rows="5" placeholder="명함 사진의 글자, 위챗으로 받은 회사 정보·계좌 안내, 인보이스에서 복사한 글자"></textarea>
     <small>아이폰은 사진의 글자를 길게 눌러 <b>모두 선택 → 복사</b>하면 돼요.</small></div>`;
@@ -2857,7 +3283,8 @@ const isBill = p => !!p && p.kind === 'bill';
 const BILL_ST = [['open', '결제 전'], ['done', '완료'], ['cancel', '취소']];
 const dueTag = due => !due ? '' : due.dflt ? ` (조건 없음 · 발행일+${due.days}일)` : due.est ? ' (추정)' : '';
 const ourNames = () => { const co = S.co; return [co.nameEn, co.nameZh, co.nameKo, (co.brand || '').length >= 4 ? co.brand : ''].filter(Boolean).map(x => x.replace(/[\s.,()（）]/g, '').toLowerCase()); };
-const isOurs = n => { const k = String(n || '').replace(/[\s.,()（）]/g, '').toLowerCase(); return !!k && k.length >= 3 && ourNames().some(o => o && (k.includes(o) || (o.includes(k) && k.length >= 6))); };
+/* our own company, also when written another way or misread (深圳市艾沃端电子…, AVORY ELECTRONICS CO., LIMITED) */
+const isOurs = n => oursHit(n) >= 0.5;
 const COMPANY_RE = /(LIMITED|LTD\.?|CO\.,?\s*LTD|CORPORATION|CORP\.?|INC\.?|LLC|GMBH|有限公司|有限责任公司|股份公司|公司|商行|株式会社|주식회사|\(주\)|㈜)/i;
 const BILL_TITLE = /\b(INVOICE|DEBIT\s*NOTE|BILL(?:ING)?\s*STATEMENT|STATEMENT OF ACCOUNT|PAYMENT REQUEST|PAYMENT NOTICE)\b|请款单|请款|付款通知|付款申请|账单|对账单|费用(确认|结算)单|结算单|增值税(专用|普通|电子)?发票|电子发票|发票|發票|청구서|세금계산서|거래명세서|請求書/i;
 function parseBillText(text) {
@@ -2869,9 +3296,9 @@ function parseBillText(text) {
   const amt = s => { const m = String(s || '').match(/-?[\d,]+\.\d{2}\b|-?\d{1,3}(?:,\d{3})+(?!\.\d)\b/g); return m ? parseNum(m[m.length - 1]) : 0; };
   // total: prefer "amount due / 应付 / 价税合计(小写)" over a plain TOTAL line
   const pick = [
-    /(AMOUNT\s*DUE|BALANCE\s*DUE|TOTAL\s*DUE|AMOUNT\s*PAYABLE|PLEASE\s*PAY|应付金额|本期应付|应付合计|请款金额|청구\s*금액|청구액)/i,
+    /(AMOUNT\s*DUE|BALANCE\s*DUE|TOTAL\s*DUE|AMOUNT\s*PAYABLE|TOTAL\s*PAYABLE|PLEASE\s*PAY|应付金额|本期应付|应付合计|应付总额|应收金额|本期应收|应收合计|请款金额|申请金额|付款申请[^\d\n]{0,12}金额|本次(?:付款|申请|应付|应收|结算|请款)[^\d\n]{0,12}金额|结算金额|付款金额|청구\s*금액|청구액)/i,
     /(价税合计|（小写）|\(小写\)|小写)/,
-    /(GRAND\s*TOTAL|TOTAL\s*AMOUNT|INVOICE\s*TOTAL|合\s*计|总\s*计|总金额|합계\s*금액|총\s*액|TOTAL)/i
+    /(GRAND\s*TOTAL|TOTAL\s*AMOUNT|INVOICE\s*TOTAL|NET\s*AMOUNT|合\s*计|總\s*計|总\s*计|总金额|金额合计|合计金额|总\s*额|합계\s*금액|총\s*액|TOTAL)/i
   ];
   let total = 0, totalLine = '';
   for (const re of pick) {
@@ -2883,6 +3310,9 @@ function parseBillText(text) {
     }
     if (total) break;
   }
+  // no total line (or it is cut off in the photo): the numbered rows added up, else the amount in Chinese capitals (贰万柒仟肆佰元整)
+  if (!(total > 0)) { const rs = rowAmounts(lines); if (rs.length) { total = Math.round(sumBy(rs, r => r.amt) * 100) / 100; totalLine = rs.map(r => r.desc).join(' '); } }
+  if (!(total > 0)) { const up = lines.find(l => /大写|大寫/.test(l) || /人民币[零壹贰叁肆伍陆柒捌玖]/.test(l)); const v = up ? cnUpperNum(up) : NaN; if (v > 0) { total = v; totalLine = up + ' 元'; } }
   if (!(total > 0)) return null;
   // currency
   const curOf = s => { const m = String(s).match(/\b(USD|CNY|RMB|EUR|JPY|KRW|HKD|GBP)\b|US\$|人民币|￥|¥|元|원|₩|\$/i); if (!m) return ''; const k = m[0].toUpperCase(); return { RMB: 'CNY', '人民币': 'CNY', '￥': 'CNY', '¥': 'CNY', '元': 'CNY', '원': 'KRW', '₩': 'KRW', 'US$': 'USD', '$': 'USD' }[k] || k; };
@@ -2902,9 +3332,16 @@ function parseBillText(text) {
   const hanOf = x => /[一-鿿]/.test(x || '');
   const issuerAlt = issuer ? (lines.slice(0, 12).find(l => l !== issuer && COMPANY_RE.test(l) && !toRe.test(l) && !(billTo && l.includes(billTo)) && l.length <= 80 && !isOurs(l) && !/(BANK|银行)/i.test(l) && hanOf(l) !== hanOf(issuer)) || '').trim() : '';
   const charges = []; { const hi = lines.findIndex(l => /^(DESCRIPTION|项目|品名|费用名称|费用项目|ITEM|CHARGE)/i.test(l) && /(AMOUNT|金额)/i.test(l)); for (let k = hi + 1; hi >= 0 && k < lines.length && charges.length < 20; k++) { const l = lines[k]; if (/TOTAL|合计|总计|REMARK|备注/i.test(l)) break; const mm = l.match(/^([A-Za-z一-鿿][^\d]{1,60}?)\s+[\d*].*?([\d,]+\.\d{2})\s*$/); if (mm) charges.push({ desc: mm[1].trim(), amt: parseNum(mm[2]) }); } }
+  if (!charges.length) rowAmounts(lines).forEach(r => charges.push({ desc: r.desc, amt: r.amt }));
   const ti = lines.findIndex(l => BILL_TITLE.test(l)); const head = lines.slice(0, ti > 2 ? ti : 8).join('\n');
-  const dir = usIssuer && !usTo ? 'export' : 'import';
-  const partnerName = dir === 'export' ? billTo : issuer;
+  // who is who: the document's own labels (收款方 / 付款方, 购买方 / 销售方, Bill To…) decide; the heading is the fallback
+  const dp = docParties(raw);
+  let dir = usIssuer && !usTo ? 'export' : 'import';
+  if (dp.ourRole) dir = dp.ourRole === 'seller' ? 'export' : 'import'; else if (dp.us && dp.us.issuer) dir = 'export';
+  let partnerName = dp.them ? dp.them.name : dir === 'export' ? billTo : issuer;
+  if (!dp.them && partnerName) { partnerName = partyName(partnerName) || ''; if (!looksCompany(partnerName, true)) partnerName = ''; }
+  if (partnerName && isOurs(partnerName)) partnerName = dir === 'export' ? (isOurs(billTo) ? '' : billTo) : (isOurs(issuer) ? '' : issuer);
+  partnerName = partnerName ? snapName(ocrTrim(partnerName)) : '';
   // numbers: invoice / debit no, and other references (B/L, job, PO)
   const codeRe = /\b[A-Z]{1,8}[-_]?\d{4,}[\w\-\/]*\b/g;
   const codes = [...new Set((all.match(codeRe) || []).filter(c => !/^(TEL|FAX|USD|CNY|RMB|HKD|ROOM|RM|NO)\d*$/i.test(c)))];
@@ -2918,7 +3355,7 @@ function parseBillText(text) {
   while ((dm = dRe.exec(all))) { const s = `${dm[1]}-${pad2(dm[2])}-${pad2(dm[3])}`; if (isYmd(s) && +dm[2] <= 12 && +dm[3] <= 31) dates.push({ s, at: dm.index }); }
   const dueM = all.match(/(?:DUE\s*DATE|PAYMENT\s*DUE|DUE\s*ON|PAY(?:ABLE)?\s*BY|PLEASE\s*PAY\s*(?:BEFORE|BY)|付款期限|最迟付款日|最晚付款日|到期日|付款日期|请于|지급\s*기한|결제\s*기한|납부\s*기한|입금\s*기한)[^\n\d]{0,12}(\d{4}\s*[-./年]\s*\d{1,2}\s*[-./月]\s*\d{1,2})/i);
   const payDue = dueM ? parseAnyDate(dueM[1]) || '' : '';
-  const issueM = all.match(/(?:ISSUE\s*DATE|INVOICE\s*DATE|DATE\s*OF\s*ISSUE|开票日期|开具日期|日\s*期|발행일|작성일자?)[^\n\d]{0,12}(\d{4}\s*[-./年]\s*\d{1,2}\s*[-./月]\s*\d{1,2})/i);
+  const issueM = all.match(/(?:ISSUE\s*DATE|INVOICE\s*DATE|DATE\s*OF\s*ISSUE|开票日期|开具日期|开单日期|单据日期|出单日期|日\s*期|발행일|작성일자?)[^\n\d]{0,12}(\d{4}\s*[-./年]\s*\d{1,2}\s*[-./月]\s*\d{1,2})/i);
   const date = (issueM && parseAnyDate(issueM[1])) || (dates.find(d => d.s !== payDue) || {}).s || todayStr();
   const termsM = all.match(/(?:PAYMENT\s*TERMS?|TERMS)\s*[:：]?\s*((?:NET\s*\d+|\d+\s*DAYS?)[^\n]{0,30})/i) || all.match(/(月结\s*\d+\s*天|票到\s*\d+\s*天[^\n]{0,10}|开票后\s*\d+\s*天)/);
   // bank details printed on the bill (where to pay)
@@ -2935,10 +3372,10 @@ function parseBillText(text) {
   const descWord = { logistics: '물류비', customs: '관세·통관', rent: '임차료', purchase: '매입', expense: '경비', sales: '매출 청구' }[category];
   const memo = [ship ? `출하 ${ship.ref || ''}${ship.blNo ? ' · B/L ' + ship.blNo : ''}` : '', vsl ? `선박 ${vsl.trim()}` : '', route.length === 2 ? route.join(' → ') : '', billTo && !usTo && dir === 'import' ? `청구서 수신처: ${billTo}` : ''].filter(Boolean).join(' · ');
   return {
-    kind: 'bill', dir, no, partnerName: (partnerName || '').slice(0, 80), billTo, issuer, toOther: dir === 'import' && !!billTo && !usTo, title: title.toUpperCase(),
+    kind: 'bill', dir, no, partnerName: (partnerName || '').slice(0, 80), billTo, issuer, toOther: dir === 'import' && !!billTo && !usTo && !dp.us && coKey(billTo) !== coKey(partnerName), title: title.toUpperCase(),
     poDate: date, payDue, payTerms: termsM ? termsM[1].trim() : '', currency, total, category,
-    items: charges.length > 1 && Math.abs(sumBy(charges, c => c.amt) - total) <= Math.max(0.05, total * 0.005) ? charges.map(c => ({ desc: c.desc, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: c.amt })) : [{ desc: `${descWord}${no ? ' · ' + no : ''}${charges.length ? ' (' + charges.map(c => c.desc).slice(0, 4).join(', ') + ')' : ''}`, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: total }], issuerAlt,
-    refPo: po ? po.no : (ship && ship.blNo) || refs[0] || '', poLink: po ? po.id : '', shipId: ship ? ship.id : '', supBank: bankLines.join('\n'), memo, status: 'open', source: 'ocr',
+    items: charges.length > 1 && Math.abs(sumBy(charges, c => c.amt) - total) <= Math.max(0.05, total * 0.005) ? charges.map(c => ({ desc: c.desc, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: c.amt })) : [{ desc: `${descWord}${no ? ' · ' + no : ''}${charges.length ? ' (' + charges.map(c => c.desc).slice(0, 4).join(', ') + ')' : ''}`, descKo: '', spec: '', hs: '', qty: 1, unit: '', price: total }], issuerAlt: (dp.them && dp.them.alt) || (dir === 'import' ? issuerAlt : ''),
+    refPo: po ? po.no : (ship && ship.blNo) || refs[0] || '', poLink: po ? po.id : '', shipId: ship ? ship.id : '', supBank: dir === 'import' ? bankLines.join('\n') : '', memo, status: 'open', source: 'ocr',
     ptInfo: dir === 'import' ? Object.assign((() => { const o = parsePartnerText(head); delete o.name; delete o.banks; delete o.nameAlt; return o; })(), { banks: (bk => (snapHolder(bk, issuer, issuerAlt), bk))(parseBanks(all)) }, issuerAlt ? { nameAlt: issuerAlt } : {}) : {}
   };
 }
@@ -3442,7 +3879,7 @@ ${String(text).slice(0, 60000)}
 }
 function ocrPrompt(kind, note, text) {
   const co = S.co;
-  const names = [co.nameKo, co.nameEn, co.nameZh].filter(Boolean).join(' / ') || '(not set yet)';
+  const names = [co.nameKo, co.nameEn, co.nameZh, co.aliases].filter(Boolean).join(' / ') || '(not set yet)';
   const partners = S.partners.filter(p => !p.sample).slice(0, 80).map(p => p.name).join(', ');
   const poNos = S.pos.slice(0, 80).map(p => p.no).filter(Boolean).join(', ');
   const want = { auto: 'Decide the kind yourself.', order: 'This is an order-type document: purchase order, sales contract, quotation, proforma or commercial invoice (订单/采购单/合同/报价单/形式发票/发票).', bank: 'These are bank statements, bank app screenshots or payment notifications.', receipt: 'This is a receipt or Chinese invoice (发票) for an expense.', shipping: 'These are shipping documents: B/L, booking confirmation, arrival notice (提单/订舱确认/到货通知/入仓单).', text: 'Only transcribe the text and translate it.' }[kind] || 'Decide the kind yourself.';
@@ -3511,22 +3948,36 @@ function parseAnyDate(s) {
 const CUR_WORD = { '人民币元': 'CNY', '人民币': 'CNY', RMB: 'CNY', CNY: 'CNY', '美元': 'USD', USD: 'USD', '港币': 'HKD', '港元': 'HKD', HKD: 'HKD', '欧元': 'EUR', EUR: 'EUR', '日元': 'JPY', JPY: 'JPY', '韩元': 'KRW', KRW: 'KRW', '英镑': 'GBP', GBP: 'GBP' };
 const BOC_LABELS = ['国际汇款', '网上支付', '收费', '冲正', '转账收入', '转账支出', '代发划转', '代发收费', '实时缴税', '跨行转账', '本行转账', '转账', '工资', '利息', '结息', '存入', '取款', '消费', '退款', '手续费', '汇款', '汇入', '汇出', '结汇', '购汇', '快捷支付', '批量代发'];
 const BOC_NOISE = /^(查询结果|推荐服务|汇总信息|默认排序|筛选|余额|交易|今日余额|历史余额|已为您加载全部数据|加载更多|返回|\d{1,2}:\d{2}|[-–—]+|\.+|筛选\S*|共\s*\d+\s*个结果)$/;
-/* bank app transaction lists copied with iPhone text recognition (中国银行 查询结果 and similar) */
+/* bank app transaction lists copied with iPhone text recognition or read from a screenshot (中国银行 查询结果 and similar) */
+const bocLabel = s => { s = zhs(String(s || '').replace(/\s/g, '')); if (!s) return ''; const ex = BOC_LABELS.find(x => s === x); if (ex) return ex; if (s.length >= 3) { const f = BOC_LABELS.filter(x => x.length >= 3 && Math.abs(x.length - s.length) <= 1).find(x => levD(s, x) <= 1); if (f) return f; } return ''; };
+const cpOk = s => { s = String(s || '').trim(); const cj = (s.match(/[一-鿿]/g) || []).length; if (cj) return cj >= 2 && cj >= s.replace(/\s/g, '').length * 0.6; const L = (s.match(/[A-Za-z]/g) || []).length; return /[A-Za-z]{4,}/.test(s) && L >= 5 && L >= s.replace(/\s/g, '').length * 0.7 && (s.match(/[A-Z]/g) || []).length >= L * 0.8 && s.split('(').length === s.split(')').length && !/[\][{}]/.test(s); };
 function parseBankScreenText(text) {
-  const lines = String(text || '').replace(/\r/g, '').split('\n').map(s => s.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  const lines = String(text || '').replace(/\r/g, '').split('\n').map(s => s.replace(/\s+/g, ' ').replace(/\s*[|│]\s*/g, ' ').trim()).filter(Boolean);
   const DT = /(20\d{2})[\/.\-](\d{1,2})[\/.\-](\d{1,2})\s+(\d{1,2}):(\d{2})(?::(\d{2}))?/;
+  // a type label printed at the right of the date sometimes comes out on the line above it
+  for (let i = 0; i + 1 < lines.length; i++) { const lb = bocLabel(lines[i]); if (lb && DT.test(lines[i + 1]) && !lines[i + 1].replace(DT, '').trim() && !(i > 0 && DT.test(lines[i - 1]) && !lines[i - 1].replace(DT, '').trim())) { lines[i + 1] += ' ' + lb; lines.splice(i, 1); } }
   const idx = lines.map((l, i) => DT.test(l) ? i : -1).filter(i => i >= 0);
   if (!idx.length) return [];
   const head = lines.slice(0, idx[0]).join('\n');
   let our = ''; const hm = head.match(/(?:^|\n)(\d{9,20})(?:\n|$)/); if (hm) our = hm[1];
   const bank = /中国银行/.test(text) ? '中国银行' : (head.match(/[一-鿿]{2,8}银行/) || [''])[0];
+  const known = [...new Set(S.txns.slice(-400).map(t => t.counterparty).filter(Boolean))];
   const out = [];
   idx.forEach((start, k) => {
     const end = k + 1 < idx.length ? idx[k + 1] : lines.length;
     const block = lines.slice(start, end);
     const m = block[0].match(DT);
-    let rest = [block[0].replace(m[0], '').trim(), ...block.slice(1)].filter(Boolean);
-    let cur = '', amt = NaN, sign = 0, label = '', acct = '';
+    // what follows the date on its row is the transaction type (网上支付, 收费…), even when misread
+    const dtRest = block[0].replace(m[0], '').trim();
+    let label = '', typeRaw = '';
+    let rest = block.slice(1);
+    if (dtRest) {
+      const lb = bocLabel(dtRest) || bocLabel(dtRest.split(' ').pop());
+      if (lb) label = lb;
+      else if (dtRest.replace(/[^一-鿿A-Za-z]/g, '').length <= 6 && !cpOk(dtRest)) typeRaw = /[一-鿿]{2}/.test(dtRest) ? dtRest : '';
+      else rest = [dtRest, ...rest];
+    }
+    let cur = '', amt = NaN, sign = 0, acct = '';
     const used = new Set();
     rest.forEach((l, i) => {
       if (isNaN(amt)) {
@@ -3534,17 +3985,25 @@ function parseBankScreenText(text) {
         if (a && (a[1] || /^[+\-－]?\s*[\d,]+\.\d{2}$/.test(l))) { amt = parseNum(a[3]); sign = a[2] === '-' || a[2] === '－' ? -1 : a[2] === '+' ? 1 : 0; cur = a[1] ? CUR_WORD[a[1]] : ''; used.add(i); if (!cur && i > 0 && CUR_WORD[rest[i - 1]]) { cur = CUR_WORD[rest[i - 1]]; used.add(i - 1); } return; }
       }
       if (CUR_WORD[l] && !cur) { cur = CUR_WORD[l]; used.add(i); return; }
-      if (!label) { const lb = BOC_LABELS.find(x => l === x || l.endsWith(' ' + x) || l.startsWith(x + ' ')); if (lb) { label = lb; const left = l.replace(lb, '').trim(); if (left) rest[i] = left; else used.add(i); return; } }
-      if (/^\d{6,25}$/.test(l)) { if (!acct) acct = l; used.add(i); return; }
+      if (!label) { const lb = bocLabel(l) || BOC_LABELS.find(x => l.endsWith(' ' + x) || l.startsWith(x + ' ')); if (lb) { label = lb; const left = l.replace(lb, '').trim(); if (left && left !== l) rest[i] = left; else used.add(i); return; } }
+      if (/^[\d ]{6,30}$/.test(l) && digits(l).length >= 6) { if (!acct) acct = digits(l); used.add(i); return; }
       if (BOC_NOISE.test(l)) used.add(i);
     });
     if (!(amt > 0)) return;
     const OUT_ONLY = ['收费', '转账支出', '代发划转', '代发收费', '实时缴税', '手续费', '汇出', '购汇', '消费', '取款', '批量代发'];
     const IN_ONLY = ['国际汇款', '转账收入', '利息', '结息', '存入', '汇入', '退款', '冲正', '结汇'];
     const dir = sign < 0 ? 'out' : sign > 0 ? 'in' : OUT_ONLY.includes(label) ? 'out' : IN_ONLY.includes(label) ? 'in' : 'in';
-    const cp = rest.filter((l, i) => !used.has(i) && !/^\d+$/.test(l) && !BOC_NOISE.test(l) && /[A-Za-z一-鿿]/.test(l) && !BOC_LABELS.includes(l))[0] || '';
-    out.push({ dir, amount: amt, currency: cur || BASE(), date: `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`, time: `${pad2(m[4])}:${m[5]}`, counterparty: cp.slice(0, 40), bank, account: our, balance: null, memo: [label, acct].filter(Boolean).join(' · '), source: 'screen' });
+    let cp = rest.filter((l, i) => !used.has(i) && !/^[\d ]+$/.test(l) && !BOC_NOISE.test(l) && /[A-Za-z一-鿿]/.test(l) && !BOC_LABELS.includes(l))[0] || '';
+    cp = cpOk(cp) ? snapName(cp, known) : '';
+    out.push({ dir, amount: amt, currency: cur || BASE(), date: `${m[1]}-${pad2(m[2])}-${pad2(m[3])}`, time: `${pad2(m[4])}:${m[5]}`, counterparty: cp.slice(0, 40), bank, account: our, balance: null, memo: [label || typeRaw, acct].filter(Boolean).join(' · '), source: 'screen' });
   });
+  // a name the camera could not read: the same counterparty account (their bank details, an earlier record, another row here) tells who it is
+  const acctName = new Map(), firstAcct = s => (String(s || '').match(/\d{8,25}/) || [''])[0];
+  for (const p of S.partners) for (const b of p.banks || []) { const d = digits(b.account); if (d.length >= 8) acctName.set(d, p.name); }
+  for (const t of S.txns) { const d = firstAcct(t.memo); if (d && t.counterparty && !acctName.has(d)) acctName.set(d, t.counterparty); }
+  const pool = new Set([...known, ...S.partners.map(p => p.name)]);
+  for (const r of out) { const d = firstAcct(r.memo); if (d && pool.has(r.counterparty) && !acctName.has(d)) acctName.set(d, r.counterparty); }
+  for (const r of out) { const d = firstAcct(r.memo), k = d && acctName.get(d); if (!k || r.counterparty === k) continue; if (!r.counterparty || levD(coKey(r.counterparty), coKey(k)) <= Math.max(3, Math.floor(coKey(k).length / 3))) r.counterparty = k; }
   // a 冲正 (reversal) cancels the failed payment and its fee: mark both sides
   for (const r of out.filter(x => /冲正/.test(x.memo) && x.dir === 'in')) {
     r.category = 'reversal';
@@ -3619,12 +4078,12 @@ function parseOrderText(text) {
   const total = totalLine ? parseNum((totalLine.match(/[\d,]+\.\d{2}/g) || []).pop()) : 0;
   if (!items.length && !total) return null;
   const poNo = g(/(?:^|\n)\s*P\.?\s?O\.?\s*(?:No\.?|Number|#)?\s*[:：]\s*([A-Za-z0-9][\w\-\/.]{2,40})/i) || g(/(?:订单号|订单编号|采购单号|采购订单号|PO\s*No\.?)\s*[:：]?\s*([A-Za-z0-9][\w\-\/.]{2,40})/i);
-  const conNo = g(/(?:Contract\s*No\.?|合同编号|合同号|Invoice\s*No\.?|发票号)\s*[:：]\s*([A-Za-z0-9][\w\-\/.]{2,40})/i) || g(/(?:^|\n)No\.\s*[:：]\s*([A-Za-z0-9][\w\-\/.]{2,40})/);
+  const conNo = g(/(?:Contract\s*No\.?|合同编号|合同号|Invoice\s*No\.?|发票号|报价单号|报价编号|Quotation\s*No\.?|Quote\s*No\.?|PI\s*No\.?|单据编号)\s*[:：]\s*([A-Za-z0-9][\w\-\/.]{2,40})/i) || g(/(?:^|\n)No\.\s*[:：]\s*([A-Za-z0-9][\w\-\/.]{2,40})/);
   const dateStr = g(/(?:PO date|Order date|订单日期|Date|日期)[^:：\n]{0,16}[:：]\s*([^\n|]{6,32})/i);
   const date = parseAnyDate(dateStr) || parseAnyDate(all);
   // parties
-  const co = S.co, ours = [co.nameEn, co.nameZh, co.nameKo].filter(Boolean).map(x => x.replace(/[\s.,]/g, '').toLowerCase());
-  const isUs = n => { const k = String(n || '').replace(/[\s.,]/g, '').toLowerCase(); return !!k && ours.some(o => o && (k.includes(o) || o.includes(k))); };
+  const dp = docParties(raw);
+  const isUs = n => isOurs(n);
   const STOP = /^(SELLER|BUYER|卖方|买方|供方|需方|CONTRACT|DETAILS|No\.|PO|Date|日期|Currency|Effective|Basis|01\b|TO\b|FROM\b|SHIP TO|Consignee|Notify)/i;
   const block = re => {
     const i = lines.findIndex(l => re.test(l)); if (i < 0) return null;
@@ -3640,9 +4099,12 @@ function parseOrderText(text) {
   else if (seller && !isUs(seller[0])) { role = 'buyer'; pb = seller; }
   else if (buyer && isUs(buyer[0])) role = 'buyer';
   else if (seller && isUs(seller[0])) role = 'seller';
+  // the document's own labels (甲方/乙方, 供方/需方, To:, the heading…) know better when the BUYER/SELLER blocks miss or name us
+  if (dp.ourRole) role = dp.ourRole;
+  if (pb && (isUs(partyName(pb[0]) || pb[0]) || (dp.them && !coKey(pb.slice(0, 2).join(' ')).includes(coKey(dp.them.name))))) pb = null;
   const partner = { name: '', nameAlt: '', address: '', contact: '', tel: '', email: '', country: '' };
   if (pb) {
-    partner.name = pb[0];
+    partner.name = partyName(pb[0]) || pb[0];
     let k = 1;
     if (pb[1] && /(公司|LIMITED|LTD|CO\.|INC|有限|商行|集团)/i.test(pb[1]) && !/\d{3,}/.test(pb[1])) { partner.nameAlt = pb[1]; k = 2; }
     const addr = []; for (; k < pb.length; k++) { if (/(Attn|Tel|电话|联系人|Contact|Email|E-mail|邮箱|手机)/i.test(pb[k])) break; addr.push(pb[k]); }
@@ -3654,6 +4116,8 @@ function parseOrderText(text) {
     partner.banks = parseBanks(all);
     partner.country = /HONG ?KONG|香港|九龍|九龙|新界/i.test(bt) ? 'Hong Kong' : /KOREA|한국|대한민국|SEOUL|서울|韩国/i.test(bt) ? 'Korea' : /CHINA|中国|广东|深圳|上海|浙江|江苏/i.test(bt) ? 'China' : /USA|U\.S\.A|UNITED STATES/i.test(bt) ? 'USA' : /JAPAN|日本/i.test(bt) ? 'Japan' : '';
   }
+  else if (dp.them) { const info = parsePartnerText(raw); partner.name = dp.them.name; partner.nameAlt = dp.them.alt || info.nameAlt || ''; ['address', 'contact', 'tel', 'email', 'country'].forEach(k => { partner[k] = info[k] || ''; }); partner.banks = info.banks || []; }
+  if (partner.name) partner.name = snapName(ocrTrim(partner.name));
   // terms
   const payLine = lines.find(l => /^(Payment(?:\s*terms?)?|Terms of payment|付款方式|付款条件|结算方式|결제\s*조건)/i.test(l)) || lines.find(l => /(Payment terms?|付款方式|付款条件|결제\s*조건)\s*[:：]/i.test(l));
   const payTerms = payLine ? payLine.replace(/^.*?(Payment(?:\s*terms)?|付款方式|付款条件|付款|결제\s*조건)\s*(?:\/\s*付款)?\s*[:：]?\s*/i, '').split(/[;；。]/)[0].trim().slice(0, 100) : '';
@@ -3884,7 +4348,7 @@ function openSmart(opts = {}) {
   const KINDS = [['auto', '자동 판별'], ['bill', '청구서 (줄 돈·받을 돈)'], ['order', 'PO·계약'], ['bank', '은행 내역'], ['receipt', '영수증·发票'], ['shipping', '출하 정보'], ['text', '읽기·번역만']];
   const body = `${kind === 'bank' && !opts.text ? `<div class="banner info"><span>아이폰이 모아 둔 은행 문자 파일이 있으면 바로 가져와요. ${esc(smsLastLine())}</span><span class="actions">${smsFileBtn('btn btn-s', '파일 가져오기')}<button type="button" class="btn btn-s" data-act="sms-help">설정 방법</button></span></div>` : ''}<div class="f"><span>붙여넣기</span><textarea class="in" id="sm-text" rows="4" placeholder="은행 문자, 은행 앱 화면 글자, 주문 내용… 무엇이든 붙여넣으세요">${esc(opts.text || '')}</textarea>
       <small>${ocrHere() ? '사진은 아래에서 고르면 앱이 직접 글자를 읽어요. 일정표 사진은 생산 일정으로 바로 들어가요.' : '사진 속 글자는 아이폰에서 사진을 열고 글자를 길게 눌러 <b>모두 선택 → 복사</b>한 뒤 여기 붙여넣으면 앱이 바로 정리해요.'}</small></div>
-    <div class="f"><span>PDF · 사진</span><input type="file" id="sm-file" class="in" accept="application/pdf,image/*" multiple style="padding:9px"><small>${ocrHere() ? '계약서·인보이스 PDF와 사진(청구서·은행 화면·일정표)을 앱이 직접 읽어요. 사진은 처음 한 번 글자 사전(약 15MB)을 받아요.' : '계약서·PO·인보이스 PDF는 앱이 직접 읽어요. 원본은 함께 보관돼요.'}</small><div class="thumbs" id="sm-thumbs"></div></div>
+    <div class="f"><span>PDF · 사진 · 엑셀</span><input type="file" id="sm-file" class="in" accept="application/pdf,image/*,.xlsx,.xls,.csv" multiple style="padding:9px"><small>${ocrHere() ? '계약서·인보이스 PDF, 엑셀(청구서·은행 거래내역), 사진(청구서·은행 화면·일정표)을 앱이 직접 읽어요. 사진은 처음 한 번 글자 사전(약 15MB)을 받아요.' : '계약서·PO·인보이스 PDF와 엑셀은 앱이 직접 읽어요. 원본은 함께 보관돼요.'}</small><div class="thumbs" id="sm-thumbs"></div></div>
     ${F('덧붙일 말 (선택)', inp('sm-note', opts.note || '', { ph: '예: 이미 출하했고 목요일 웨이하이에서 출항' }))}
     <div class="f"><span>종류</span><div class="seg" id="sm-kind" role="group" aria-label="종류" style="flex-wrap:wrap">${KINDS.map(([k, l]) => `<button type="button" data-k="${k}" aria-pressed="${k === kind}">${l}</button>`).join('')}</div></div>
     <div id="sm-status"></div><div id="sm-out" style="display:flex;flex-direction:column;gap:12px"></div>`;
@@ -3893,7 +4357,7 @@ function openSmart(opts = {}) {
     mount: panel => {
       const st = $('#sm-status', panel), out = $('#sm-out', panel), go = $('#sm-go', panel), fin = $('#sm-file', panel), ta = $('#sm-text', panel);
       const urls = [];
-      fin.addEventListener('change', () => { urls.forEach(u => URL.revokeObjectURL(u)); urls.length = 0; files = [...fin.files]; $('#sm-thumbs', panel).innerHTML = files.map(f => { if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) return `<span class="chip mono">PDF · ${esc(f.name)}</span>`; const u = URL.createObjectURL(f); urls.push(u); return `<img src="${u}" alt="">`; }).join(''); });
+      fin.addEventListener('change', () => { urls.forEach(u => URL.revokeObjectURL(u)); urls.length = 0; files = [...fin.files]; $('#sm-thumbs', panel).innerHTML = files.map(f => { if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) return `<span class="chip mono">PDF · ${esc(f.name)}</span>`; if (isSheetFile(f)) return `<span class="chip mono">엑셀 · ${esc(f.name)}</span>`; const u = URL.createObjectURL(f); urls.push(u); return `<img src="${u}" alt="">`; }).join(''); });
       $('#sm-kind', panel).addEventListener('click', e => { const b = e.target.closest('[data-k]'); if (!b) return; kind = b.dataset.k; $$('#sm-kind [data-k]', panel).forEach(x => x.setAttribute('aria-pressed', String(x === b))); });
       const busy = (msg, stop) => { st.innerHTML = `<div class="busy"><span class="spin" aria-hidden="true"></span><span>${esc(msg)}</span>${stop ? '<button type="button" class="btn btn-s btn-q" data-oact="stop">멈추기</button>' : ''}</div>`; };
       const reveal = () => { go.textContent = '다시 읽기'; go.classList.remove('btn-p'); requestAnimationFrame(() => { try { out.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { } }); };
@@ -3915,12 +4379,15 @@ function openSmart(opts = {}) {
         const text = ta.value.trim(), note = readForm(panel)['sm-note'] || '';
         if (!text && !files.length && !(kind === 'shipping' && note)) { toast('붙여넣거나 파일을 올려 주세요.', 'crit'); return; }
         out.innerHTML = ''; st.innerHTML = ''; go.disabled = true;
-        const pdfImgs = [], photos = []; let pdfText = '', pdfFail = false;
+        const pdfImgs = [], photos = [], sheetTxns = []; let pdfText = '', pdfFail = false, sheetText = '', sheetFail = false;
         sendFiles = files.slice();
         for (const f of files) {
           if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) {
             busy(`PDF 읽는 중 · ${f.name}`);
             try { const r = await readPdf(f, SAMPLE ? 3 : 0); pdfImgs.push(...r.images); pdfText += `\n${r.text}`; } catch (e) { pdfFail = true; }
+          } else if (isSheetFile(f)) {
+            busy(`엑셀 읽는 중 · ${f.name}`);
+            try { const r = await readSheetFile(f); sheetTxns.push(...r.txns); if (r.text) sheetText += `\n${r.text}`; } catch (e) { sheetFail = true; }
           } else photos.push(f);
         }
         let photoText = '', ocrFail = false;
@@ -3930,13 +4397,15 @@ function openSmart(opts = {}) {
           catch (e) { ocrFail = true; }
         }
         st.innerHTML = '';
-        const all = [text, pdfText, photoText.trim()].filter(Boolean).join('\n\n');
+        const all = [text, pdfText, sheetText.trim(), photoText.trim()].filter(Boolean).join('\n\n');
         pending = { text: all, note, imgs: [...pdfImgs, ...(await Promise.all(photos.map(f => toJpeg(f))))] };
+        if (sheetTxns.length && (kind === 'auto' || kind === 'bank')) { go.disabled = false; show({ kind: 'bank', summary_ko: `엑셀 거래내역에서 ${sheetTxns.length}건을 읽었어요.`, transactions: sheetTxns, _local: true }, true); return; }
         if (kind !== 'text') { const r = localRead(all, note, kind); if (r) { go.disabled = false; show(r, true); return; } }
         go.disabled = false;
-        const why = pdfFail ? '이 PDF는 앱이 열지 못했어요.' : ocrFail ? '사진 읽기 엔진을 받지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.' : photoText.trim() ? `사진 글자는 읽었는데 청구서·은행 내역 형식으로 정리하지 못했어요. 읽은 글자를 위 칸에 넣어 둘게요. 고쳐서 다시 정리하기를 누르세요.` : photos.length && !all ? '사진 속 글자는 앱이 직접 읽지 못해요. 아이폰에서 사진의 글자를 길게 눌러 <b>모두 선택 → 복사</b>한 뒤 위에 붙여넣으면 무료로 바로 정리돼요.' : kind === 'text' ? '번역은 Claude가 해요.' : '이 형식은 앱이 스스로 정리하지 못했어요.';
+        const ptGuess = kind !== 'text' && all ? parsePartnerText(all) : {};
+        const why = pdfFail ? '이 PDF는 앱이 열지 못했어요.' : sheetFail ? '이 엑셀 파일은 앱이 열지 못했어요. xlsx나 csv로 다시 저장해 보세요.' : ptGuess.name ? `청구서·주문·은행 내역은 아니지만 거래처 정보(<b>${esc(ptGuess.name)}</b>)가 있어요.` : ocrFail ? '사진 읽기 엔진을 받지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.' : photoText.trim() ? `사진 글자는 읽었는데 청구서·은행 내역 형식으로 정리하지 못했어요. 읽은 글자를 위 칸에 넣어 둘게요. 고쳐서 다시 정리하기를 누르세요.` : photos.length && !all ? '사진 속 글자는 앱이 직접 읽지 못해요. 아이폰에서 사진의 글자를 길게 눌러 <b>모두 선택 → 복사</b>한 뒤 위에 붙여넣으면 무료로 바로 정리돼요.' : kind === 'text' ? '번역은 Claude가 해요.' : '이 형식은 앱이 스스로 정리하지 못했어요.';
         if (photoText.trim() && !text) ta.value = photoText.trim();
-        st.innerHTML = `<div class="banner"><span>${why}${SAMPLE ? ' 필요하면 Claude로 읽을 수 있어요(Claude 사용량을 써요).' : ''}</span>${SAMPLE ? '<button type="button" class="btn btn-s" data-oact="claude">Claude로 읽기</button>' : ''}</div>`;
+        st.innerHTML = `<div class="banner"><span>${why}${SAMPLE ? ' 필요하면 Claude로 읽을 수 있어요(Claude 사용량을 써요).' : ''}</span>${ptGuess.name ? '<button type="button" class="btn btn-s btn-p" data-oact="as-partner">거래처로 등록</button>' : ''}${SAMPLE ? '<button type="button" class="btn btn-s" data-oact="claude">Claude로 읽기</button>' : ''}</div>`;
       });
       panel.addEventListener('change', e => {
         const ds = e.target.dataset || {};
@@ -3949,6 +4418,7 @@ function openSmart(opts = {}) {
         const b = e.target.closest('[data-oact]'); if (!b) return; const a = b.dataset.oact;
         if (a === 'stop') { if (ctl) ctl.abort(); return; }
         if (a === 'claude') { askClaude(); return; }
+        if (a === 'as-partner') { const t = (pending && pending.text) || ta.value; const info = parsePartnerText(t); const ex = (info.name && (partnerByName(info.name) || matchPartner(info.name))) || (info.nameAlt && (partnerByName(info.nameAlt) || matchPartner(info.nameAlt))) || null; closeSheet(); openPartner(ex, ex ? { paste: t, banner: `이미 있는 거래처 ‘${ex.name}’에 빈칸만 채워요.` } : { paste: t }); return; }
         if (a === 'copy-orig') return copyText(((result || {}).text || {}).original || '', null);
         if (a === 'copy-ko') return copyText(((result || {}).text || {}).ko || '', null);
         if (a === 'record') { b.disabled = true; try { const n = await recordTxns(plan.txns); toast(`${n}건 기록했어요`); closeSheet(); } catch (err) { b.disabled = false; } return; }
@@ -4146,7 +4616,7 @@ const ACT = {
   'file-dl': el => downloadFile(el.dataset.fid, el.dataset.name),
   'set-bal': el => openSetBal(el.dataset.key),
   'new-partner': () => openPartner(null), 'edit-partner': el => { const p = S.partners.find(x => x.id === el.dataset.id); if (p) openPartner(p, { focus: el.dataset.focus || '' }); },
-  'open-partner': el => { S.ptId = el.dataset.id; go('partner'); }, 'pt-paste': () => openPtPaste(),
+  'open-partner': el => { if (el.closest('.sheet')) closeSheet(); S.ptId = el.dataset.id; go('partner'); }, 'pt-paste': () => openPtPaste(),
   'copy': el => copyText(el.dataset.text || ''), 'copy-pay': el => { const p = poById(el.dataset.id); if (p) copyTransfer(p); },
   'copy-bank': el => { const pt = ptById(el.dataset.id); if (!pt) return; const b = (pt.banks || []).filter(b => b.account || b.bankName)[+el.dataset.i]; if (b) copyText(transferText(b, pt.name)); },
   'pt-new-bill': el => { const pt = ptById(el.dataset.id); if (!pt) return; const b0 = (pt.banks || [])[0] || {}; openBill({ dir: pt.kind === 'buyer' ? 'export' : 'import', partnerName: pt.name, currency: b0.currency || BASE(), payTerms: pt.payTerms || '', category: pt.kind === 'forwarder' ? 'logistics' : pt.kind === 'buyer' ? 'sales' : 'purchase', poDate: todayStr(), status: 'open', kind: 'bill', items: [{ desc: '', qty: 1, price: '' }] }); },
@@ -4261,7 +4731,7 @@ async function xlsxRead(buf) {
   const zip = await window.JSZip.loadAsync(buf);
   const P = s => new DOMParser().parseFromString(s, 'application/xml');
   const tags = (node, name) => [...node.getElementsByTagNameNS('*', name)];
-  const txt = async p => { const f = zip.file(p); return f ? f.async('string') : ''; };
+  const txt = async p => { const f = zip.file(p); return f ? (await f.async('string')).replace(/^\uFEFF/, '') : ''; };
   const ss = []; const ssx = await txt('xl/sharedStrings.xml');
   if (ssx) for (const si of tags(P(ssx), 'si')) ss.push(tags(si, 't').filter(t => { const pn = t.parentNode && t.parentNode.localName; return pn === 'si' || pn === 'r'; }).map(t => t.textContent).join(''));
   const wb = P(await txt('xl/workbook.xml')); const rels = P(await txt('xl/_rels/workbook.xml.rels') || '<x/>');
@@ -5008,9 +5478,9 @@ const OCR_CJK = '\\u4e00-\\u9fff\\u3000-\\u303f\\uff00-\\uffef';
 function ocrNorm(s) {
   s = String(s || '');
   if (new RegExp('[' + OCR_CJK + ']').test(s)) s = s.replace(/〈/g, '（').replace(/〉/g, '）').replace(/\(/g, '（').replace(/\)/g, '）');
-  const re = new RegExp('(?<=[' + OCR_CJK + '/])\\s+(?=[' + OCR_CJK + '/])', 'g');
-  for (let i = 0; i < 3; i++) s = s.replace(re, '');
-  return s.replace(/\s*\/\s*/g, '/').replace(/,\./g, ',').replace(/(?<=\d)\.(?=\d{3}\b)/g, ',').replace(/\s+/g, ' ').trim();
+  // one space between Chinese characters is the reader's own; two spaces mark a gap between table cells and stay
+  s = s.replace(new RegExp('(?<=[' + OCR_CJK + '/]) (?=[' + OCR_CJK + '/])', 'g'), '');
+  return s.replace(/ ?\/ ?/g, '/').replace(/,\./g, ',').replace(/(?<=\d)\.(?=\d{3}\b)/g, ',').replace(/[ \t]{2,}/g, '  ').trim();
 }
 function tsvWords(tsv, k = 1, ox = 0, oy = 0) {
   const out = [];
@@ -5023,8 +5493,20 @@ function tsvWords(tsv, k = 1, ox = 0, oy = 0) {
 }
 function wordLines(words) {
   const by = new Map(); for (const w of words) { if (!by.has(w.key)) by.set(w.key, []); by.get(w.key).push(w); }
-  return [...by.values()].map(ws => ({ x0: Math.min(...ws.map(w => w.x)), x1: Math.max(...ws.map(w => w.x + w.w)), y0: Math.min(...ws.map(w => w.y)), y1: Math.max(...ws.map(w => w.y + w.h)), t: ocrNorm(ws.sort((a, b) => a.x - b.x).map(w => w.t).join(' ')) }))
+  const lines = [...by.values()].map(ws => { ws.sort((a, b) => a.x - b.x); const hs = ws.map(w => w.h).sort((a, b) => a - b); return { ws, h: hs[hs.length >> 1] || 10, x0: Math.min(...ws.map(w => w.x)), x1: Math.max(...ws.map(w => w.x + w.w)), y0: Math.min(...ws.map(w => w.y)), y1: Math.max(...ws.map(w => w.y + w.h)) }; })
     .sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
+  // pieces of one printed row that came out as separate lines (a type label at the right of a date) go back together
+  const rows = [];
+  for (const l of lines) {
+    const p = rows.find(m => { const ov = Math.min(m.y1, l.y1) - Math.max(m.y0, l.y0); return ov > 0.6 * Math.min(m.y1 - m.y0, l.y1 - l.y0) && (l.x0 >= m.x1 - 2 || l.x1 <= m.x0 + 2); });
+    if (p) { p.ws.push(...l.ws); p.ws.sort((a, b) => a.x - b.x); p.x0 = Math.min(p.x0, l.x0); p.x1 = Math.max(p.x1, l.x1); p.y0 = Math.min(p.y0, l.y0); p.y1 = Math.max(p.y1, l.y1); p.h = Math.max(p.h, l.h); }
+    else rows.push(l);
+  }
+  return rows.map(l => {
+    let t = '', prev = null;
+    for (const w of l.ws) { if (prev) t += w.x - (prev.x + prev.w) > 1.3 * l.h ? '  ' : ' '; t += w.t; prev = w; }
+    return { x0: l.x0, x1: l.x1, y0: l.y0, y1: l.y1, h: l.h, c: l.ws.reduce((a, w) => a + (w.c || 0), 0) / l.ws.length, t: ocrNorm(t) };
+  }).filter(l => l.t).sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
 }
 async function imgCanvas(file, max = 2600) {
   const url = URL.createObjectURL(file);
@@ -5036,7 +5518,7 @@ async function imgCanvas(file, max = 2600) {
   } finally { URL.revokeObjectURL(url); }
 }
 /* crop → grey, contrast stretched, enlarged, white border: what Tesseract reads best */
-function ocrCrop(src, x0, y0, x1, y1, scale = 3, invert = false) {
+function ocrCrop(src, x0, y0, x1, y1, scale = 3, invert = false, mode0 = '') {
   x0 = Math.max(0, Math.floor(x0)); y0 = Math.max(0, Math.floor(y0)); x1 = Math.min(src.width, Math.ceil(x1)); y1 = Math.min(src.height, Math.ceil(y1));
   const w = Math.max(1, x1 - x0), h = Math.max(1, y1 - y0), pad = 12, W = Math.round(w * scale), H = Math.round(h * scale);
   const c = document.createElement('canvas'); c.width = W + pad * 2; c.height = H + pad * 2;
@@ -5045,10 +5527,11 @@ function ocrCrop(src, x0, y0, x1, y1, scale = 3, invert = false) {
   const d = g.getImageData(pad, pad, W, H), a = d.data, n = a.length / 4, L = new Float32Array(n), hist = new Uint32Array(256);
   for (let i = 0; i < n; i++) { let v = 0.299 * a[i * 4] + 0.587 * a[i * 4 + 1] + 0.114 * a[i * 4 + 2]; if (invert) v = 255 - v; L[i] = v; hist[v | 0]++; }
   const pct = p => { let acc = 0; const lim = n * p; for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc >= lim) return v; } return 255; };
-  const mode = window.__OCR_MODE || OCR_MODE;
+  const mode = mode0 || window.__OCR_MODE || OCR_MODE;
   let lo = pct(0.02), hi = pct(0.98);
   if (mode === 'gray') { lo = 0; hi = 255; }
   if (mode === 'soft') { hi = Math.max(hi, 245); lo = Math.min(lo, pct(0.005)); }
+  if (mode === 'auto') { lo = pct(0.01); hi = pct(0.99); }
   const k = 255 / Math.max(1, hi - lo);
   for (let i = 0; i < n; i++) { const v = Math.max(0, Math.min(255, (L[i] - lo) * k)); a[i * 4] = a[i * 4 + 1] = a[i * 4 + 2] = v; a[i * 4 + 3] = 255; }
   g.putImageData(d, pad, pad); return c;
@@ -5256,13 +5739,38 @@ async function readPhoto(file, say) {
   OCR_SAY = m => { if (!say) return; if (/load|initializ/i.test(m.status)) say(`사진 읽기 준비 중${m.progress ? ` ${Math.round(m.progress * 100)}%` : ''} · 처음 한 번은 글자 사전(약 15MB)을 받아요`); };
   const ocr = await ocrEngine();
   if (say) say('사진 글자 읽는 중…');
-  const s = src.width < 1500 ? 1.5 : Math.min(1, 2600 / src.width);
-  const big = ocrCrop(src, 0, 0, src.width, src.height, s); const pad = 12;
-  const full = tsvWords(await ocr(big, 3)).map(w => Object.assign(w, { x: (w.x - pad) / s, y: (w.y - pad) / s, w: w.w / s, h: w.h / s }));
-  const text = wordLines(full).map(l => l.t).join('\n');
+  const pad = 12;
   const st = schedStructure(src);
-  if (st.secs.length) { const sc = await readSchedule(src, st, full, ocr, say); if (sc && (sc.tasks.length || sc.months.length)) return { text, schedule: sc }; }
-  return { text, schedule: null };
+  if (st.secs.length) {
+    const s = src.width < 1500 ? 1.5 : Math.min(1, 2600 / src.width);
+    const big = ocrCrop(src, 0, 0, src.width, src.height, s);
+    const full = tsvWords(await ocr(big, 3)).map(w => Object.assign(w, { x: (w.x - pad) / s, y: (w.y - pad) / s, w: w.w / s, h: w.h / s }));
+    const text = wordLines(full).map(l => l.t).join('\n');
+    const sc = await readSchedule(src, st, full, ocr, say); if (sc && (sc.tasks.length || sc.months.length)) return { text, schedule: sc };
+  }
+  // invoices, contracts, bank-app screens: the whole picture read as one block keeps every printed row (a table row, a date with its type) on one line
+  const tall = src.height / src.width >= 1.8;
+  const s = (tall ? 1500 : Math.max(1600, Math.min(2200, src.width))) / src.width;
+  const big = ocrCrop(src, 0, 0, src.width, src.height, s, false, 'auto');
+  const words = tsvWords(await ocr(big, 6)).map(w => Object.assign(w, { x: (w.x - pad) / s, y: (w.y - pad) / s, w: w.w / s, h: w.h / s }));
+  const lines = wordLines(words);
+  // big titles (INVOICE, 付款通知单) can drop out of a whole-page read: look at the top part once more, smaller, word by word
+  if (!tall) try {
+    const ts = 0.75, top = ocrCrop(src, 0, 0, src.width, Math.round(src.height * 0.3), ts, false, 'auto');
+    const tl = wordLines(tsvWords(await ocr(top, 11)).map(w => Object.assign(w, { x: (w.x - pad) / ts, y: (w.y - pad) / ts, w: w.w / ts, h: w.h / ts })));
+    const have = coKey(lines.map(l => l.t).join(' '));
+    for (const l of tl) { const k = coKey(l.t); if (k.length >= 4 && (SELLER_DOC.test(l.t) || BUYER_DOC.test(l.t) || BILL_TITLE.test(l.t)) && !have.includes(k)) lines.push(l); }
+    lines.sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
+  } catch (e) { }
+  // a Chinese line taken for Latin letters ('Seth SiH BERRA RAG)'): read that line again on its own, larger
+  let again = 0;
+  for (const l of lines) {
+    const L = (l.t.match(/[A-Za-z]/g) || []).length;
+    if (/[\u4e00-\u9fff]/.test(l.t) || L < 6 || !(l.c < 72 || /[a-z][A-Z]|[)\]}|]\s*$/.test(l.t)) || again >= 10) continue;
+    again++;
+    try { const t2 = await ocrLine(ocr, src, [l.x0 - 6, l.y0 - 6, l.x1 + 6, l.y1 + 6], { scale: Math.max(2, 2.2 * s), psm: 7 }); if ((t2.match(/[\u4e00-\u9fff]/g) || []).length >= 4) l.t = t2; } catch (e) { }
+  }
+  return { text: lines.map(l => l.t).join('\n'), schedule: null };
 }
 /* the Claude page cannot run the reader; Claude reads the calendar there */
 async function scheduleByClaude(file) {
