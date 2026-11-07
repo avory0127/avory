@@ -2019,8 +2019,8 @@ function cellDate(v) {
 const cellNum = v => { let s = String(v ?? '').trim(); let neg = false; if (/^\(.*\)$/.test(s)) { neg = true; s = s.slice(1, -1); } if (/^[^\d\-]*[\d,.]+\s*-$/.test(s)) { neg = true; s = s.replace(/-\s*$/, ''); } const n = Number(s.replace(/[,\s원₩¥￥$]|RMB|CNY|USD|元/gi, '')); return Number.isFinite(n) ? (neg ? -Math.abs(n) : n) : 0; };
 /* a CSV saved by a Chinese (GBK) or Korean (EUC-KR) bank site */
 function decodeText(buf) {
-  const u = new TextDecoder('utf-8').decode(buf); if (!u.includes('�')) return u.replace(/^﻿/, '');
-  const score = s => (s.match(/[交易日期金额余额摘要账户收入支出借贷币种对方]/g) || []).length * 3 + (s.match(/[거래일자입출금잔액적요내용]/g) || []).length * 3 - (s.match(/�/g) || []).length * 5;
+  const u = new TextDecoder('utf-8').decode(buf); if (!u.includes('\uFFFD')) return u.replace(/^\uFEFF/, '');
+  const score = s => (s.match(/[交易日期金额余额摘要账户收入支出借贷币种对方]/g) || []).length * 3 + (s.match(/[거래일자입출금잔액적요내용]/g) || []).length * 3 - (s.match(/\uFFFD/g) || []).length * 5;
   const c = ['gb18030', 'euc-kr'].map(e => { try { return new TextDecoder(e).decode(buf); } catch (er) { return ''; } }).filter(Boolean);
   return c.sort((a, b) => score(b) - score(a))[0] || u;
 }
