@@ -703,7 +703,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.07-1';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.09-1';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -2828,13 +2828,31 @@ async function pdfTextLite(buf) {
   const fontInfo = new Map(), nameToObj = new Map();
   for (const [num, body] of objs) {
     const sIdx = body.indexOf('stream'); const head = sIdx >= 0 ? body.slice(0, sIdx) : body;
-    if (/\/BaseFont\s*\//.test(head) && /\/Subtype\s*\/(Type0|TrueType|Type1|Type3|MMType1)\b/.test(head)) {
+    if ((/\/BaseFont\s*\//.test(head) || (/\/Subtype\s*\/Type3\b/.test(head) && /\/ToUnicode/.test(head))) && /\/Subtype\s*\/(Type0|TrueType|Type1|Type3|MMType1)\b/.test(head)) {
       const enc = (head.match(/\/Encoding\s*\/([\w-]+)/) || [])[1] || '';
       fontInfo.set(num, { ucs2: /UCS2|UTF16/i.test(enc), two: /Type0/.test(head), tu: +((head.match(/\/ToUnicode\s+(\d+)\s+\d+\s+R/) || [])[1] || 0), map: null });
     }
     for (const fm of head.matchAll(/\/Font\s*<<([\s\S]*?)>>/g)) for (const r of fm[1].matchAll(/\/([^\s\/<>\[\]]+)\s+(\d+)\s+\d+\s+R/g)) if (!nameToObj.has(r[1])) nameToObj.set(r[1], +r[2]);
     for (const fr of head.matchAll(/\/Font\s+(\d+)\s+\d+\s+R/g)) { const fb = objs.get(+fr[1]) || ''; for (const r of fb.matchAll(/\/([^\s\/<>\[\]]+)\s+(\d+)\s+\d+\s+R/g)) if (!nameToObj.has(r[1])) nameToObj.set(r[1], +r[2]); }
     for (const rr of head.matchAll(/\/Resources\s+(\d+)\s+\d+\s+R/g)) { const rb = objs.get(+rr[1]) || ''; for (const fm of rb.matchAll(/\/Font\s*<<([\s\S]*?)>>/g)) for (const r of fm[1].matchAll(/\/([^\s\/<>\[\]]+)\s+(\d+)\s+\d+\s+R/g)) if (!nameToObj.has(r[1])) nameToObj.set(r[1], +r[2]); }
+  }
+  // glyph widths (simple fonts: /FirstChar + /Widths, Type3 scaled by its FontMatrix; CID fonts: /W and /DW)
+  const balanced = (str, i) => { let d = 0; for (let k = i; k < str.length; k++) { if (str[k] === '[') d++; else if (str[k] === ']' && !--d) return str.slice(i, k + 1); } return str.slice(i); };
+  const arrOf = (body, key) => { const m = new RegExp('/' + key + '\\s*(\\[|(\\d+)\\s+\\d+\\s+R)').exec(body); if (!m) return null; if (m[2]) { const o = (objs.get(+m[2]) || '').trim(); return o.startsWith('[') ? balanced(o, 0) : null; } return balanced(body, m.index + m[0].length - 1); };
+  for (const [num, f] of fontInfo) {
+    const body = objs.get(num) || ''; const head = body.split('stream')[0];
+    try {
+      if (f.two) {
+        const dref = (head.match(/\/DescendantFonts\s*\[\s*(\d+)\s+\d+\s+R/) || [])[1]; const d = dref ? (objs.get(+dref) || '') : head;
+        const dw = +((d.match(/\/DW\s+(\d+)/) || [])[1] || 1000); const w = new Map(); const wa = arrOf(d, 'W');
+        if (wa) { const tk = wa.slice(1, -1).match(/\[[^\]]*\]|[-\d.]+/g) || []; for (let k = 0; k < tk.length;) { const c = +tk[k]; if (tk[k + 1] && tk[k + 1][0] === '[') { tk[k + 1].slice(1, -1).trim().split(/\s+/).forEach((x, j) => w.set(c + j, +x)); k += 2; } else { const c2 = +tk[k + 1], wv = +tk[k + 2]; for (let c3 = c; c3 <= c2 && c3 - c < 6000; c3++) w.set(c3, wv); k += 3; } } }
+        f.wid = c => (w.has(c) ? w.get(c) : dw) / 1000;
+      } else {
+        const fc = +((head.match(/\/FirstChar\s+(\d+)/) || [])[1] || 0); const wa = arrOf(head, 'Widths');
+        const fm = head.match(/\/FontMatrix\s*\[\s*([-\d.]+)/); const sc = /\/Subtype\s*\/Type3\b/.test(head) && fm ? Math.abs(+fm[1]) : 0.001;
+        if (wa) { const ws = (wa.match(/[-\d.]+/g) || []).map(Number); f.wid = c => ((ws[c - fc] ?? 0) || 500) * sc; }
+      }
+    } catch (e) { }
   }
   const hexStr = h => { h = h.replace(/[^0-9a-f]/gi, ''); let s = ''; for (let i = 0; i + 3 < h.length + 2; i += 4) { const c = parseInt(h.slice(i, i + 4).padEnd(4, '0'), 16); if (!isNaN(c)) s += String.fromCharCode(c); } return s; };
   for (const f of fontInfo.values()) {
@@ -2851,6 +2869,7 @@ async function pdfTextLite(buf) {
     }
     f.map = map; f.bytes = f.two ? 2 : bytes;
   }
+  const widthOf = (raw, fname) => { const f = fontInfo.get(nameToObj.get(fname)); if (!f || !f.wid || f.ucs2) return null; const b = f.two ? 2 : (f.bytes || 1); let w = 0; for (let i = 0; i + b - 1 < raw.length; i += b) w += f.wid(b === 2 ? (raw.charCodeAt(i) << 8) | raw.charCodeAt(i + 1) : raw.charCodeAt(i)); return w; };
   const decode = (raw, fname) => {
     const f = fontInfo.get(nameToObj.get(fname));
     if (f && f.ucs2) { let s = ''; for (let i = 0; i + 1 < raw.length; i += 2) s += String.fromCharCode((raw.charCodeAt(i) << 8) | raw.charCodeAt(i + 1)); return s; }
@@ -2865,9 +2884,9 @@ async function pdfTextLite(buf) {
     const dictHead = body.slice(0, body.indexOf('stream'));
     if (/\/Type\s*\/(XRef|ObjStm|Metadata)/.test(dictHead) || /\/Subtype\s*\/(Image|XML)/.test(dictHead) || /\/Length1|\/Length2|\/Subtype\s*\/(Type1C|CIDFontType0C|OpenType)/.test(dictHead)) continue;
     const s = await streamOf(body); if (!s || !s.text || !/\bBT\b/.test(s.text) || !/T[jJ]/.test(s.text)) continue;
-    const t = s.text; let i = 0; const st = []; let font = '', tm = [1, 0, 0, 1, 0, 0], lm = [1, 0, 0, 1, 0, 0], ctm = [1, 0, 0, 1, 0, 0], lead = 0; const cstack = [];
+    const t = s.text; let i = 0; const st = []; let font = '', fsize = 1, tm = [1, 0, 0, 1, 0, 0], lm = [1, 0, 0, 1, 0, 0], ctm = [1, 0, 0, 1, 0, 0], lead = 0; const cstack = [];
     const pos = () => ({ x: ctm[0] * tm[4] + ctm[2] * tm[5] + ctm[4], y: ctm[1] * tm[4] + ctm[3] * tm[5] + ctm[5] });
-    const emit = str => { if (!str) return; const p = pos(); runs.push({ x: p.x, y: p.y, s: str, size: Math.abs(tm[3] * ctm[3]) || 10 }); };
+    const emit = (str, w) => { if (!str) return; const p = pos(); runs.push({ x: p.x, y: p.y, s: str, size: Math.abs((fsize || 1) * tm[3] * ctm[3]) || 10, w: w == null ? null : w * (fsize || 1) * Math.abs(tm[0] * ctm[0]) }); };
     const lit = () => { let depth = 1, out = ''; i++; while (i < t.length && depth) { const c = t[i]; if (c === '\\') { const n = t[i + 1]; if (/[0-7]/.test(n)) { let o = ''; let k = i + 1; while (k < i + 4 && /[0-7]/.test(t[k])) o += t[k++]; out += String.fromCharCode(parseInt(o, 8) & 255); i = k; continue; } out += ({ n: '\n', r: '\r', t: '\t', b: '\b', f: '\f' })[n] ?? (n === '\r' || n === '\n' ? '' : n); i += 2; continue; } if (c === '(') depth++; else if (c === ')') { depth--; if (!depth) { i++; break; } } out += c; i++; } return { str: out }; };
     while (i < t.length) {
       const c = t[i];
@@ -2886,25 +2905,27 @@ async function pdfTextLite(buf) {
         else if (op === 'Q') ctm = cstack.pop() || [1, 0, 0, 1, 0, 0];
         else if (op === 'cm' && nums.length >= 6) { const [a, b, cc, d, e, f] = nums.slice(-6); const m0 = ctm; ctm = [a * m0[0] + b * m0[2], a * m0[1] + b * m0[3], cc * m0[0] + d * m0[2], cc * m0[1] + d * m0[3], e * m0[0] + f * m0[2] + m0[4], e * m0[1] + f * m0[3] + m0[5]]; }
         else if (op === 'BT') { tm = [1, 0, 0, 1, 0, 0]; lm = tm.slice(); }
-        else if (op === 'Tf') { const nm = st.find(x => x && x.name); if (nm) font = nm.name; }
+        else if (op === 'Tf') { const nm = st.find(x => x && x.name); if (nm) font = nm.name; if (nums.length) fsize = nums[nums.length - 1]; }
         else if (op === 'TL' && nums.length) lead = nums[nums.length - 1];
         else if (op === 'Tm' && nums.length >= 6) { tm = nums.slice(-6); lm = tm.slice(); }
         else if ((op === 'Td' || op === 'TD') && nums.length >= 2) { const [tx, ty] = nums.slice(-2); if (op === 'TD') lead = -ty; lm = [lm[0], lm[1], lm[2], lm[3], lm[4] + tx * lm[0] + ty * lm[2], lm[5] + tx * lm[1] + ty * lm[3]]; tm = lm.slice(); }
         else if (op === 'T*') { lm = [lm[0], lm[1], lm[2], lm[3], lm[4] - lead * lm[2], lm[5] - lead * lm[3]]; tm = lm.slice(); }
-        else if (op === 'Tj' || op === "'" || op === '"') { if (op !== 'Tj') { lm = [lm[0], lm[1], lm[2], lm[3], lm[4] - lead * lm[2], lm[5] - lead * lm[3]]; tm = lm.slice(); } const sv = st.filter(x => x && x.str !== undefined).pop(); if (sv) emit(decode(sv.str, font)); }
-        else if (op === 'TJ') { const a = st.filter(x => x && x.arr).pop(); if (a) emit(a.arr.map(x => x.str !== undefined ? decode(x.str, font) : (typeof x === 'number' && x < -180 ? ' ' : '')).join('')); }
+        else if (op === 'Tj' || op === "'" || op === '"') { if (op !== 'Tj') { lm = [lm[0], lm[1], lm[2], lm[3], lm[4] - lead * lm[2], lm[5] - lead * lm[3]]; tm = lm.slice(); } const sv = st.filter(x => x && x.str !== undefined).pop(); if (sv) emit(decode(sv.str, font), widthOf(sv.str, font)); }
+        else if (op === 'TJ') { const a = st.filter(x => x && x.arr).pop(); if (a) { let w = 0; for (const x of a.arr) { if (x.str !== undefined) { const ww = widthOf(x.str, font); w = ww == null || w == null ? null : w + ww; } else if (typeof x === 'number' && w != null) w -= x / 1000; } emit(a.arr.map(x => x.str !== undefined ? decode(x.str, font) : (typeof x === 'number' && x < -180 ? ' ' : '')).join(''), w); } }
         st.length = 0; continue;
       }
       i++;
     }
   }
   // group runs into lines by their height on the page, left to right
-  const clean = s => s.replace(/[\u0000-\u0008\u000b-\u001f\uFFFD]/g, '').replace(/\s+/g, ' ');
+  const clean = s => s.replace(/[\u0000-\u0008\u000b-\u001f\uFFFD]/g, '').replace(/[\u2F00-\u2FDF\uFB00-\uFB06]/g, c => c.normalize('NFKC')).replace(/\s+/g, ' ');
   const rs = runs.map(r => Object.assign(r, { s: clean(r.s) })).filter(r => r.s.trim());
   rs.sort((a, b) => (b.y - a.y) || (a.x - b.x));
   const lines = []; let cur = null;
   for (const r of rs) { const tol = Math.max(2, r.size * 0.45); if (cur && Math.abs(cur.y - r.y) <= tol) cur.items.push(r); else { cur = { y: r.y, items: [r] }; lines.push(cur); } }
-  return lines.map(l => l.items.sort((a, b) => a.x - b.x).map(x => x.s.trim()).join(' ').replace(/\s+([:：])/g, ' $1').trim()).filter(Boolean).join('\n');
+  // glyphs placed one by one join up; a real gap is a space, a wide one (a table cell) two
+  const CJ = /[\u2E80-\u9fff\uac00-\ud7a3\u3000-\u303f\uff00-\uffef]/;
+  return lines.map(l => { let out = '', prev = null; for (const x of l.items.sort((a, b) => a.x - b.x)) { const t = x.s.trim(); if (!t) continue; if (prev) { let sep = ' '; if (prev.w != null && x.w != null) { const em = Math.max(1, Math.min(prev.size, x.size)), gap = x.x - (prev.x + prev.w); sep = gap > 1.6 * em ? '  ' : (gap > ((CJ.test(out.slice(-1)) || CJ.test(t[0])) ? 0.45 : 0.12) * em || /\s$/.test(prev.s) || /^\s/.test(x.s)) ? ' ' : ''; } out += sep; } out += t; prev = x; } return out.replace(/\s+([:：])/g, ' $1').trim(); }).filter(Boolean).join('\n');
 }
 const textScore = s => { s = String(s || ''); const cjk = (s.match(/[一-鿿가-힣]/g) || []).length; const al = (s.match(/[A-Za-z0-9]/g) || []).length; return { cjk, al, bad: (s.match(/[\uFFFD]/g) || []).length }; };
 
@@ -3297,14 +3318,14 @@ function parseBillText(text) {
   // total: prefer "amount due / 应付 / 价税合计(小写)" over a plain TOTAL line
   const pick = [
     /(AMOUNT\s*DUE|BALANCE\s*DUE|TOTAL\s*DUE|AMOUNT\s*PAYABLE|TOTAL\s*PAYABLE|PLEASE\s*PAY|应付金额|本期应付|应付合计|应付总额|应收金额|本期应收|应收合计|请款金额|申请金额|付款申请[^\d\n]{0,12}金额|本次(?:付款|申请|应付|应收|结算|请款)[^\d\n]{0,12}金额|结算金额|付款金额|청구\s*금액|청구액)/i,
-    /(价税合计|（小写）|\(小写\)|小写)/,
+    /(价税合计|含税合计|合税合计|含税总[价额计]|（小写）|\(小写\)|小写)/,
     /(GRAND\s*TOTAL|TOTAL\s*AMOUNT|INVOICE\s*TOTAL|NET\s*AMOUNT|合\s*计|總\s*計|总\s*计|总金额|金额合计|合计金额|总\s*额|합계\s*금액|총\s*액|TOTAL)/i
   ];
   let total = 0, totalLine = '';
   for (const re of pick) {
     for (let i = 0; i < lines.length && !total; i++) {
       if (!re.test(lines[i]) || /SUB\s*-?\s*TOTAL|小计/i.test(lines[i]) || (/大写/.test(lines[i]) && !/小写/.test(lines[i]))) continue;
-      let v = amt(lines[i]), pre = ''; if (!v && lines[i + 1] && !/[A-Za-z一-龥]{3,}/.test(lines[i + 1])) v = amt(lines[i + 1]);
+      const la = amtAfterLabel(lines, i, re); let v = la ? la.v : amt(lines[i]), pre = ''; if (!v && lines[i + 1] && !/[A-Za-z一-龥]{3,}/.test(lines[i + 1])) v = amt(lines[i + 1]);
       if (!v && i > 0 && /[\d,]+\.\d{2}\s*$/.test(lines[i - 1]) && !/TOTAL|合计|总计|小计/i.test(lines[i - 1])) { v = amt(lines[i - 1]); pre = lines[i - 1] + ' '; }
       if (v > 0) { total = v; totalLine = pre + lines[i] + ' ' + (lines[i + 1] || ''); }
     }
@@ -4071,16 +4092,29 @@ function parseOrderText(text) {
     items.push({ desc: desc[0] || '', descKo: '', spec: desc.slice(1).join(' / ').slice(0, 120), hs: m[3] || '', qty: q, unit: (m[2] || '').toUpperCase(), price: p });
     lastEnd = i;
   }
+  // cells several lines high (name / model / spec stacked) are read as table rows instead
+  { const tr = tableRows(lines); if (tr.length > items.length) items.splice(0, items.length, ...tr); }
   const g = (re, i = 1) => { const m = all.match(re); return m ? String(m[i]).trim() : ''; };
   let cur = g(/(?:Currency|币种|貨幣|통화)[^A-Za-z\n]{0,14}\b([A-Z]{3})\b/);
   if (!cur) { const t = g(/(?:TOTAL|合计|总计|Grand Total|합계)[^\n]*?\b(USD|CNY|RMB|EUR|JPY|KRW|HKD)\b/i); cur = t ? t.toUpperCase().replace('RMB', 'CNY') : /\$|US\$/.test(all) ? 'USD' : /人民币|¥|￥|元/.test(all) ? 'CNY' : ''; }
-  const totalLine = lines.find(l => /(?:TOTAL|合计|总计|Grand Total|합계)/i.test(l) && /[\d,]+\.\d{2}/.test(l));
-  const total = totalLine ? parseNum((totalLine.match(/[\d,]+\.\d{2}/g) || []).pop()) : 0;
+  // the total: the tax-inclusive / grand total first, its amount after the label or on the line below it
+  let total = 0;
+  for (const re of [/(含税合计|合税合计|价税合计|含税总[价额计]|GRAND\s*TOTAL|TOTAL\s*AMOUNT|TOTAL\s*[（(]\s*(?:USD|CNY|RMB|EUR|HKD)\s*[)）]|总金额|合计金额|总价)/i, /(TOTAL|合\s*计|总\s*计|합계)/i]) {
+    for (let i = 0; i < lines.length && !total; i++) { if (!re.test(lines[i]) || /SUB\s*-?\s*TOTAL|小计/i.test((lines[i].match(re) || [''])[0] + lines[i].slice(0, (lines[i].match(re) || { index: 0 }).index).slice(-6))) continue; const r = amtAfterLabel(lines, i, re, Math.round(sumBy(items, it => it.qty * it.price) * 100) / 100); if (r) total = r.v; }
+    if (total) break;
+  }
+  { const sum = Math.round(sumBy(items, i => i.qty * i.price) * 100) / 100; if (items.length && sum > 0 && Math.abs(sum - total) > 0.01 && lines.some(l => /(TOTAL|合计|总计|含税|价税|합계)/i.test(l) && (l.match(/[\d,]+\.\d{2}/g) || []).some(x => Math.abs(parseNum(x) - sum) < 0.01))) total = sum; }
   if (!items.length && !total) return null;
   const poNo = g(/(?:^|\n)\s*P\.?\s?O\.?\s*(?:No\.?|Number|#)?\s*[:：]\s*([A-Za-z0-9][\w\-\/.]{2,40})/i) || g(/(?:订单号|订单编号|采购单号|采购订单号|PO\s*No\.?)\s*[:：]?\s*([A-Za-z0-9][\w\-\/.]{2,40})/i);
   const conNo = g(/(?:Contract\s*No\.?|合同编号|合同号|Invoice\s*No\.?|发票号|报价单号|报价编号|Quotation\s*No\.?|Quote\s*No\.?|PI\s*No\.?|单据编号)\s*[:：]\s*([A-Za-z0-9][\w\-\/.]{2,40})/i) || g(/(?:^|\n)No\.\s*[:：]\s*([A-Za-z0-9][\w\-\/.]{2,40})/);
   const dateStr = g(/(?:PO date|Order date|订单日期|Date|日期)[^:：\n]{0,16}[:：]\s*([^\n|]{6,32})/i);
   const date = parseAnyDate(dateStr) || parseAnyDate(all);
+  // the document's own number printed under its title (AVORY-PO-20261109-JC01)
+  const codeNo = (() => {
+    const ti = lines.findIndex(l => /(PURCHASE\s*ORDER|采购订单|採購訂單|采购单|订购单|订货单|SALES\s*CONTRACT|销售合同|PROFORMA|报价单|QUOTATION|INVOICE)/i.test(l));
+    if (ti >= 0) for (const l of lines.slice(Math.max(0, ti - 1), ti + 3)) { const m = l.match(/\b([A-Z][A-Z0-9]{1,12}(?:[-_\/][A-Z0-9]{1,14}){2,})\b/); if (m && /\d{4,}/.test(m[1])) return m[1].replace(/[^-_\/]+$/, seg => /\d/.test(seg) ? seg.replace(/O(?=\d)/g, '0') : seg); }
+    const m2 = all.match(/\b([A-Z][A-Z0-9]{1,12}[-_](?:PO|PI|SC|QT|CG|XS)[-_][A-Z0-9][\w\-]{3,30})\b/); return m2 ? m2[1] : '';
+  })();
   // parties
   const dp = docParties(raw);
   const isUs = n => isOurs(n);
@@ -4101,7 +4135,7 @@ function parseOrderText(text) {
   else if (seller && isUs(seller[0])) role = 'seller';
   // the document's own labels (甲方/乙方, 供方/需方, To:, the heading…) know better when the BUYER/SELLER blocks miss or name us
   if (dp.ourRole) role = dp.ourRole;
-  if (pb && (isUs(partyName(pb[0]) || pb[0]) || (dp.them && !coKey(pb.slice(0, 2).join(' ')).includes(coKey(dp.them.name))))) pb = null;
+  if (pb && (isUs(partyName(pb[0]) || pb[0]) || !looksCompany(partyName(pb[0]) || pb[0], true) || (dp.them && coKey(partyName(pb[0]) || pb[0]) !== coKey(dp.them.name)))) pb = null;
   const partner = { name: '', nameAlt: '', address: '', contact: '', tel: '', email: '', country: '' };
   if (pb) {
     partner.name = partyName(pb[0]) || pb[0];
@@ -4119,8 +4153,8 @@ function parseOrderText(text) {
   else if (dp.them) { const info = parsePartnerText(raw); partner.name = dp.them.name; partner.nameAlt = dp.them.alt || info.nameAlt || ''; ['address', 'contact', 'tel', 'email', 'country'].forEach(k => { partner[k] = info[k] || ''; }); partner.banks = info.banks || []; }
   if (partner.name) partner.name = snapName(ocrTrim(partner.name));
   // terms
-  const payLine = lines.find(l => /^(Payment(?:\s*terms?)?|Terms of payment|付款方式|付款条件|结算方式|결제\s*조건)/i.test(l)) || lines.find(l => /(Payment terms?|付款方式|付款条件|결제\s*조건)\s*[:：]/i.test(l));
-  const payTerms = payLine ? payLine.replace(/^.*?(Payment(?:\s*terms)?|付款方式|付款条件|付款|결제\s*조건)\s*(?:\/\s*付款)?\s*[:：]?\s*/i, '').split(/[;；。]/)[0].trim().slice(0, 100) : '';
+  const payLine = lines.find(l => /^(Payment(?:\s*terms?)?|Terms of payment|付款方式|付款条件|结算方式|결제\s*조건)/i.test(l)) || lines.find(l => /(Payment terms?|付款方式|付款条件|결제\s*조건|Payment)\s*[:：]/i.test(l));
+  const payTerms = payLine ? payLine.replace(/^.*?(Payment(?:\s*terms)?|付款方式|付款条件|付款|결제\s*조건)\s*(?:\/\s*付款)?\s*[:：]?\s*/i, '').replace(/^[\/\s]*(?:Payment(?:\s*terms?)?)?\s*[:：]?\s*/i, '').split(/[;；。]/)[0].trim().slice(0, 100) : '';
   let inc = ''; const incRe = /\b(EXW|FCA|FAS|FOB|CFR|CIF|CPT|CIP|DAP|DPU|DDP)\b/g; let im;
   while ((im = incRe.exec(all))) { const pre = all.slice(Math.max(0, im.index - 10), im.index); if (/not an?\s*$|非\s*$|no\s*$/i.test(pre)) continue; inc = im[1]; break; }
   const delLine = lines.find(l => /^(Delivery|交货地点|交货|Ship to|送货地址)/i.test(l));
@@ -4130,11 +4164,75 @@ function parseOrderText(text) {
   const docType = /SALES CONTRACT|销售合同|货物买卖合同|买卖合同/i.test(all) ? 'sales_contract' : /PROFORMA/i.test(all) ? 'proforma_invoice' : /COMMERCIAL INVOICE|商业发票/i.test(all) ? 'commercial_invoice' : /QUOTATION|报价单|견적/i.test(all) ? 'quotation' : /PURCHASE ORDER|采购订单|采购单|发주/i.test(all) ? 'purchase_order' : 'other';
   const quote = g(/(quotation|报价单)\s+([A-Z][\w\-]+(?:\s*Rev\.?\s*\d+)?)/i, 2);
   return {
-    docType, no: poNo || conNo, contractNo: conNo && conNo !== poNo ? conNo : '', date, ourRole: role, status: 'open', partner,
+    docType, no: poNo || conNo || codeNo, contractNo: conNo && conNo !== poNo ? conNo : '', date, ourRole: role, status: 'open', partner,
     currency: cur || BASE(), incoterms: inc, place, payTerms, payDue: '', deliveryDate: '',
     items: items.length ? items : [{ desc: '(품목 미확인)', qty: 1, unit: '', price: total, hs: '', spec: '', descKo: '' }],
-    total: total || sumBy(items, i => i.qty * i.price), notesKo: quote ? `견적 ${quote}` : '', _verified: items.length
+    total: total || Math.round(sumBy(items, i => i.qty * i.price) * 100) / 100, notesKo: quote ? `견적 ${quote}` : '', _verified: items.length
   };
+}
+/* the amount that belongs to a label: after it on the same line, else the last amount on the next line (含税合计 / TOTAL (CNY) ⏎ 2,760.00) */
+const lastAmt = s => { const m = String(s || '').match(/-?\d{1,3}(?:,\d{3})+(?:\.\d{1,4})?|-?\d+\.\d{2,4}/g); return m ? parseNum(m[m.length - 1]) : 0; };
+function amtAfterLabel(lines, i, re, prefer) {
+  const l = lines[i], m = l.match(re); const after = m ? l.slice(m.index + m[0].length) : l;
+  let v = lastAmt(after); if (v > 0) return { v, line: l };
+  // only when nothing but the label's own words follow it (含税合计 / TOTAL (CNY)): the figure printed below it,
+  // which may sit under the tax line beside it — the items' sum when it is there, else the largest
+  if (after.length > 24 || after.replace(/[\s\/()（）:：.A-Za-z]/g, '').length) return null;
+  const cand = [];
+  for (const nx of lines.slice(i + 1, i + 3)) { if (re.test(nx) || /(账号|帳號|ACCOUNT|A\/C|TEL|电话|DATE|日期|NO\.)/i.test(nx)) break; for (const x of nx.match(/-?\d{1,3}(?:,\d{3})+(?:\.\d{1,4})?|-?\d+\.\d{2,4}/g) || []) cand.push(parseNum(x)); }
+  if (!cand.length) return null;
+  v = prefer > 0 && cand.some(c => Math.abs(c - prefer) < 0.01) ? prefer : Math.max(...cand);
+  return { v, line: l + ' ' + lines.slice(i + 1, i + 3).join(' ') };
+}
+/* a priced table read row by row, also when a cell is several lines high:
+   顶针治具（检测） / Probe-pin test fixture  1 套 / 1  GX0216B5019  CSV2F3352-V5.1  1,380.00  1,380.00 / 单模，连接器向下  Set */
+const UNIT_RE = '(PCS|PC|SETS?|EA|UNITS?|KGS?|MT|CTNS?|ROLLS?|PAIRS?|个|台|套|件|只|箱|米|片|块|批|项|卷|包|对|根|条|张)';
+function tableRows(lines) {
+  const AM = /-?\d{1,3}(?:,\d{3})+(?:\.\d{1,4})?|-?\d+\.\d{2,4}/g;
+  const headAt = lines.findIndex(l => /(金额|AMOUNT|总价|금액|小计)/i.test(l) && /(数量|QTY|QUANTITY|单价|PRICE|수량|단가)/i.test(l));
+  const isEnd = l => /^(TOTAL|GRAND|SUB\s*-?\s*TOTAL|合\s*计|总\s*计|小\s*计|未税|不含税|含税合计|合税合计|价税合计|增值税|税额|합계|备注|REMARK|交易条款|TERMS|付款|PAYMENT)/i.test(l.replace(/^[\s|]+/, ''));
+  const anchors = []; let want = 1;
+  for (let i = headAt + 1; i < lines.length; i++) {
+    const l = lines[i];
+    if (anchors.length && isEnd(l)) break;
+    const m = l.match(/^\s*(\d{1,3})\s*[.、)]?\s+(.*)$/); if (!m || +m[1] !== want) continue;
+    if (!/(\d{1,3}(?:,\d{3})+(?:\.\d{1,4})?|\d+\.\d{2,4})\s*(?:[A-Z]{3}|元|RMB)?\s*$/i.test(l)) continue;
+    anchors.push(i); want++;
+  }
+  if (!anchors.length) return [];
+  let stop = lines.length; for (let i = anchors[anchors.length - 1] + 1; i < lines.length; i++) if (isEnd(lines[i])) { stop = i; break; }
+  const HEADW = /^(序号|NO\.?|物料|PART|品名|DESCRIPTION|数量|QTY|单价|UNIT\s*PRICE|金额|AMOUNT)/i;
+  const rows = [];
+  anchors.forEach((a, k) => {
+    const prevA = k ? anchors[k - 1] : headAt, nextA = k + 1 < anchors.length ? anchors[k + 1] : Math.min(stop, a + 5);
+    const gapBefore = a - prevA - 1, gapAfter = nextA - a - 1;
+    const from = k ? a - Math.floor(gapBefore / 2) : Math.max(headAt + 1, a - 4);
+    const to = k + 1 < anchors.length ? a + Math.ceil(gapAfter / 2) : Math.min(stop - 1, a + 4);
+    const band = []; for (let j = from; j <= to; j++) if (j !== a && lines[j] && !HEADW.test(lines[j]) && !/^\s*(?:[$¥￥€]|USD|CNY|RMB|US\$)?\s*(?:-?[\d,]+(?:\.\d{1,4})?)?\s*$/i.test(lines[j])) band.push(lines[j]);
+    const l = lines[a].replace(/^\s*\d{1,3}\s*[.、)]?\s+/, '');
+    const ams = (l.match(AM) || []).map(parseNum);
+    // the row's amount alone on the next line ("1 Test Light Box 2 882.355" ⏎ "$ 1,764.71")
+    const own = (lines[a + 1] || '').match(/^\s*(?:[$¥￥€]|USD|CNY|RMB|US\$)?\s*(-?\d{1,3}(?:,\d{3})+(?:\.\d{1,4})?|-?\d+\.\d{2,4})\s*$/i);
+    if (own && k + 1 < anchors.length ? anchors[k + 1] !== a + 1 : own) ams.push(parseNum(own[1]));
+    const amount = ams[ams.length - 1]; let price = ams.length >= 2 ? ams[ams.length - 2] : 0;
+    let qty = 0, unit = '';
+    const before = l.slice(0, l.search(AM) >= 0 ? l.search(AM) : l.length);
+    const qIn = before.match(new RegExp('(?:^|\\s)(\\d+(?:\\.\\d+)?)\\s*' + UNIT_RE + '?\\s*$', 'i'));
+    if (qIn && ams.length >= 2) { qty = +qIn[1]; unit = qIn[2] || ''; }
+    if (!qty) for (const b of band) { const q = b.match(new RegExp('(?:^|\\s)(\\d+(?:\\.\\d+)?)\\s*\\S?\\s*' + UNIT_RE + '(?![A-Za-z])', 'i')); if (q) { qty = +q[1]; unit = q[2]; break; } }
+    if (!unit) { const u = [l, ...band].join(' ').match(new RegExp('(?:^|\\s)' + UNIT_RE + '(?:\\s|$)', 'i')); if (u) unit = u[1]; }
+    if (price > 0 && qty > 0 && Math.abs(qty * price - amount) > Math.max(0.02, amount * 0.005)) { const q2 = amount / price; if (Math.abs(q2 - Math.round(q2)) < 0.01) qty = Math.round(q2); }
+    if (!qty) qty = price > 0 && Math.abs(amount / price - Math.round(amount / price)) < 0.01 ? Math.round(amount / price) : 1;
+    if (!(price > 0)) price = Math.round(amount / qty * 10000) / 10000;
+    const codes = before.split(/\s+/).filter(t => /[A-Za-z]/.test(t) && /\d/.test(t) && t.length >= 4);
+    const name = band.find(b => /[一-鿿]{2}/.test(b) && !new RegExp('^\\s*\\d+(?:\\.\\d+)?\\s*\\S?\\s*' + UNIT_RE, 'i').test(b)) || band.find(b => /[A-Za-z]{3}/.test(b) && !new RegExp('^' + UNIT_RE + '$', 'i').test(b.trim())) || before.replace(/\S*\d\S*/g, '').trim();
+    const clean = x => x.replace(new RegExp('\\s+\\d+(?:\\.\\d+)?\\s*\\S?\\s*' + UNIT_RE + '\\s*$', 'i'), '').replace(new RegExp('\\s+' + UNIT_RE + '\\s*$', 'i'), '').trim();
+    const model = codes.length ? codes[codes.length - 1] : '';
+    const desc = [clean(name || ''), model].filter(Boolean).join(' ').slice(0, 80) || '(품목)';
+    const spec = [codes.length > 1 ? codes.slice(0, -1).join(' ') : '', ...band.filter(b => b !== name).map(clean).filter(b => b && !new RegExp('^' + UNIT_RE + '$', 'i').test(b))].filter(Boolean).join(' / ').slice(0, 120);
+    if (amount > 0) rows.push({ desc, descKo: '', spec, hs: '', qty, unit: /[A-Za-z]/.test(unit) ? unit.toUpperCase() : unit, price });
+  });
+  return rows;
 }
 const DOC_KO = { sales_contract: '판매 계약서', proforma_invoice: 'PI', commercial_invoice: '상업 송장', quotation: '견적서', purchase_order: '발주서', other: '주문 서류' };
 /* the app's own reading, tried before anything is sent to Claude */
