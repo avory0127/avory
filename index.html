@@ -1157,7 +1157,7 @@ function monthAgg(ym) {
   return { rows, inK, outK, net: r2(inK - outK), byCat, fx, noRate: [...noRate], unc: rows.filter(t => !t.category).length, xfer: rows.filter(t => EXCL.has(t.category)).length };
 }
 /* balance per account: last known balance carried forward by later transactions (transfers included, since they move real money) */
-/* one account however a message writes it: 777081462592, *2592 and 尾号2592 are the same account (same currency, same last 4 digits) */
+/* one account however a message writes it: 123456782592, *2592 and 尾号2592 are the same account (same currency, same last 4 digits) */
 const acctTail = a => { const d = String(a || '').replace(/\D/g, ''); return d.length >= 4 ? d.slice(-4) : ''; };
 function acctKeyer(txns) {
   const known = {};
