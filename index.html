@@ -535,6 +535,54 @@ table.age td.hot{color:var(--crit);font-weight:600}
 .pc-t .st,.pc-t .to{display:none}
 .pc-d .pc-t:nth-of-type(n+4){display:none}
 .pc-more{font-size:10px;color:var(--ink-3);font-weight:600}
+.pc-m.dsm{background:#ECE7F6;color:#4B3780}.pc-m.dis{background:#FCEBD9;color:#8A4A0B}
+.dv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:10px}
+.dv-board{display:flex;flex-direction:column;min-width:0}.dv-col{min-width:0}
+@media (min-width:1100px){.dv-board{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;align-items:start}.dv-board .dv-grid{grid-template-columns:minmax(0,1fr)}.dv-board .dv-grp{margin-top:8px}}
+.dv-cs{display:flex;align-items:center;border-top:1px solid var(--line-2)}.list .dv-cs:first-child{border-top:0}.dv-cs>.row{flex:1;min-width:0;border-top:0}.dv-cs>.btn{flex:none;margin-right:10px}
+.dv-ln .chip{flex:none}.dv-dd{margin-left:auto;flex:none;white-space:nowrap;padding-left:6px}
+.dv-card{display:flex;flex-direction:column;gap:7px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0;width:100%;font:inherit;color:inherit;cursor:pointer}
+.dv-card:hover{border-color:var(--accent)}
+.dv-card.wait,.dv-card.hold{background:var(--surface-2);border-style:dashed}.dv-card.done{opacity:.7}
+.dv-h{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;min-width:0}
+.dv-n{font-size:16px;font-weight:700;overflow-wrap:anywhere;min-width:0;line-height:1.35}
+.dv-sub{font-size:13px;color:var(--ink-3);overflow-wrap:anywhere}
+.dv-steps{display:flex;align-items:center;gap:3px}
+.dv-steps i{flex:1;height:5px;border-radius:3px;background:var(--sunk)}
+.dv-steps i.on{background:#8DB6CB}.dv-steps i.cur{background:var(--accent)}
+.dv-steps em{font-style:normal;font-size:12px;font-weight:700;color:var(--accent);margin-left:6px;min-width:28px;text-align:right}
+.dv-ln{font-size:13px;color:var(--ink-2);display:flex;gap:6px;align-items:center;min-width:0}
+.dv-ln b{font-weight:600}.dv-ln.late{color:var(--crit);font-weight:600}
+.dv-ell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dv-qty{display:flex;flex-direction:column;gap:5px}
+.dv-bar{height:6px;border-radius:3px;background:var(--sunk);overflow:hidden;display:flex}.dv-bar.big{height:10px;border-radius:5px}
+.dv-bar i{background:var(--good)}.dv-bar b{background:#9FD3BA}
+.dv-qtys{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-3)}.dv-qtys b{color:var(--ink);font-size:14px}
+.dv-f{font-size:12px;color:var(--ink-3);display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line-2);padding-top:7px;margin-top:2px}
+.dv-grp{display:flex;align-items:center;gap:8px;margin:20px 2px 8px;font-size:14px;font-weight:700;color:var(--ink-2)}
+.dv-grp .n{color:var(--ink-3);font-weight:600;font-family:var(--f-mono);font-size:12px}
+.dv-dot{width:10px;height:10px;border-radius:3px;background:var(--accent)}.dv-dot.s-mp{background:var(--good)}.dv-dot.s-appr{background:#6B4FA0}.dv-dot.s-pr{background:#2463A5}.dv-dot.s-es{background:#0D5E83}.dv-dot.s-dev{background:#8DB6CB}
+.dv-stepper{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.dv-stepper button{border:0;background:none;padding:4px 1px;display:flex;flex-direction:column;align-items:stretch;gap:6px;font-size:12px;font-weight:600;color:var(--ink-3);cursor:pointer;min-width:0}
+.dv-stepper i{height:8px;border-radius:4px;background:var(--sunk)}
+.dv-stepper span{text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dv-stepper button.past i{background:#8DB6CB}.dv-stepper button.past span{color:var(--ink-2)}
+.dv-stepper button[aria-pressed=true] i{background:var(--accent)}.dv-stepper button[aria-pressed=true] span{color:var(--accent);font-weight:700}
+.dv-spec{font-size:14px;color:var(--ink-2);margin-top:4px;overflow-wrap:anywhere}
+.dv-up{display:flex;flex-direction:column;gap:8px}
+.dv-ist{font-weight:500;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45}
+.dv-is .row-s{white-space:normal}
+.dv-more summary{padding:10px 16px;font-size:13px;color:var(--ink-3);cursor:pointer;border-top:1px solid var(--line-2)}
+.dv-log{display:flex;flex-direction:column}
+.dv-le{display:grid;grid-template-columns:84px minmax(0,1fr);gap:4px 12px;padding:12px 16px;border:0;border-top:1px solid var(--line-2);text-align:left;background:none;width:100%;font:inherit;color:inherit;cursor:pointer}
+.dv-le time{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);padding-top:2px;white-space:nowrap}
+.dv-le p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.5}
+.dv-le.auto p{color:var(--ink-3);font-size:13px}
+.dvi-it{border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.dvi-it .check{align-items:center}.dvi-it .check .in{flex:1;min-width:0}
+.dvi-chips{display:flex;flex-wrap:wrap;gap:4px}.dvi-chips .chip{white-space:normal}
+.dvi-is{margin:0;padding-left:18px;font-size:13px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px;overflow-wrap:anywhere}
+@media (max-width:420px){.dv-le{grid-template-columns:1fr}.dv-stepper{gap:2px}.dv-stepper button{font-size:11px}}
 .pc-m.etd{background:#1E7A55;color:#fff}.pc-m.eta{background:#D3EEE1;color:#14573B}.pc-m.cut{background:#E3E9EF;color:#2D4A60}
 .pc-m.ap{background:#F8E2E2;color:#9A2A2A}.pc-m.ar{background:#E3ECF8;color:#1F4F8A}.pc-m.tax{background:#FCF0DA;color:#6B4100}
 .pc-t.td{color:var(--accent);font-weight:600}.pc-t.td .tdm,.pl-legend .tdm{font-weight:800;margin-right:2px;color:var(--accent)}
@@ -703,9 +751,9 @@ const IC = {
   chev: '<path d="M9 6l6 6-6 6"/>', back: '<path d="M15 6l-6 6 6 6"/>', x: '<path d="M6 6l12 12M18 6 6 18"/>', plus: '<path d="M12 5v14M5 12h14"/>', check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
 };
 const svg = (k, cls = '') => `<svg viewBox="0 0 24 24" class="${cls}" aria-hidden="true">${IC[k]}</svg>`;
-const NAV = [['home', '홈', 'home'], ['partners', '거래처', 'users'], ['money', '자금', 'money'], ['po', 'PO', 'po'], ['products', '단가', 'tag'], ['plan', '일정', 'cal'], ['docs', '서류', 'docs']];
-const SIDE = [['home', '홈', 'home'], ['partners', '거래처', 'users'], ['money', '자금', 'money'], ['po', 'PO', 'po'], ['products', '제품 단가', 'tag'], ['plan', '일정', 'cal'], ['docs', '서류', 'docs'], ['report', '리포트', 'report']];
-const ROUTES = new Set(['home', 'partners', 'partner', 'po', 'ship', 'money', 'arap', 'docs', 'report', 'company', 'plan', 'products']);
+const NAV = [['home', '홈', 'home'], ['partners', '거래처', 'users'], ['money', '자금', 'money'], ['po', 'PO', 'po'], ['dev', '제품', 'tag'], ['plan', '일정', 'cal'], ['docs', '서류', 'docs']];
+const SIDE = [['home', '홈', 'home'], ['partners', '거래처', 'users'], ['money', '자금', 'money'], ['po', 'PO', 'po'], ['dev', '제품', 'tag'], ['plan', '일정', 'cal'], ['docs', '서류', 'docs'], ['report', '리포트', 'report']];
+const ROUTES = new Set(['home', 'partners', 'partner', 'po', 'ship', 'money', 'arap', 'docs', 'report', 'company', 'plan', 'products', 'dev', 'devp']);
 
 /* ================= state ================= */
 const S = {
@@ -719,7 +767,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products', 'todos'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.09-2';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.13-1';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -984,6 +1032,7 @@ function openAlert(key) {
   const parts = String(key || '').split('|'); const kind = parts[0], ref = decodeURIComponent(parts[1] || ''), date = parts[2] || '';
   if (kind === 'unc') { openClassify(); return; }
   if (kind === 'todo') { const t = tdById(ref); if (t) openTodo(t); return; }
+  if (kind === 'dev') { const pid = ref.split('~')[0]; if (plById(pid)) { closeSheet(); S.dvId = pid; go('devp'); } return; }
   const a = computeAlerts({ hidden: true, horizon: 120 }).find(x => x.key === key);
   const off = (S.co.alertOff || {})[key];
   const kv = rows => `<dl class="kv2">${rows.filter(r => r[1] !== '' && r[1] != null).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
@@ -1416,14 +1465,14 @@ function scheduleRender() { if (rq) return; rq = requestAnimationFrame(() => { r
 function render() {
   const a = document.activeElement; const keepId = a && a.id && $('#view').contains(a) ? a.id : null; const sel = keepId && a.selectionStart != null ? [a.selectionStart, a.selectionEnd] : null;
   const alerts = computeAlerts(); const urgent = alerts.filter(x => x.sev === 'crit').length;
-  const navBtn = (cls, [k, label, ic]) => `<button class="${cls}" data-act="go" data-to="${k}" ${S.route === k || (k === 'money' && (S.route === 'arap' || (cls === 'tab' && S.route === 'report'))) || (k === 'partners' && S.route === 'partner') || (k === 'plan' && S.route === 'ship') ? 'aria-current="page"' : ''}>${svg(ic)}<span>${label}</span>${k === 'home' && urgent ? `<span class="pip">${urgent}</span>` : ''}</button>`;
+  const navBtn = (cls, [k, label, ic]) => `<button class="${cls}" data-act="go" data-to="${k}" ${S.route === k || (k === 'money' && (S.route === 'arap' || (cls === 'tab' && S.route === 'report'))) || (k === 'partners' && S.route === 'partner') || (k === 'plan' && S.route === 'ship') || (k === 'dev' && (S.route === 'products' || S.route === 'devp')) ? 'aria-current="page"' : ''}>${svg(ic)}<span>${label}</span>${k === 'home' && urgent ? `<span class="pip">${urgent}</span>` : ''}</button>`;
   $('#sidenav').innerHTML = SIDE.map(n => navBtn('nav', n)).join('');
   $('#tabbar').innerHTML = NAV.map(n => navBtn('tab', n)).join('');
   if (S.route === 'company') $('#nav-company').setAttribute('aria-current', 'page'); else $('#nav-company').removeAttribute('aria-current');
   const lk = (S.co.logo || '').slice(-40) + '|' + (S.co.brand || S.co.nameKo || S.co.nameZh || '');
   $$('[data-co-logo]').forEach(el => { if (el.__k === lk) return; el.__k = lk; el.innerHTML = S.co.logo ? `<img src="${esc(S.co.logo)}" alt="${esc(S.co.brand || S.co.nameEn || '회사 로고')}">` : `<b>${esc(S.co.brand || S.co.nameKo || S.co.nameZh || '업무 대장')}</b>`; });
   $('#sync-note').textContent = { connecting: '불러오는 중…', live: '이 기기에 저장 중', local: '저장 안 됨', error: '저장소를 열지 못함', revoked: '' }[S.mode] || '';
-  const v = { home: viewHome, partners: viewPartners, partner: viewPartner, po: viewPo, ship: viewShip, money: viewMoney, arap: viewArap, docs: viewDocs, report: viewReport, company: viewCompany, plan: viewPlan, products: viewProducts }[S.route] || viewHome;
+  const v = { home: viewHome, partners: viewPartners, partner: viewPartner, po: viewPo, ship: viewShip, money: viewMoney, arap: viewArap, docs: viewDocs, report: viewReport, company: viewCompany, plan: viewPlan, products: viewProducts, dev: viewDev, devp: viewDevP }[S.route] || viewHome;
   $('#view').innerHTML = statusBanner() + v(alerts);
   if (keepId) { const el = document.getElementById(keepId); if (el) { el.focus(); if (sel && el.setSelectionRange) try { el.setSelectionRange(sel[0], sel[1]); } catch (e) { } } }
   $('#dl-partners').innerHTML = S.partners.map(p => `<option value="${esc(p.name)}">`).join('');
@@ -1461,6 +1510,7 @@ function upcomingEvents(days) {
   for (const e of taxEvents()) { const d = dday(e.date); if (d > days) break; ev.push({ date: e.date, d, tag: ['세무', 'c-warn'], title: e.title, sub: e.sub, amt: '', key: K('tax', e.title, e.date) }); }
   for (const x of plMilestones(days, 0)) ev.push({ date: x.date, d: x.d, tag: [mileWord(x.t), x.t.type === 'ship' ? 'c-good' : x.t.type === 'inspect' ? 'c-warn' : 'c-steel'], title: x.pl.name || '', sub: `${x.pl.title || ''} · ${tText(x.pl, x.t)}${x.pl.partnerName ? ' · ' + x.pl.partnerName : ''}`, amt: '', key: x.key });
   for (const t of S.todos) { if (t.done) continue; const d = tdDate(t); if (!isYmd(d)) continue; const dd = dday(d); if (dd > days || dd < -7) continue; ev.push({ date: d, d: dd, tag: ['할 일', 'c-acc'], title: t.title, sub: tdSub(t).join(' · '), amt: '', key: `todo|${encodeURIComponent(t.id)}|${d}` }); }
+  ev.push(...dvUpcoming(days));
   return ev.filter(e => (S.co.alertOff || {})[e.key] !== 'done').sort((a, b) => a.date.localeCompare(b.date));
 }
 function viewHome(alerts) {
@@ -1513,7 +1563,7 @@ function viewHome(alerts) {
     ${ev.length ? `<div class="list">${ev.map(e => `<button class="row sched" data-act="alert" data-key="${esc(e.key)}"><span class="sd mono"><b>${fmtD(e.date)}</b><small>${e.d === 0 ? '오늘' : e.d < 0 ? `${-e.d}일 지남` : `D-${e.d}`}</small></span><div style="min-width:0"><div class="row-t"><span class="chip ${e.tag[1]}">${e.tag[0]}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(e.title)}</span></div><div class="row-s">${esc(e.sub)}</div></div><span class="amt">${esc(e.amt)}</span></button>`).join('')}</div>`
       : '<div class="empty">2주 안에 잡힌 일정이 없어요.</div>'}</section>
   <section class="panel quick"><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:8px">
-    <label for="quick-in" style="font-size:12px;font-weight:600;color:var(--ink-2)">빠른 입력 · 은행 문자, 청구서·주문 글자를 붙여넣으면 알아서 정리해요</label>
+    <label for="quick-in" style="font-size:12px;font-weight:600;color:var(--ink-2)">빠른 입력 · 은행 문자, 청구서·주문, 주간 개발 현황을 붙여넣으면 알아서 정리해요</label>
     <div style="display:flex;gap:8px;align-items:stretch"><textarea id="quick-in" class="in" rows="2" placeholder="여기에 붙여넣기">${esc(S.quick)}</textarea><button class="btn btn-p" data-act="quick-go">정리</button></div></div></section>
   <div class="grid2">
     <section class="panel"><div class="panel-h"><h2>결제 남은 거래처</h2><button class="btn btn-s btn-q" data-act="go" data-to="partners">전체 거래처</button></div>
@@ -4500,6 +4550,7 @@ function openSmart(opts = {}) {
       go.addEventListener('click', async () => {
         const text = ta.value.trim(), note = readForm(panel)['sm-note'] || '';
         if (!text && !files.length && !(kind === 'shipping' && note)) { toast('붙여넣거나 파일을 올려 주세요.', 'crit'); return; }
+        if (kind === 'auto' && !files.length && dvIsReport(text)) { openDevImport(text); return; }
         out.innerHTML = ''; st.innerHTML = ''; go.disabled = true;
         const pdfImgs = [], photos = [], sheetTxns = []; let pdfText = '', pdfFail = false, sheetText = '', sheetFail = false;
         sendFiles = files.slice();
@@ -4567,6 +4618,7 @@ const openOcr = kind => openSmart({ kind: kind || 'auto' });
 /* quick paste on the home screen: bank messages are recorded at once (with undo), anything else goes to smart input */
 async function quickHandle(text) {
   text = String(text || '').trim(); if (!text) return;
+  if (dvIsReport(text)) { const q = $('#quick-in'); if (q) q.value = ''; S.quick = ''; openDevImport(text); return; }
   const blocks = splitSmsBlocks(text);
   const local = !parseBankScreenText(text).length && blocks.every(b => b.length <= 320) ? parseBankSms(text) : [];
   const ord = parseOrderText(text);
@@ -4958,7 +5010,7 @@ function plHeadPanel(pl, multi) {
   </div></section>`;
 }
 /* ================= one calendar: my to-dos, production · development, shipments, payments ================= */
-const CAL_CATS = [['todo', '할 일'], ['prod', '생산'], ['ship', '출하'], ['money', '결제·세무']];
+const CAL_CATS = [['todo', '할 일'], ['prod', '제품·생산'], ['ship', '출하'], ['money', '결제·세무']];
 function calCats() {
   if (!S.calCats) { try { S.calCats = JSON.parse(localStorage.getItem('avory-calcat') || 'null'); } catch (e) { S.calCats = null; } }
   if (!S.calCats || typeof S.calCats !== 'object') S.calCats = { todo: 1, prod: 1, ship: 1, money: 1 };
@@ -5078,21 +5130,23 @@ function calExtra(from, to) {
   if (c.todo) for (const t of S.todos) for (const d of tdOccur(t, from, to)) out.push({ k: 'todo', date: d, t, cur: d === tdDate(t) });
   if (c.ship) for (const s of S.ships) { if (s.status === 'cancel') continue; for (const [f, w, cls] of [['docCutoff', '서류마감', 'cut'], ['etd', '출항', 'etd'], ['eta', '도착', 'eta']]) if (s[f] && s[f] >= from && s[f] <= to) out.push({ k: 'ship', date: s[f], s, w, cls }); }
   if (c.money) { for (const x of arapItems()) if (x.due && x.due.date >= from && x.due.date <= to) out.push({ k: 'due', date: x.due.date, x }); for (const e of taxEvents()) if (e.date >= from && e.date <= to) out.push({ k: 'tax', date: e.date, e }); }
+  out.push(...dvCalItems(from, to));
   return out;
 }
 const shortName = n => { const s = String(n || ''); const z = s.replace(/^(?:深圳市|东莞市|广州市|上海市|深圳|东莞|SHENZHEN\s+|DONGGUAN\s+)/i, '').replace(/(?:股份有限公司|有限公司|有限责任公司|CO\.?,?\s*LTD\.?|LIMITED|LTD\.?)$/i, '').trim(); return (z || s).slice(0, 8); };
 const xChip = x => x.k === 'ship' ? `<i class="pc-m ${x.cls}">${x.w}<span class="q"> ${esc(x.s.ref || x.s.pod || '')}</span></i>`
   : x.k === 'due' ? `<i class="pc-m ${x.x.side}">${x.x.side === 'ap' ? '지급' : '입금'}<span class="q"> ${esc(shortName(x.x.p.partnerName))}</span></i>`
-  : x.k === 'tax' ? `<i class="pc-m tax">세무<span class="q"> ${esc(x.e.title.slice(0, 10))}</span></i>` : '';
+  : x.k === 'tax' ? `<i class="pc-m tax">세무<span class="q"> ${esc(x.e.title.slice(0, 10))}</span></i>` : x.k === 'dsm' || x.k === 'dis' ? dvXChip(x) : '';
 const tdLine = x => `<span class="pc-t td${x.t.done ? ' done' : ''}${x.cur ? '' : ' fut'}"><b class="tdm">${x.t.done ? '✓' : '○'}</b>${x.t.time ? `<span class="to">${esc(x.t.time)} </span>` : ''}${esc(x.t.title)}</span>`;
 function calRow(x) {
+  if (x.k === 'dsm' || x.k === 'dis') return dvCalRow(x);
   if (x.k === 'todo') { const t = x.t, done = !!t.done; return `<div class="td-row${done ? ' done' : ''}${x.cur ? '' : ' fut'}"><button type="button" class="td-chk" data-act="td-done" data-id="${esc(t.id)}" aria-pressed="${done}" aria-label="${done ? '완료 취소' : '완료'}" ${x.cur ? '' : 'disabled'}>${svg('check')}</button><button class="row" data-act="td-open" data-id="${esc(t.id)}"><div style="min-width:0"><div class="row-t"><span class="td-title">${esc(t.title)}</span></div>${tdSub(t).length ? `<div class="row-s">${tdSub(t).map(esc).join(' · ')}</div>` : ''}</div><span class="row-r">${svg('chev')}</span></button></div>`; }
   if (x.k === 'ship') return `<button class="row" data-act="edit-ship" data-id="${esc(x.s.id)}"><div style="min-width:0"><div class="row-t"><span class="chip ${x.cls === 'etd' ? 'c-good' : x.cls === 'eta' ? 'c-acc' : 'c-steel'}">${x.w}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(routeText(x.s))}</span></div><div class="row-s">${[x.s.ref, x.s.vessel, x.s.partnerName].filter(Boolean).map(esc).join(' · ') || '출하'}</div></div><span class="row-r">${svg('chev')}</span></button>`;
   if (x.k === 'due') { const p = x.x.p; return `<button class="row" data-act="edit-po" data-id="${esc(p.id)}"><div style="min-width:0"><div class="row-t"><span class="chip ${x.x.side === 'ap' ? 'c-out' : 'c-steel'}">${x.x.side === 'ap' ? '지급' : '입금'}</span><span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.partnerName || '')}</span></div><div class="row-s">${isBill(p) ? '청구서' : 'PO'} ${esc(p.no || '')}${x.x.due.est || x.x.due.dflt ? ' · 기한 추정' : ''}</div></div><span class="row-r mono">${money(x.x.bal, x.x.cur)}</span></button>`; }
   if (x.k === 'tax') return `<button class="row" data-act="alert" data-key="${esc(`tax|${encodeURIComponent(x.e.title)}|${x.e.date}`)}"><div style="min-width:0"><div class="row-t"><span class="chip c-warn">세무</span><span>${esc(x.e.title)}</span></div><div class="row-s">${esc(x.e.sub || '')}</div></div><span class="row-r">${svg('chev')}</span></button>`;
   return '';
 }
-const X_ORDER = { todo: 0, ship: 1, due: 2, tax: 3 };
+const X_ORDER = { todo: 0, ship: 1, dsm: 2, dis: 3, due: 4, tax: 5 };
 
 function viewPlan() {
   const all = S.plans.slice().sort(plOrder), c = calCats();
@@ -5127,11 +5181,12 @@ function viewPlan() {
   const listMonth = [...extra.map(x => ({ date: x.date, h: calRow(x), o: X_ORDER[x.k] })), ...sel.flatMap(pl => plSorted(pl).filter(t => t.start.startsWith(ym) || (isMile(t) && t.start < from && tEnd(t) >= from)).map(t => ({ date: t.start < from ? from : t.start, h: tRow({ pl, t }), o: 5 })))].sort((a, b) => a.date.localeCompare(b.date) || a.o - b.o);
   const byDay = {}; for (const x of listMonth) (byDay[x.date] = byDay[x.date] || []).push(x.h);
   const catChips = `<div class="pl-chips" role="group" aria-label="달력에 보일 것">${CAL_CATS.map(([k, l]) => `<button class="pj-chip cat-${k}" data-act="cal-cat" data-k="${k}" aria-pressed="${!!c[k]}"><i></i>${l}</button>`).join('')}</div>`;
-  const pjChips = prodOn && all.length > 1 ? `<div class="pl-chips" role="group" aria-label="달력에 보일 생산 일정"><span class="muted" style="font-size:12px;font-weight:600">생산 일정</span>${all.map(p => `<button class="pj-chip" data-act="pl-tog" data-id="${esc(p.id)}" aria-pressed="${sel.includes(p)}"><i style="background:${pjCol(p)}"></i>${esc(p.name || '이름 없음')}${p.status === 'done' ? ' · 끝' : ''}</button>`).join('')}</div>` : '';
-  const legend = [c.todo ? '<span><b class="tdm">○</b> 할 일</span>' : '', c.ship ? '<span><i class="pc-m etd">출항</i><i class="pc-m eta">도착</i> 출하·선적</span>' : '', c.money ? '<span><i class="pc-m ap">지급</i><i class="pc-m ar">입금</i> 결제 기한</span>' : '', prodOn ? `<span><i class="pc-m inspect">验货</i><i class="pc-m ship">出货</i> 생산 일정</span><span><b>排</b> 공장 확정</span><span class="st-n"><b>拟</b> 확인 대기</span>${rest.length ? `<span>${rest.map(i => PL_WD_KO[i]).join('·')} 쉬는 날</span>` : ''}` : ''].filter(Boolean).join('');
+  const pjChips = prodOn && all.length > 1 ? `<div class="pl-chips" role="group" aria-label="달력에 보일 생산 일정"><span class="muted" style="font-size:12px;font-weight:600">제품</span>${all.map(p => `<button class="pj-chip" data-act="pl-tog" data-id="${esc(p.id)}" aria-pressed="${sel.includes(p)}"><i style="background:${pjCol(p)}"></i>${esc(p.name || '이름 없음')}${p.status === 'done' ? ' · 끝' : ''}</button>`).join('')}</div>` : '';
+  const legend = [c.todo ? '<span><b class="tdm">○</b> 할 일</span>' : '', c.ship ? '<span><i class="pc-m etd">출항</i><i class="pc-m eta">도착</i> 출하·선적</span>' : '', c.money ? '<span><i class="pc-m ap">지급</i><i class="pc-m ar">입금</i> 결제 기한</span>' : '', prodOn ? `<span><i class="pc-m inspect">验货</i><i class="pc-m ship">出货</i><i class="pc-m dsm">샘플</i><i class="pc-m dis">요청</i> 제품·생산</span><span><b>排</b> 공장 확정</span><span class="st-n"><b>拟</b> 확인 대기</span>${rest.length ? `<span>${rest.map(i => PL_WD_KO[i]).join('·')} 쉬는 날</span>` : ''}` : ''].filter(Boolean).join('');
   const dayRows = [...dayX.map(calRow), ...[...dd.miles, ...dd.tasks].map(tRow)];
-  const prodPanels = !c.prod ? '' : all.length ? `<div class="sec-h"><h2>생산·개발 일정</h2></div><div class="actions" style="margin:-2px 0 12px">${prodBtns}</div>${sel.map(pl => plHeadPanel(pl, multi)).join('')}
-  <section class="panel"><div class="panel-h"><h2>${ymLabel(ym)} 생산 메모</h2></div><div class="panel-b" style="display:flex;flex-direction:column;gap:12px">${sel.map(pl => { const n = plNote(pl, ym); return `<div class="pl-noteb">${multi ? `<div class="row-t" style="margin-bottom:4px"><span class="chip" style="color:${pjCol(pl)}">${esc(pjShort(pl))}</span></div>` : ''}<div class="pl-note">${n ? esc(n) : '<span class="muted">달력 아래에 붙는 각주예요. 사진·PDF·엑셀에도 들어가요.</span>'}</div><div><button class="btn btn-s btn-q" data-act="pl-note" data-id="${esc(pl.id)}">고치기</button></div></div>`; }).join('')}</div></section>
+  const noted = sel.filter(pl => plNote(pl, ym));
+  const prodPanels = !c.prod ? '' : all.length ? `<div class="sec-h"><h2>제품·생산 일정</h2><button class="btn btn-s btn-q" data-act="go" data-to="dev">제품 현황</button></div><div class="actions" style="margin:-2px 0 12px">${prodBtns}</div>${dvCalSummary(sel)}
+  ${noted.length ? `<section class="panel"><div class="panel-h"><h2>${ymLabel(ym)} 공장 일정 메모</h2></div><div class="panel-b" style="display:flex;flex-direction:column;gap:12px">${noted.map(pl => { const n = plNote(pl, ym); return `<div class="pl-noteb">${noted.length > 1 ? `<div class="row-t" style="margin-bottom:4px"><span class="chip" style="color:${pjCol(pl)}">${esc(pjShort(pl))}</span></div>` : ''}<div class="pl-note">${n ? esc(n) : '<span class="muted">달력 아래에 붙는 각주예요. 사진·PDF·엑셀에도 들어가요.</span>'}</div><div><button class="btn btn-s btn-q" data-act="pl-note" data-id="${esc(pl.id)}">고치기</button></div></div>`; }).join('')}</div></section>` : ''}
   <section class="panel"><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:10px">
     <div class="actions"><button class="btn" data-act="pl-add" data-d="${day}">${svg('plus')}생산 작업 추가</button><button class="btn" data-act="pl-share">공장에 공유 · 사진·PDF·엑셀</button></div>
     <small class="muted">공유하는 그림·PDF·엑셀에는 생산·개발 일정만 들어가요. 내 할 일·결제는 들어가지 않아요.</small></div></section>`
@@ -5231,7 +5286,7 @@ function openPlanEd(pl) {
         const latest = isNew ? pl : JSON.parse(JSON.stringify(plById(pl.id) || pl));
         const id = await put('plans', Object.assign(latest, v));
         S.planId = id; const ids = plSel().map(p => p.id); if (!ids.includes(id)) plSetSel([...ids, id]);
-        toast(isNew ? '일정을 만들었어요. 작업을 추가해 보세요' : '일정 설정을 저장했어요'); if (S.route !== 'plan') go('plan'); return true;
+        toast(isNew ? '일정을 만들었어요. 작업을 추가해 보세요' : '일정 설정을 저장했어요'); if (S.route !== 'plan' && S.route !== 'devp') go('plan'); return true;
       };
       sheetDelete = async () => { await remove('plans', pl.id); plSetSel((plSelIds() || []).filter(x => x !== pl.id)); S.planId = null; toast('일정을 지웠어요'); };
       const dp = $('#pl-dup', panel); if (dp) dp.addEventListener('click', async () => {
@@ -5506,6 +5561,564 @@ function plMilestones(days, back = 3) {
 }
 const plTaskOf = ref => { const [pid, tid] = String(ref || '').split('~'); const pl = plById(pid); const t = pl && (pl.tasks || []).find(x => x.id === tid); return pl && t ? { pl, t } : null; };
 
+/* ================= product development status: reading a weekly status note (개발 현황 붙여넣기) =================
+   1. (양산중)YT-8333+SC235HAI-V1 개발완료
+   * 현재 발주 총 50k발주중 11/12 15k출하 완료, 20k 11/25~26중출하, 15k 12/25출하 예정
+   7.[개발 중] fh8536h+gc2083 _智远可达
+   * 1080p,720p 효과 튜닝중 22개 샘플 요청_11/ 20목표시간                                                     */
+const DV_TAG = /^[(\[【（〔]\s*([^)\]】）〕]{1,14}?)\s*[)\]】）〕]\s*/;
+const DV_NUM = /^\s*(\d{1,2})\s*[.)、．:]\s*(?!\d)(.*)$/;
+const DV_BUL = /^\s*(?:[*\-•·●○▪◦‣–—>]+|\(?\d{1,2}\)|[①-⑳])\s*/;
+const DV_WAIT = /(?:暂时\s*)?(?:未|没有|没|无)\s*反馈|회신\s*(?:없음|없어|대기|안\s*옴)|피드백\s*(?:없음|대기)|답변\s*(?:없음|대기)|대기\s*중/;
+const DV_HOLD = /보류|暂停|搁置|중단|hold/i;
+const DV_DONEW = /받음|받았|받았음|수령|도착함|완료(?!\s*목표|\s*예정|\s*요망)|收到|已收|已到|已完成|已发|已出|끝남|끝났/;
+const DV_ASKW = /요청|필요|요망|확인|부탁|해\s*주|해주|바람|바랍|请|麻烦|需要|要求|明确|加强|确认|改善|改进|整改|이슈|문제|불량|不良|异常|偏心|反馈|해야|하기|진행해|보내|전달|발송\s*예정|예정/;
+const DV_SHIPW = /출하|出货|发货|선적|납품|交货|出库|발송(?!\s*예정\s*\d*头)/;
+const DV_SAMPW = /샘플|样品|样机|sample|\bES\b|\bPR\b|\bCS\b/i;
+const DV_STOPW = /\s*(?:양산\s*중?|量产中?|개발\s*중|开发中|订单|발주|오더|원인|이슈|문제|필요|요청|요망|확인|개발\s*완료|완료|진행|예정|받음|받았|发货|出货|출하|샘플|样品|样机|——|--|[:：，,;；]|\d{1,2}\s*[/／月]\s*\d{1,2})/;
+const DV_TOK = '[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*';
+const DV_CHAIN = new RegExp(`(?:^|[^A-Za-z0-9-])(${DV_TOK}(?:\\s*\\+\\s*${DV_TOK})+)`);
+const dvClean = s => String(s || '').replace(/\[([^\]]+)\]\((?:mailto:|https?:\/\/)[^)]*\)/g, '$1').replace(/\\+\s*$/, '').replace(/[　\t ]/g, ' ').replace(/\s+$/, '');
+const dvKey = s => String(s || '').toLowerCase().replace(/[\s+\-_·/()（）\[\]【】.,，]+/g, '');
+const dvTidyName = s => String(s || '').replace(new RegExp(DV_TOK, 'g'), t => /\d/.test(t) && /[a-z]/i.test(t) ? t.toUpperCase() : t).replace(/\s*\+\s*/g, ' + ').replace(/\s+/g, ' ').trim();
+function dvStageOf(tag) {
+  const t = String(tag || '');
+  const o = {};
+  if (/양산|量产|\bMP\b/i.test(t)) o.stage = 'mp';
+  else if (/승인|承认|认证|인증/.test(t)) o.stage = 'appr';
+  else if (/\bPR\b|시생산|试产|小批|PP\b|파일럿/i.test(t)) o.stage = 'pr';
+  else if (/\bES\b|샘플|样品|样机|sample/i.test(t)) o.stage = 'es';
+  else if (/개발|开发|dev|설계|设计|기획/i.test(t)) o.stage = 'dev';
+  if (DV_HOLD.test(t)) o.state = 'hold'; else if (DV_WAIT.test(t)) o.state = 'wait';
+  return o;
+}
+/* 11/12 · 11/25~26 · 11월 20일 · 11.20 · 11/ 20 → [start, end] in this year or the next */
+const DV_DATE = /(?<![\d.])(\d{1,2})\s*(?:[/／]|월|月|\.(?!\d*\s*(?:k|K|m|cm|mm|fps|%|万|千|만|천|v|V|w|W|개|pcs|套|只|件|头|寸|g\b)))\s*(\d{1,2})(?!\s*(?:k|K|fps|%|万|千|만|천|개|pcs|套|件|头))(?:\s*(?:일|日|号))?(?:\s*[~～\-–]\s*(?:(\d{1,2})\s*(?:[/／]|월|月)\s*)?(\d{1,2})(?:\s*(?:일|日|号))?)?(?![\d.])/g;
+function dvYmd(m, d, ref) {
+  m = +m; d = +d; if (!(m >= 1 && m <= 12 && d >= 1 && d <= 31)) return '';
+  const r = parseYmd(ref || todayStr()); let y = r.getFullYear();
+  const mk = yy => `${yy}-${pad2(m)}-${pad2(d)}`;
+  let s = mk(y); const diff = (parseYmd(s) - r) / 864e5;
+  if (diff < -150) s = mk(y + 1); else if (diff > 300) s = mk(y - 1);
+  return parseYmd(s).getDate() === d ? s : '';
+}
+function dvDates(text, ref) {
+  const out = []; DV_DATE.lastIndex = 0; let m;
+  while ((m = DV_DATE.exec(text))) {
+    const s = dvYmd(m[1], m[2], ref); if (!s) continue;
+    let e = ''; if (m[4]) { e = dvYmd(m[3] || m[1], m[4], s); if (e && e <= s) e = ''; }
+    out.push({ s, e, i: m.index, len: m[0].length, raw: m[0] });
+  }
+  return out;
+}
+const dvNoDates = (text, ref) => { let t = text; for (const d of dvDates(text, ref).reverse()) t = t.slice(0, d.i) + ' '.repeat(d.len) + t.slice(d.i + d.len); return t; };
+const DV_QTY = /(\d+(?:[.,]\d+)*)\s*(k|K|千|천|만|万|w|W)?\s*(개|pcs|PCS|pc|套|台|只|个|件|ea|EA|sets?)?/g;
+function dvQtys(text) {
+  const out = []; DV_QTY.lastIndex = 0; let m;
+  while ((m = DV_QTY.exec(text))) {
+    if (/[A-Za-z]/.test(text[m.index - 1] || '') && !m[3]) continue;
+    const after = text.slice(m.index + m[0].length, m.index + m[0].length + 3);
+    if (/^\s*(?:fps|[pP]\b|头|寸|mm|V\b|%)/.test(after) && !m[2]) continue;
+    let n = Number(String(m[1]).replace(/,/g, '')); if (!Number.isFinite(n)) continue;
+    const u = m[2] || ''; if (/k|千|천/i.test(u)) n *= 1000; else if (/만|万|w/i.test(u)) n *= 10000;
+    n = Math.round(n);
+    if (!u && !m[3] && n < 100) continue;
+    out.push({ n, unit: !!(u || m[3]), i: m.index });
+  }
+  return out;
+}
+function dvSample(seg, ref, stage) {
+  if (!DV_SAMPW.test(seg)) return null;
+  const qs = dvQtys(dvNoDates(seg, ref)); const q = qs.find(x => x.unit) || qs[0];
+  if (!q || q.n > 5000) return null;
+  const ds = dvDates(seg, ref);
+  const kind = /\bPR\b|시생산|试产/i.test(seg) ? 'PR' : /\bCS\b/i.test(seg) ? 'CS' : (stage === 'pr' ? 'PR' : 'ES');
+  const fut = ds[0] && ds[0].s > todayStr();
+  const st = /승인|合格|OK\b/i.test(seg) ? 'ok' : /보냄|발송함|보냈|寄出|已发|送样|받음|받았|收到/.test(seg) ? (fut ? 'make' : 'sent') : /요청|필요|요망|需要/.test(seg) ? 'req' : /생산|제작|做|制作|튜닝|调试/.test(seg) ? 'make' : 'req';
+  return { kind, qty: q.n, due: ds[0] ? ds[0].s : '', st };
+}
+/* a header remainder cut where each date starts: 원인 … 필요 | 11/23 전후로 개발완료 | 11/27 샘플 55개 */
+const dvDateSegs = (text, ref) => text.split(/[,，;；]\s*/).flatMap(p => dvDates(p, ref).length > 1 ? dvCutDates(p, ref) : [p]);
+const dvCutDates = (text, ref) => { const cuts = [0, ...dvDates(text, ref).map(d => d.i).filter(i => i > 0), text.length]; const out = []; for (let k = 0; k < cuts.length - 1; k++) out.push(text.slice(cuts[k], cuts[k + 1])); return out; };
+/* one note line → what it says: an order total, shipments, samples, a milestone, an open request */
+function dvLine(line, ref, o = {}) {
+  const raw = dvClean(line).replace(DV_BUL, '').trim(); if (!raw) return null;
+  const f = { text: raw, ships: [], samples: [], miles: [], issues: [], order: 0 };
+  let rest = raw;
+  const om = rest.match(/(?:발주|订单|下单|오더|\bPO\b)\D{0,8}?(\d+(?:[.,]\d+)*)\s*(k|K|천|千|만|万)?/) || rest.match(/총\s*(\d+(?:[.,]\d+)*)\s*(k|K|천|千|만|万)?\s*(?:개|pcs|套)?\s*(?:발주|오더|订单)/);
+  if (om) { const q = dvQtys(om[1] + (om[2] || '') + (om[2] ? '' : '개')); if (q[0] && q[0].n >= 100) { f.order = q[0].n; rest = rest.replace(om[0], ' '); } }
+  const segs = (o.head ? dvDateSegs(rest, ref) : rest.split(/[,，;；]\s*/)).filter(s => s.trim());
+  let used = false;
+  for (const seg of segs) {
+    const ds = dvDates(seg, ref), qs = dvQtys(dvNoDates(seg, ref));
+    if (DV_SHIPW.test(seg) && qs.length && !DV_SAMPW.test(seg)) {
+      for (let k = 0; k < Math.max(1, Math.min(ds.length, qs.length)); k++) {
+        const d = ds[k] || ds[0]; if (!d) continue;
+        f.ships.push({ start: d.s, end: d.e, qty: (qs[k] || qs[0]).n, done: /완료|했|됨|已|done|끝/.test(seg) && !/예정|계획|计划/.test(seg) });
+      }
+      used = used || f.ships.length > 0;
+    }
+  }
+  for (const seg of o.head ? segs : [raw]) {
+    const sm = dvSample(seg, ref, o.stage); if (!sm) continue;
+    f.samples.push(sm); used = true;
+    if (!sm.due && /확인|请|麻烦|문의/.test(seg) && !o.head) f.issues.push({ text: raw, due: '' });
+  }
+  if (o.head) {
+    for (const seg of segs) {
+      const ds = dvDates(seg, ref); if (!ds.length || DV_SAMPW.test(seg) || DV_SHIPW.test(seg)) continue;
+      const nm = /개발\s*완료|开发完成|完成开发/.test(seg) ? '개발 완료' : /验货|검사|검수/.test(seg) ? '验货' : dvNoDates(seg, ref).replace(/전후로|前后|左右|까지|목표|예정/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 24);
+      if (nm) f.miles.push({ name: nm, start: ds[0].s, type: nm === '验货' ? 'inspect' : 'mile' });
+    }
+    return f;
+  }
+  if (used || f.order) return f;
+  const ds = dvDates(raw, ref);
+  if (/개발\s*완료|开发完成/.test(raw) && ds.length && raw.length <= 40) { f.miles.push({ name: '개발 완료', start: ds[0].s, type: 'mile' }); return f; }
+  if (DV_DONEW.test(raw) && !/요청|필요|요망|请|麻烦|需要|확인/.test(raw)) return f;
+  if (raw.length >= 4) f.issues.push({ text: raw, due: ds.length ? ds[ds.length - 1].s : '' });
+  return f;
+}
+/* the header after its number and tag: name · spec · customer, and what is left to read like a note line */
+function dvHead(h, known) {
+  let s = dvClean(h).trim(), state = '', customer = '';
+  const wm = s.match(DV_WAIT); let waitText = ''; if (wm) { state = 'wait'; waitText = wm[0].trim(); s = s.replace(wm[0], ' '); }
+  const cm = s.match(/[_＿]\s*([^\s_＿,，;；]{2,24})\s*$/); if (cm) { customer = cm[1]; s = s.slice(0, cm.index); }
+  s = s.replace(/\s+/g, ' ').trim();
+  let name = '', spec = '', rest = '';
+  const ch = s.match(DV_CHAIN);
+  if (ch && /\d/.test(ch[1])) {
+    const at = s.indexOf(ch[1]); name = dvTidyName(ch[1]);
+    const post = s.slice(at + ch[1].length).trim(), pre = s.slice(0, at).trim();
+    const b = post.search(DV_STOPW); spec = (b < 0 ? post : post.slice(0, b)).trim(); rest = b < 0 ? '' : post.slice(b).trim();
+    if (pre && !rest) rest = ''; if (pre) spec = [pre, spec].filter(Boolean).join(' ');
+  } else {
+    const b = s.search(DV_STOPW);
+    name = (b <= 0 ? s : s.slice(0, b)).trim(); rest = b <= 0 ? '' : s.slice(b).trim();
+    if (!name) { name = s.slice(0, 24); rest = s.slice(24); }
+  }
+  /* a product we already have, followed by this week's words: 以太网线 4K 项目 | 이번 주 미팅 11/19 */
+  const nk = dvKey(name);
+  for (const [kn, kk] of known || []) {
+    if (kk.length < 2 || nk === kk || !nk.startsWith(kk)) continue;
+    let got = '', cut = -1; for (let i = 0; i < s.length; i++) { got += dvKey(s[i]); if (got.length >= kk.length) { cut = i + 1; break; } }
+    if (cut > 0 && dvKey(s.slice(0, cut)) === kk) { name = kn; rest = s.slice(cut).trim(); spec = ''; }
+    break;
+  }
+  spec = spec.replace(/^[-_·,，\s]+|[-_·,，\s]+$/g, '').replace(/\s+/g, ' ');
+  return { name: name.replace(/^[-_·,，\s]+|[-_·,，\s]+$/g, ''), spec, customer, state, waitText, rest: rest.replace(/^[_\s——\-,，、;；:：]+/, '') };
+}
+const DV_LOOSE = /개발|开发|양산|量产|샘플|样品|样机|反馈|회신/;
+const dvIsReport = text => { const ls = String(text || '').split(/\r?\n/); if (ls.filter(l => { const m = l.match(DV_NUM); return m && DV_LOOSE.test(m[2]); }).length >= 2 && !/합계|总计|合计|TOTAL|单价|Unit\s*price/i.test(text)) return true; return ls.filter(l => { const m = l.match(DV_NUM); return m && DV_TAG.test(m[2].trim()) && Object.keys(dvStageOf((m[2].trim().match(DV_TAG) || [])[1])).length; }).length >= 1 && ls.filter(l => DV_NUM.test(l) || DV_TAG.test(l.trim())).length >= 2; };
+function dvParse(text, ref, known) {
+  ref = ref || todayStr();
+  const kn = (known || []).map(n => [n, dvKey(n)]).sort((a, b) => b[1].length - a[1].length);
+  const lines = String(text || '').replace(/\r/g, '').split('\n');
+  const isHead = l => { const m = l.match(DV_NUM); const r = m ? m[2].trim() : l.trim(); if (!DV_TAG.test(r)) return null; const tg = r.match(DV_TAG); const st = dvStageOf(tg[1]); return (m || Object.keys(st).length) ? { tag: tg[1], st, body: r.slice(tg[0].length) } : null; };
+  const tagged = lines.filter(isHead).length;
+  const items = []; let cur = null;
+  for (const l0 of lines) {
+    const l = dvClean(l0); if (!l.trim()) continue;
+    let h = isHead(l);
+    if (!h && !tagged) { const m = l.match(DV_NUM); if (m && m[2].trim().length >= 2) h = { tag: '', st: {}, body: m[2] }; }
+    if (h) { cur = { tag: h.tag, st: h.st, head: h.body, body: [] }; items.push(cur); continue; }
+    if (cur) cur.body.push(l);
+  }
+  return items.map(c => {
+    const hd = dvHead(c.head, kn);
+    const loose = !c.tag ? { stage: /양산|量产/.test(c.head) ? 'mp' : /개발|开发/.test(c.head) ? 'dev' : '' } : {};
+    const it = { name: hd.name, spec: hd.spec, customer: hd.customer, stage: c.st.stage || loose.stage || '', state: c.st.state || hd.state, order: 0, ships: [], samples: [], miles: [], issues: [], log: '' };
+    const add = f => { if (!f) return; if (f.order) it.order = f.order; it.ships.push(...f.ships); it.samples.push(...f.samples); it.miles.push(...f.miles); it.issues.push(...f.issues); };
+    if (hd.rest) add(dvLine(hd.rest, ref, { head: 1, stage: it.stage }));
+    for (const b of c.body) { if (DV_WAIT.test(b) && b.replace(DV_WAIT, '').replace(/[\s.,，。]/g, '').length < 4) { it.state = 'wait'; continue; } add(dvLine(b, ref, { stage: it.stage })); }
+    it.log = [[hd.rest, hd.waitText].filter(Boolean).join(' '), ...c.body.map(b => b.replace(DV_BUL, '').trim())].filter(Boolean).join('\n');
+    return it;
+  }).filter(it => it.name);
+}
+
+/* ================= products: development · mass production board (제품 현황) =================
+   A product is a 생산·개발 일정 record (S.plans) with a stage, a spec, an order total, samples, open requests and an update log.
+   Its 出货·验货·milestones stay schedule tasks, so the calendar, the two-week list and factory sharing keep working. */
+const DV_STAGES = [['dev', '개발'], ['es', 'ES 샘플'], ['pr', 'PR 시생산'], ['appr', '승인'], ['mp', '양산']];
+const DV_SHORT = { dev: '개발', es: 'ES', pr: 'PR', appr: '승인', mp: '양산' };
+const DV_STATES = [['', '진행'], ['wait', '회신 대기'], ['hold', '보류'], ['done', '끝남']];
+const DV_SM_ST = [['req', '요청'], ['make', '제작 중'], ['sent', '보냄·받음'], ['ok', '승인'], ['ng', '불합격']];
+const DV_SM_RANK = { req: 0, make: 1, sent: 2, ok: 3, ng: 3 };
+const DV_SM_KINDS = ['ES', 'CS', 'PR', 'PP', 'DV', 'PV', 'MP'];
+const dvStage = pl => pl.stage || (pl.kind === 'dev' ? 'dev' : 'mp');
+const dvState = pl => pl.status === 'done' ? 'done' : (pl.state || '');
+const dvSi = pl => Math.max(0, DV_STAGES.findIndex(s => s[0] === dvStage(pl)));
+const kq = v => { const n = num(String(v ?? '').replace(/,/g, '')); if (!n) return String(v ?? '') || '0'; if (n >= 1000 && n % 100 === 0) return `${n / 1000}k`; return n.toLocaleString('en-US'); };
+const dayDiff = (a, b) => Math.round((parseYmd(a) - parseYmd(b)) / 864e5);
+const dvShipsOf = pl => (pl.tasks || []).filter(t => t.type === 'ship' && isYmd(t.start)).sort((a, b) => a.start.localeCompare(b.start));
+const dvShipped = pl => sumBy(dvShipsOf(pl).filter(t => t.st === 'done'), t => num(String(t.qty).replace(/,/g, '')));
+const dvPlanned = pl => sumBy(dvShipsOf(pl).filter(t => t.st !== 'done'), t => num(String(t.qty).replace(/,/g, '')));
+const dvOpenIs = pl => (pl.issues || []).filter(i => !i.done);
+const dvOpenSm = pl => (pl.samples || []).filter(s => !['ok', 'ng'].includes(s.st));
+const dvLogs = pl => (pl.log || []).map((l, i) => [l, i]).sort((a, b) => String(b[0].d || '').localeCompare(String(a[0].d || '')) || a[1] - b[1]).map(x => x[0]);
+const dvLastD = pl => { const l = dvLogs(pl)[0]; return l ? l.d : ''; };
+const dvGroupOrder = ['mp', 'appr', 'pr', 'es', 'dev'];
+/* the product a note line is about · same chips with another resolution, or a factory production schedule for a development note, is a different product */
+const dvSig = sp => (String(sp || '').match(/\d{3,4}\s*[pP](?:\s*@\s*[\d.]+\s*fps)?/) || [''])[0].toLowerCase().replace(/\s/g, '');
+function dvMatch(name, it) {
+  const k = dvKey(name); if (!k) return null;
+  let c = S.plans.filter(p => dvKey(p.name) === k || (p.short && dvKey(p.short) === k));
+  if (!c.length && k.length >= 5) c = S.plans.filter(p => { const q = dvKey(p.name); return q.length >= 5 && (q.includes(k) || k.includes(q)); });
+  if (it) {
+    const sg = dvSig(it.spec), devIn = !!it.stage && it.stage !== 'mp';
+    c = c.filter(p => !(sg && dvSig(p.spec) && dvSig(p.spec) !== sg) && !(devIn && !p.stage && dvStage(p) === 'mp' && (p.tasks || []).length));
+  }
+  c.sort((a, b) => (!!b.stage - !!a.stage) || (dvState(a) === 'done') - (dvState(b) === 'done') || num(b.updatedAt) - num(a.updatedAt));
+  return c[0] || null;
+}
+/* everything with a date on one product: milestones, 出货, samples, requests */
+function dvAgenda(pl) {
+  const out = [];
+  for (const t of pl.tasks || []) { if (t.type === 'task' || t.st === 'done' || !isYmd(t.start)) continue; out.push({ date: t.start, k: t.type === 'ship' ? 'ship' : 'mile', label: t.type === 'ship' ? `출하 ${kq(t.qty)}` : t.type === 'inspect' ? `验货${t.qty ? ' ' + kq(t.qty) : ''}` : (t.name || mileWord(t)), id: t.id }); }
+  for (const s of pl.samples || []) { if (!isYmd(s.due) || !['req', 'make'].includes(s.st)) continue; out.push({ date: s.due, k: 'sample', label: `샘플 ${s.kind || ''} ${kq(s.qty)}개`.replace(/\s+/g, ' '), id: s.id }); }
+  for (const i of pl.issues || []) { if (i.done || !isYmd(i.due)) continue; out.push({ date: i.due, k: 'issue', label: i.text, id: i.id }); }
+  return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+function dvNext(pl) { const t0 = todayStr(), ag = dvAgenda(pl); return { next: ag.find(x => x.date >= t0) || null, late: ag.filter(x => x.date < t0 && x.date >= addDays(t0, -60)) }; }
+const dvAgWord = x => x.k === 'issue' ? '요청' : x.k === 'sample' ? '샘플' : x.k === 'ship' ? '출하' : '일정';
+
+/* fold what a note says into a product · returns what was added */
+function dvMerge(pl, it, o = {}) {
+  const t0 = todayStr(), add = { ship: 0, sample: 0, mile: 0, issue: 0, log: 0, upd: 0 };
+  pl.tasks = pl.tasks || []; pl.samples = pl.samples || []; pl.issues = pl.issues || []; pl.log = pl.log || [];
+  if (it.stage) { const cur = pl.stage; if (!(it.stage === 'dev' && ['es', 'pr', 'appr'].includes(cur)) && cur !== it.stage) { if (cur) pl.log.unshift({ id: 'lg' + uid(), d: t0, text: `단계 ${DV_SHORT[cur] || cur} → ${DV_SHORT[it.stage]}`, auto: 1 }); pl.stage = it.stage; add.upd++; } }
+  if (it.state === 'wait' || it.state === 'hold') { if (pl.state !== it.state) { pl.state = it.state; add.upd++; } }
+  else if (o.report && pl.state) { pl.state = ''; add.upd++; }
+  if (it.customer && !pl.customer) pl.customer = it.customer;
+  if (it.spec && !pl.spec) pl.spec = it.spec;
+  if (it.order && num(pl.orderQty) !== it.order) { pl.orderQty = it.order; add.upd++; }
+  for (const s of it.ships || []) {
+    const ex = pl.tasks.find(t => t.type === 'ship' && t.start === s.start) || pl.tasks.find(t => t.type === 'ship' && t.st !== 'done' && num(t.qty) === s.qty && isYmd(t.start) && Math.abs(dayDiff(t.start, s.start)) <= 14);
+    if (ex) { ex.start = s.start; ex.end = s.end || (ex.end > s.start ? ex.end : ''); ex.qty = s.qty; if (s.done) ex.st = 'done'; }
+    else { pl.tasks.push({ id: 't' + uid(), type: 'ship', b: '', st: s.done ? 'done' : '排', name: '', start: s.start, end: s.end || '', qty: s.qty, note: '', mark: '' }); add.ship++; }
+  }
+  for (const m of it.miles || []) {
+    const ex = pl.tasks.find(t => t.type !== 'ship' && t.type !== 'task' && (t.type === 'inspect' ? '验货' : t.name) === m.name && isYmd(t.start) && Math.abs(dayDiff(t.start, m.start)) <= 45);
+    if (ex) ex.start = m.start;
+    else { pl.tasks.push({ id: 't' + uid(), type: m.type || 'mile', b: '', st: '排', name: m.type === 'inspect' ? '' : m.name, start: m.start, end: '', qty: '', note: '', mark: '' }); add.mile++; }
+  }
+  for (const s of it.samples || []) {
+    const ex = pl.samples.find(x => x.kind === s.kind && num(x.qty) === s.qty && !['ok', 'ng'].includes(x.st));
+    if (ex) { if (s.due) ex.due = s.due; if ((DV_SM_RANK[s.st] || 0) > (DV_SM_RANK[ex.st] || 0)) ex.st = s.st; }
+    else { pl.samples.push({ id: 'sm' + uid(), kind: s.kind || 'ES', qty: s.qty, due: s.due || '', st: s.st || 'req', note: '', at: t0 }); add.sample++; }
+  }
+  for (const i of it.issues || []) {
+    const k = dvKey(i.text).slice(0, 28);
+    const ex = k && pl.issues.find(x => dvKey(x.text).slice(0, 28) === k);
+    if (ex) { if (i.due && !ex.done) ex.due = i.due; }
+    else { pl.issues.push({ id: 'is' + uid(), text: i.text, due: i.due || '', done: false, at: t0 }); add.issue++; }
+  }
+  if (it.log && !pl.log.some(l => l.text === it.log)) { pl.log.unshift({ id: 'lg' + uid(), d: t0, text: it.log }); add.log++; }
+  return add;
+}
+const dvAddWords = a => [a.ship ? `출하 ${a.ship}` : '', a.sample ? `샘플 ${a.sample}` : '', a.mile ? `일정 ${a.mile}` : '', a.issue ? `요청 ${a.issue}` : ''].filter(Boolean).join(' · ');
+function dvNewPlan(name, stage) {
+  return { name: dvTidyName(name) || name, kind: stage === 'mp' ? 'prod' : 'dev', stage: stage || 'dev', state: '', title: stage === 'mp' ? '生产日历' : '开发日程', unit: '', status: 'active', restDays: [6], batches: [], tasks: [], notes: [], legend: PL_LEGEND, samples: [], issues: [], log: [], spec: '', orderQty: '' };
+}
+function dvKeepSel(ids) { const cur = plSelIds(); if (cur) plSetSel([...new Set([...cur, ...ids])]); }
+
+/* ---------- the board ---------- */
+function dvCard(pl) {
+  const st = dvStage(pl), ss = dvState(pl), si = dvSi(pl), { next, late } = dvNext(pl);
+  const order = num(pl.orderQty), shp = dvShipped(pl), plan = dvPlanned(pl), sm = dvOpenSm(pl), is = dvOpenIs(pl), ld = dvLastD(pl);
+  const stChip = ss === 'wait' ? '<span class="chip c-warn">회신 대기</span>' : ss === 'hold' ? '<span class="chip">보류</span>' : ss === 'done' ? '<span class="chip c-good">끝남</span>' : '';
+  const qty = order || shp || plan ? `<span class="dv-qty"><span class="dv-bar" aria-hidden="true"><i style="width:${Math.min(100, (shp / Math.max(order, shp + plan, 1)) * 100).toFixed(1)}%"></i><b style="width:${Math.min(100, (plan / Math.max(order, shp + plan, 1)) * 100).toFixed(1)}%"></b></span><span class="dv-ln"><b class="mono">${kq(shp)}</b> 출하${plan ? ` · 예정 <b class="mono">${kq(plan)}</b>` : ''}${order ? ` · 발주 <b class="mono">${kq(order)}</b>` : ''}</span></span>` : '';
+  const smL = sm.length ? `<span class="dv-ln">샘플 ${sm.map(s => `${esc(s.kind || '')} ${kq(s.qty)}개 ${esc(L(DV_SM_ST, s.st))}${s.due ? ' ' + fmtD(s.due) : ''}`).join(' · ')}</span>` : '';
+  const nx = next ? `<span class="dv-ln"><span class="chip ${next.k === 'issue' ? 'c-warn' : next.k === 'ship' ? 'c-good' : 'c-steel'}">${fmtD(next.date, true)}</span><span class="dv-ell">${esc(next.label)}</span><span class="muted mono dv-dd">${dday(next.date) === 0 ? '오늘' : 'D-' + dday(next.date)}</span></span>` : '';
+  const lt = late.length ? `<span class="dv-ln late">${late.length}건 날짜 지남 · ${esc(late[0].label.slice(0, 30))}</span>` : '';
+  return `<button class="dv-card ${ss}" data-act="dv-open" data-id="${esc(pl.id)}">
+    <span class="dv-h"><b class="dv-n">${esc(pl.name || '이름 없음')}</b>${stChip}</span>
+    ${pl.spec || pl.customer ? `<span class="dv-sub">${[pl.spec, pl.customer ? '고객 ' + pl.customer : ''].filter(Boolean).map(esc).join(' · ')}</span>` : ''}
+    <span class="dv-steps" aria-label="단계 ${esc(L(DV_STAGES, st))}">${DV_STAGES.map((s, i) => `<i class="${i < si ? 'on' : i === si ? 'cur' : ''}"></i>`).join('')}<em>${esc(DV_SHORT[st])}</em></span>
+    ${qty}${smL}${nx}${lt}
+    <span class="dv-f">${is.length ? `<span>요청 ${is.length}건</span>` : ''}${ld ? `<span>기록 ${fmtD(ld)}</span>` : '<span>기록 없음</span>'}${pl.partnerName ? `<span>${esc(shortName(pl.partnerName))}</span>` : ''}</span>
+  </button>`;
+}
+function viewDev() {
+  const f = S.dvF || 'act', all = S.plans.slice();
+  const act = all.filter(p => dvState(p) !== 'done');
+  const rows = f === 'done' ? all.filter(p => dvState(p) === 'done') : f === 'all' ? all : act;
+  const nDev = act.filter(p => dvStage(p) !== 'mp' && !dvState(p)).length, nMp = act.filter(p => dvStage(p) === 'mp' && !dvState(p)).length;
+  const nWait = act.filter(p => ['wait', 'hold'].includes(dvState(p))).length, nIs = sumBy(act, p => dvOpenIs(p).length);
+  const t0 = todayStr(), wk = addDays(t0, 7), nWeek = sumBy(act, p => dvAgenda(p).filter(x => x.date >= t0 && x.date <= wk).length);
+  const sortIn = (a, b) => (['wait', 'hold'].includes(dvState(a))) - (['wait', 'hold'].includes(dvState(b))) || String((dvNext(a).next || {}).date || '9999').localeCompare(String((dvNext(b).next || {}).date || '9999')) || num(a.createdAt) - num(b.createdAt);
+  const groups = dvGroupOrder.map(k => [k, rows.filter(p => dvStage(p) === k).sort(sortIn)]).filter(g => g[1].length);
+  const segBtn = (v, l) => `<button data-act="dv-f" data-v="${v}" aria-pressed="${f === v}">${l}</button>`;
+  return `
+  <div class="page-head"><div><div class="eyebrow">Products</div><h1>제품 현황</h1></div><div class="actions"><button class="btn" data-act="dv-import">${svg('chat')}현황 붙여넣기</button><button class="btn" data-act="dv-report">현황 복사</button><button class="btn btn-p" data-act="dv-new">${svg('plus')}새 제품</button></div></div>
+  <div class="filters"><div class="seg" role="group" aria-label="제품 메뉴"><button data-act="go" data-to="dev" aria-pressed="true">개발·양산 현황</button><button data-act="go" data-to="products" aria-pressed="false">단가표</button></div></div>
+  <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">
+    <div class="tile"><div class="k">개발 중</div><div class="v">${nDev}</div><div class="s">개발 · ES · PR · 승인</div></div>
+    <div class="tile"><div class="k">양산 중</div><div class="v">${nMp}</div><div class="s">출하 일정은 달력에도</div></div>
+    <div class="tile"><div class="k">회신 대기 · 보류</div><div class="v" style="color:${nWait ? 'var(--warn)' : 'var(--ink)'}">${nWait}</div><div class="s">${nWait ? '공장·고객에게 물어볼 것' : '없어요'}</div></div>
+    <div class="tile"><div class="k">열린 요청</div><div class="v">${nIs}</div><div class="s">7일 안 날짜 ${nWeek}건</div></div>
+  </div>
+  <div class="filters"><div class="seg" role="group" aria-label="보기">${segBtn('act', '진행 중')}${segBtn('all', '전체')}${segBtn('done', '끝난 제품')}</div></div>
+  ${groups.length ? `<div class="dv-board">${groups.map(([k, ps]) => `<div class="dv-col"><div class="dv-grp"><span class="dv-dot s-${k}"></span>${esc(L(DV_STAGES, k))}<span class="n">${ps.length}</span></div><div class="dv-grid">${ps.map(dvCard).join('')}</div></div>`).join('')}</div>`
+    : `<section class="panel"><div class="empty">${all.length ? '이 조건의 제품이 없어요.' : '주간 개발 현황을 그대로 붙여넣으면 제품별로 나눠서 단계·수량·출하·샘플·요청을 정리해요.'}<span class="actions" style="justify-content:center"><button class="btn btn-s btn-p" data-act="dv-import">현황 붙여넣기</button><button class="btn btn-s" data-act="dv-new">새 제품</button></span></div></section>`}`;
+}
+
+/* ---------- one product ---------- */
+function viewDevP() {
+  const pl = plById(S.dvId);
+  if (!pl && S.dvWait === S.dvId && Date.now() - num(S.dvWaitAt) < 6000) return '<div class="empty">저장하는 중…</div>';
+  if (!pl) { S.route = 'dev'; return viewDev(); }
+  const st = dvStage(pl), ss = dvState(pl), si = dvSi(pl), id = esc(pl.id), t0 = todayStr();
+  const order = num(pl.orderQty), shp = dvShipped(pl), plan = dvPlanned(pl), ships = dvShipsOf(pl);
+  const open = dvOpenIs(pl).sort((a, b) => String(a.due || '9999').localeCompare(String(b.due || '9999'))), closed = (pl.issues || []).filter(i => i.done).sort((a, b) => num(b.doneAt) - num(a.doneAt));
+  const sms = (pl.samples || []).slice().sort((a, b) => (DV_SM_RANK[a.st] >= 3) - (DV_SM_RANK[b.st] >= 3) || String(a.due || '9999').localeCompare(String(b.due || '9999')));
+  const miles = (pl.tasks || []).filter(t => t.type !== 'ship' && isYmd(t.start)).sort((a, b) => a.start.localeCompare(b.start));
+  const milesUp = miles.filter(t => t.st !== 'done' && t.start >= addDays(t0, -14)), milesPast = miles.length - milesUp.length;
+  const logs = dvLogs(pl), more = S.dvLogAll === pl.id ? logs.length : 6;
+  const pr = prByName(pl.name) || S.products.find(p => { const a = dvKey(p.name).replace(/^\(?[^)]*\)/, ''), b = dvKey(pl.name); return a.length >= 5 && b.length >= 5 && (a.includes(b) || b.includes(a)); });
+  const ddw = d => { const n = dday(d); return n === 0 ? '오늘' : n < 0 ? `${-n}일 지남` : `D-${n}`; };
+  const isRow = i => `<div class="td-row dv-is${i.done ? ' done' : ''}"><button type="button" class="td-chk" data-act="dv-is-done" data-id="${id}" data-i="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="${i.done ? '다시 열기' : '끝냄'}">${svg('check')}</button><button class="row" data-act="dv-is" data-id="${id}" data-i="${esc(i.id)}"><div style="min-width:0"><div class="dv-ist td-title">${esc(i.text)}</div><div class="row-s">${i.due ? `<span class="${!i.done && i.due < t0 ? 'late' : ''}">${fmtD(i.due, true)} · ${ddw(i.due)}</span>` : '날짜 없음'}${i.at ? ` · 적은 날 ${fmtD(i.at)}` : ''}${i.done && i.doneAt ? ` · 끝낸 날 ${fmtD(todayOf(i.doneAt))}` : ''}</div></div></button></div>`;
+  const shipRow = t => `<div class="td-row"><button type="button" class="td-chk" data-act="dv-ship-done" data-id="${id}" data-t="${esc(t.id)}" aria-pressed="${t.st === 'done'}" aria-label="${t.st === 'done' ? '출하 완료 취소' : '출하 완료'}">${svg('check')}</button><button class="row" data-act="pl-task" data-pl="${id}" data-id="${esc(t.id)}"><div style="min-width:0"><div class="row-t"><span class="td-title mono">${kq(t.qty)}</span><span class="chip ${t.st === 'done' ? 'c-good' : 'c-steel'}">${t.st === 'done' ? '출하 완료' : '출하 예정'}</span></div><div class="row-s">${fmtD(t.start, true)}${tEnd(t) !== t.start ? ` → ${fmtD(tEnd(t), true)}` : ''}${t.st !== 'done' ? ` · ${ddw(t.start)}` : ''}${t.note ? ' · ' + esc(t.note) : ''}</div></div><span class="row-r">${svg('chev')}</span></button></div>`;
+  const smRow = s => `<button class="row" data-act="dv-sm" data-id="${id}" data-s="${esc(s.id)}"><div style="min-width:0"><div class="row-t"><span class="chip c-steel">${esc(s.kind || '샘플')}</span><span class="mono">${kq(s.qty)}개</span><span class="chip ${s.st === 'ok' ? 'c-good' : s.st === 'ng' ? 'c-crit' : s.st === 'sent' ? 'c-acc' : ''}">${esc(L(DV_SM_ST, s.st))}</span></div><div class="row-s">${s.due ? `${fmtD(s.due, true)} 목표${['req', 'make'].includes(s.st) ? ' · ' + ddw(s.due) : ''}` : '날짜 미정'}${s.note ? ' · ' + esc(s.note) : ''}</div></div><span class="row-r">${svg('chev')}</span></button>`;
+  const msRow = t => `<button class="row" data-act="pl-task" data-pl="${id}" data-id="${esc(t.id)}"><div style="min-width:0"><div class="row-t"><span class="chip ${t.st === 'done' ? 'c-good' : t.type === 'inspect' ? 'c-warn' : t.type === 'task' ? '' : 'c-steel'}">${t.st === 'done' ? '완료' : t.type === 'inspect' ? '验货' : t.type === 'task' ? '공정' : '일정'}</span><span class="dv-ell">${esc(t.type === 'inspect' ? `验货${t.qty ? ' ' + kq(t.qty) : ''}` : tBody(t) || t.name || '')}</span></div><div class="row-s">${fmtD(t.start, true)}${tEnd(t) !== t.start ? ` → ${fmtD(tEnd(t), true)}` : ''}${t.st !== 'done' ? ' · ' + ddw(t.start) : ''}${t.note ? ' · ' + esc(t.note) : ''}</div></div><span class="row-r">${svg('chev')}</span></button>`;
+  const info = [['고객', pl.customer], ['공장·협력사', pl.partnerName], ['관련 PO', pl.poNo], ['단위', pl.unit]].filter(r => r[1]);
+  const qtyFirst = !!(order || ships.length || st === 'mp');
+  const qtyP = `<section class="panel"><div class="panel-h"><h2>수량 · 출하</h2><button class="btn btn-s" data-act="dv-ship-new" data-id="${id}">${svg('plus')}출하</button></div>
+    ${order || ships.length ? `<div class="panel-b" style="display:flex;flex-direction:column;gap:8px"><div class="dv-bar big" aria-hidden="true"><i style="width:${Math.min(100, (shp / Math.max(order, shp + plan, 1)) * 100).toFixed(1)}%"></i><b style="width:${Math.min(100, (plan / Math.max(order, shp + plan, 1)) * 100).toFixed(1)}%"></b></div>
+      <div class="dv-qtys"><span>발주 <b class="mono">${order ? kq(order) : '—'}</b></span><span>출하 완료 <b class="mono">${kq(shp)}</b></span><span>출하 예정 <b class="mono">${kq(plan)}</b></span>${order ? `<span>${order - shp - plan > 0 ? '일정 없는 수량' : order - shp - plan < 0 ? '발주보다 많음' : '남은 수량'} <b class="mono">${kq(Math.abs(order - shp - plan))}</b></span>` : ''}</div></div>
+      ${ships.length ? `<div class="list">${ships.map(shipRow).join('')}</div>` : ''}` : '<div class="empty" style="padding-top:8px">발주 수량이나 출하 일정이 없어요. 업데이트에 ‘발주 총 50k, 11/25 20k 출하’처럼 적어도 돼요.</div>'}</section>`;
+  return `<div><button class="btn btn-s btn-q" data-act="go" data-to="dev">${svg('back')}제품 현황</button></div>
+  <div class="page-head"><div style="min-width:0"><div class="eyebrow">${esc(L(DV_STAGES, st))}${pl.customer ? `<i></i>고객 ${esc(pl.customer)}` : ''}${pl.partnerName ? `<i></i>${esc(shortName(pl.partnerName))}` : ''}</div><h1 style="overflow-wrap:anywhere">${esc(pl.name || '이름 없음')}</h1>${pl.spec ? `<div class="dv-spec">${esc(pl.spec)}</div>` : ''}</div>
+    <div class="actions"><button class="btn" data-act="dv-report" data-id="${id}">현황 복사</button><button class="btn" data-act="dv-edit" data-id="${id}">정보 고치기</button></div></div>
+  <section class="panel"><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:12px">
+    <div class="dv-stepper" role="group" aria-label="단계">${DV_STAGES.map(([k, l], i) => `<button data-act="dv-stage" data-id="${id}" data-k="${k}" aria-pressed="${k === st}" class="${i < si ? 'past' : ''}"><i></i><span>${esc(l)}</span></button>`).join('')}</div>
+    <div class="seg" role="group" aria-label="상태" style="align-self:flex-start;flex-wrap:wrap">${DV_STATES.map(([k, l]) => `<button data-act="dv-state" data-id="${id}" data-k="${k}" aria-pressed="${k === ss}">${esc(l)}</button>`).join('')}</div>
+  </div></section>
+  <section class="panel"><div class="panel-h"><h2>업데이트 적기</h2></div><div class="panel-b"><form id="dv-up" data-id="${id}" class="dv-up" autocomplete="off"><textarea class="in" name="text" rows="3" placeholder="예: 22개 샘플 11/20 발송 · 렌즈 扭力 문제로 새 홀더 11/20 전달 요청 · 20k 11/25 출하"></textarea><div class="actions" style="align-items:center"><button class="btn btn-p" type="submit">기록하기</button><small class="muted">날짜·수량·요청은 아래 목록에도 들어가요</small></div></form></div></section>
+  ${qtyFirst ? qtyP : ''}
+  <section class="panel"><div class="panel-h"><h2>요청·이슈</h2><span class="count">${open.length}건</span></div>
+    <div class="panel-b"><form id="dv-is-add" data-id="${id}" class="td-quick" autocomplete="off"><input class="in" name="text" placeholder="공장·고객에게 요청할 것, 문제" aria-label="요청·이슈"><input class="in" type="date" name="due" aria-label="기한" style="flex:0 1 160px"><button class="btn" type="submit">추가</button></form></div>
+    ${open.length ? `<div class="list">${open.map(isRow).join('')}</div>` : '<div class="empty" style="padding-top:8px">열린 요청이 없어요.</div>'}
+    ${closed.length ? `<details class="dv-more"><summary>끝난 요청 ${closed.length}건</summary><div class="list">${closed.map(isRow).join('')}</div></details>` : ''}</section>
+  <section class="panel"><div class="panel-h"><h2>샘플</h2><button class="btn btn-s" data-act="dv-sm-new" data-id="${id}">${svg('plus')}샘플</button></div>
+    ${sms.length ? `<div class="list">${sms.map(smRow).join('')}</div>` : '<div class="empty" style="padding-top:8px">ES·PR 샘플 요청과 납기를 적어 두면 달력에도 나와요.</div>'}</section>
+  <section class="panel"><div class="panel-h"><h2>일정</h2><div class="actions"><button class="btn btn-s" data-act="dv-mile-new" data-id="${id}">${svg('plus')}일정</button><button class="btn btn-s btn-q" data-act="dv-cal" data-id="${id}">달력에서 보기</button></div></div>
+    ${milesUp.length ? `<div class="list">${milesUp.slice(0, 12).map(msRow).join('')}</div>` : '<div class="empty" style="padding-top:8px">다가오는 일정이 없어요. 개발 완료·验货 같은 날짜를 넣어 두세요.</div>'}
+    ${milesUp.length > 12 || milesPast ? `<div class="panel-b"><small class="muted">${milesUp.length > 12 ? `다가오는 일정 ${milesUp.length - 12}개 더 · ` : ''}${milesPast ? `지난 일정 ${milesPast}개` : ''} · 전체는 달력에서 보여요</small></div>` : ''}</section>
+  ${qtyFirst ? '' : qtyP}
+  <section class="panel"><div class="panel-h"><h2>업데이트 기록</h2><span class="count">${logs.length}개</span></div>
+    ${logs.length ? `<div class="dv-log">${logs.slice(0, more).map(l => `<button class="dv-le${l.auto ? ' auto' : ''}" data-act="dv-log" data-id="${id}" data-l="${esc(l.id)}"><time>${fmtD(l.d, true)}</time><p>${esc(l.text)}</p></button>`).join('')}</div>${logs.length > more ? `<div class="panel-b" style="padding-top:10px"><button class="btn btn-s btn-q" data-act="dv-log-all" data-id="${id}">기록 ${logs.length - more}개 더 보기</button></div>` : ''}` : '<div class="empty" style="padding-top:8px">위에 적거나 주간 현황을 붙여넣으면 날짜별로 쌓여요.</div>'}</section>
+  <section class="panel"><div class="panel-h"><h2>정보</h2></div><div class="panel-b" style="display:flex;flex-direction:column;gap:10px">
+    ${info.length ? `<dl class="kv2">${info.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('')}</dl>` : ''}
+    ${pr ? `<button class="row" style="border:1px solid var(--line);border-radius:var(--r-sm)" data-act="pr-edit" data-id="${esc(pr.id)}"><div style="min-width:0"><div class="row-t"><span class="chip">단가표</span><span class="dv-ell">${esc(pr.name || '')}</span></div><div class="row-s">매입 ${pfx(pr.buy, pr.currency)} → 견적 ${hasNum(pr.sell) ? pfx(pr.sell, pr.currency) : '미입력'}</div></div><span class="row-r">${svg('chev')}</span></button>` : ''}
+    <div class="actions"><button class="btn btn-s" data-act="pl-edit" data-id="${id}">공장 일정표 설정</button><button class="btn btn-s" data-act="pl-shift" data-id="${id}">일정 미루기</button><button class="btn btn-s" data-act="dv-note" data-id="${id}">공장 일정 메모</button></div>
+  </div></section>`;
+}
+const todayOf = ms => { const d = new Date(num(ms)); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+
+/* ---------- saving small changes with an undo ---------- */
+async function dvSave(id, mut, msg) {
+  const cur = plById(id); if (!cur) return;
+  const before = JSON.parse(JSON.stringify(cur)), latest = JSON.parse(JSON.stringify(cur));
+  const r = mut(latest); if (r === false) return;
+  try { await put('plans', latest); } catch (e) { return; }
+  if (msg) undoToast(typeof msg === 'function' ? msg(r) : msg, async () => { try { await put('plans', before); } catch (e) { } });
+  return r;
+}
+async function dvSetStage(id, k) {
+  await dvSave(id, pl => { const cur = dvStage(pl); if (cur === k) return false; pl.stage = k; pl.log = pl.log || []; pl.log.unshift({ id: 'lg' + uid(), d: todayStr(), text: `단계 ${DV_SHORT[cur]} → ${DV_SHORT[k]}`, auto: 1 }); }, `단계를 ‘${L(DV_STAGES, k)}’로 바꿨어요`);
+}
+async function dvSetState(id, k) {
+  await dvSave(id, pl => {
+    const cur = dvState(pl); if (cur === k) return false;
+    if (k === 'done') pl.status = 'done'; else { pl.status = 'active'; pl.state = k; }
+    pl.log = pl.log || []; pl.log.unshift({ id: 'lg' + uid(), d: todayStr(), text: `상태 ${L(DV_STATES, cur)} → ${L(DV_STATES, k)}`, auto: 1 });
+  }, `‘${L(DV_STATES, k)}’로 표시했어요`);
+}
+async function dvUpdate(id, text) {
+  const pl0 = plById(id); if (!pl0) return;
+  const it = { log: text.trim(), order: 0, ships: [], samples: [], miles: [], issues: [] };
+  for (const line of text.split(/\r?\n/)) {
+    const f = dvLine(line, todayStr(), { stage: dvStage(pl0) }); if (!f) continue;
+    if (f.order) it.order = f.order; it.ships.push(...f.ships); it.samples.push(...f.samples); it.miles.push(...f.miles);
+    it.issues.push(...f.issues.filter(i => DV_ASKW.test(i.text) || i.due));
+    if (/개발\s*완료|开发完成/.test(line) && !f.miles.length) { const ds = dvDates(line, todayStr()); if (ds.length) it.miles.push({ name: '개발 완료', start: ds[0].s, type: 'mile' }); }
+  }
+  await dvSave(id, pl => dvMerge(pl, it), a => `기록했어요${dvAddWords(a) ? ' · ' + dvAddWords(a) : ''}`);
+}
+
+/* ---------- sheets ---------- */
+function openDev(pl) {
+  const isNew = !pl;
+  const p = Object.assign(dvNewPlan('', 'dev'), pl ? JSON.parse(JSON.stringify(pl)) : {});
+  const body = `<form class="fgrid" id="dv-form" autocomplete="off">
+    ${F('제품 · 모델', inp('name', p.name, { req: 1, ph: 'FH8333 + OS02H10' }), 'full')}
+    ${F('사양', inp('spec', p.spec, { ph: 'AHD 1080P@30fps · 케이스 N200 공용' }), 'full')}
+    ${F('고객', inp('customer', p.customer, { list: 'dl-partners' }))}${F('공장·협력사', inp('partnerName', p.partnerName, { list: 'dl-partners' }))}
+    ${F('단계', sel('stage', dvStage(p), DV_STAGES))}${F('상태', sel('state', dvState(p), DV_STATES))}
+    ${F('발주 수량', inp('orderQty', p.orderQty, { ph: '50000', mono: 1 }), '', '50k처럼 적어도 돼요')}${F('단위', inp('unit', p.unit, { ph: '套 · pcs' }))}
+    ${F('관련 PO', inp('poNo', p.poNo, { mono: 1 }), 'full')}
+  </form>`;
+  openSheet(isNew ? '새 제품' : '제품 정보', body, footStd(!isNew), {
+    mount: panel => {
+      sheetSave = async () => {
+        const v = readForm($('#dv-form', panel)); if (!String(v.name || '').trim()) { toast('제품 이름을 적어 주세요.', 'crit'); return false; }
+        const q = dvQtys(String(v.orderQty || '') + (/\d$/.test(String(v.orderQty || '').trim()) ? '개' : ''))[0];
+        const latest = isNew ? p : JSON.parse(JSON.stringify(plById(p.id) || p));
+        Object.assign(latest, { name: v.name.trim(), spec: v.spec, customer: v.customer, partnerName: v.partnerName, stage: v.stage, unit: v.unit, poNo: v.poNo, orderQty: q ? q.n : '' });
+        if (v.state === 'done') latest.status = 'done'; else { latest.status = 'active'; latest.state = v.state; }
+        if (isNew) { latest.kind = v.stage === 'mp' ? 'prod' : 'dev'; latest.title = latest.kind === 'dev' ? '开发日程' : '生产日历'; }
+        const id = await put('plans', latest);
+        if (isNew) { dvKeepSel([id]); S.dvId = id; S.dvWait = id; S.dvWaitAt = Date.now(); setTimeout(() => go('devp'), 30); }
+        toast(isNew ? '제품을 추가했어요' : '저장했어요'); return true;
+      };
+      sheetDelete = async () => { await remove('plans', p.id); plSetSel((plSelIds() || []).filter(x => x !== p.id)); toast('제품을 지웠어요'); go('dev'); };
+    }
+  });
+}
+function openDvIssue(pl, i) {
+  const body = `<form class="fgrid" id="dvi-form" autocomplete="off">${F('요청·이슈', ta('text', i.text, 4), 'full')}${F('기한', inp('due', i.due, { type: 'date' }))}<label class="check" style="align-self:end"><input type="checkbox" name="done" ${i.done ? 'checked' : ''}>끝남</label></form>`;
+  openSheet('요청·이슈', body, footStd(true), {
+    mount: panel => {
+      sheetSave = async () => {
+        const v = readForm($('#dvi-form', panel)); if (!String(v.text || '').trim()) { toast('내용을 적어 주세요.', 'crit'); return false; }
+        await dvSave(pl.id, x => { const it = (x.issues || []).find(y => y.id === i.id); if (!it) return false; it.text = v.text.trim(); it.due = v.due || ''; if (!!v.done !== !!it.done) { it.done = !!v.done; it.doneAt = v.done ? Date.now() : 0; } });
+        toast('저장했어요'); return true;
+      };
+      sheetDelete = async () => { await dvSave(pl.id, x => { x.issues = (x.issues || []).filter(y => y.id !== i.id); }, '요청을 지웠어요'); };
+    }
+  });
+}
+function openDvSample(pl, s) {
+  const isNew = !s;
+  s = Object.assign({ id: 'sm' + uid(), kind: dvStage(pl) === 'pr' ? 'PR' : 'ES', qty: '', due: '', st: 'req', note: '', at: todayStr() }, s || {});
+  const body = `<form class="fgrid" id="dvs-form" autocomplete="off">${F('종류', inp('kind', s.kind, { list: 'dl-smk', ph: 'ES · PR' }))}${F('수량', inp('qty', s.qty, { type: 'number', mono: 1 }))}
+    <datalist id="dl-smk">${DV_SM_KINDS.map(k => `<option value="${k}">`).join('')}</datalist>
+    ${F('목표일 · 납기', inp('due', s.due, { type: 'date' }))}${F('상태', sel('st', s.st, DV_SM_ST))}${F('메모', inp('note', s.note, { ph: '고객 승인 대기 · 렌즈 14头' }), 'full')}</form>`;
+  openSheet(isNew ? '샘플 추가' : '샘플', body, footStd(!isNew), {
+    mount: panel => {
+      sheetSave = async () => {
+        const v = readForm($('#dvs-form', panel)); if (!num(v.qty)) { toast('수량을 적어 주세요.', 'crit'); return false; }
+        await dvSave(pl.id, x => { x.samples = x.samples || []; const o = Object.assign({}, s, { kind: String(v.kind || 'ES').trim().toUpperCase(), qty: num(v.qty), due: v.due || '', st: v.st || 'req', note: v.note || '' }); const k = x.samples.findIndex(y => y.id === s.id); if (k >= 0) x.samples[k] = o; else x.samples.push(o); });
+        toast(isNew ? '샘플을 추가했어요' : '저장했어요'); return true;
+      };
+      sheetDelete = async () => { await dvSave(pl.id, x => { x.samples = (x.samples || []).filter(y => y.id !== s.id); }, '샘플을 지웠어요'); };
+    }
+  });
+}
+function openDvLog(pl, l) {
+  const body = `<form class="fgrid" id="dvl-form" autocomplete="off">${F('날짜', inp('d', l.d, { type: 'date' }))}<div></div>${F('내용', ta('text', l.text, 8), 'full')}</form>`;
+  openSheet('업데이트 기록', body, footStd(true), {
+    mount: panel => {
+      sheetSave = async () => { const v = readForm($('#dvl-form', panel)); await dvSave(pl.id, x => { const it = (x.log || []).find(y => y.id === l.id); if (!it) return false; it.d = v.d || it.d; it.text = String(v.text || '').trim(); }); toast('저장했어요'); return true; };
+      sheetDelete = async () => { await dvSave(pl.id, x => { x.log = (x.log || []).filter(y => y.id !== l.id); }, '기록을 지웠어요'); };
+    }
+  });
+}
+
+/* ---------- paste a weekly status → products ---------- */
+function openDevImport(text) {
+  let items = [];
+  const body = `<div class="banner info"><span>주간 개발 현황을 그대로 붙여넣으면 제품별로 나눠서 단계·발주·출하·샘플·요청을 정리해요. 같은 이름의 제품은 이어서 업데이트되고, 원문은 업데이트 기록에 남아요.</span></div>
+    <textarea class="in" id="dvi-t" rows="8" placeholder="1. (양산중) YT-8333+SC235HAI-V1&#10;* 발주 총 50k · 11/12 15k 출하 완료, 20k 11/25~26 출하&#10;2. (개발중) FH8333 + OS02H10 AHD 1080P@30fps&#10;* 샘플 65개 필요 · 납기 확인 요청" aria-label="개발 현황">${esc(text || '')}</textarea>
+    <div class="actions"><button type="button" class="btn" id="dvi-go">읽기</button></div><div id="dvi-out" style="display:flex;flex-direction:column;gap:10px"></div>`;
+  const foot = `<span class="sp"></span><button type="button" class="btn" data-act="sheet-close">취소</button><button type="button" class="btn btn-p" data-act="sheet-save" id="dvi-save">반영하기</button>`;
+  openSheet('개발 현황 붙여넣기', body, foot, {
+    wide: true,
+    mount: panel => {
+      const ta0 = $('#dvi-t', panel), out = $('#dvi-out', panel), sv = $('#dvi-save', panel);
+      const opts = it => { const m = dvMatch(it.name, it); return `<option value="new" ${m ? '' : 'selected'}>새 제품으로 추가</option>${S.plans.slice().sort(plOrder).map(p => `<option value="${esc(p.id)}" ${m && m.id === p.id ? 'selected' : ''}>업데이트: ${esc(p.name || '')}</option>`).join('')}`; };
+      const chips = it => [it.stage ? `<span class="chip c-acc">${esc(L(DV_STAGES, it.stage))}</span>` : '', it.state === 'wait' ? '<span class="chip c-warn">회신 대기</span>' : it.state === 'hold' ? '<span class="chip">보류</span>' : '',
+        it.order ? `<span class="chip">발주 ${kq(it.order)}</span>` : '', ...it.ships.map(s => `<span class="chip ${s.done ? 'c-good' : 'c-steel'}">${fmtD(s.start)}${s.end ? '~' + fmtD(s.end) : ''} 출하 ${kq(s.qty)}${s.done ? ' 완료' : ''}</span>`),
+        ...it.samples.map(s => `<span class="chip">샘플 ${esc(s.kind)} ${kq(s.qty)}개${s.due ? ' ' + fmtD(s.due) : ''}</span>`), ...it.miles.map(m => `<span class="chip c-steel">${fmtD(m.start)} ${esc(m.name)}</span>`),
+        it.issues.length ? `<span class="chip c-warn">요청 ${it.issues.length}건</span>` : '', it.customer ? `<span class="chip">고객 ${esc(it.customer)}</span>` : '', it.spec ? `<span class="chip">${esc(it.spec)}</span>` : ''].filter(Boolean).join('');
+      const draw = () => {
+        items = dvParse(ta0.value, todayStr(), S.plans.map(p => p.name).filter(Boolean));
+        out.innerHTML = items.length ? `<div class="row-s" style="white-space:normal">${items.length}개 제품을 찾았어요. 이름과 연결할 제품을 확인하세요.</div>` + items.map((it, k) => `<div class="dvi-it"><label class="check"><input type="checkbox" data-on="${k}" checked><input class="in" data-nm="${k}" value="${esc(it.name)}" aria-label="제품 이름" style="font-weight:700"></label>
+          <select class="in" data-to="${k}" aria-label="연결할 제품">${opts(it)}</select><div class="dvi-chips">${chips(it) || '<span class="muted" style="font-size:13px">기록만 남아요</span>'}</div>
+          ${it.issues.length ? `<ul class="dvi-is">${it.issues.map(i => `<li>${esc(i.text.length > 90 ? i.text.slice(0, 90) + '…' : i.text)}${i.due ? ` <b>${fmtD(i.due)}</b>` : ''}</li>`).join('')}</ul>` : ''}</div>`).join('')
+          : '<div class="empty">제품 줄을 찾지 못했어요. ‘1. (개발중) 제품명’처럼 번호와 단계로 시작하는 줄이 있어야 해요.</div>';
+        sv.textContent = items.length ? `${items.length}개 제품에 반영` : '반영하기';
+      };
+      $('#dvi-go', panel).addEventListener('click', draw);
+      out.addEventListener('input', e => { const k = e.target.dataset.nm; if (k === undefined) return; const m = dvMatch(e.target.value, items[+k]); const s = $(`[data-to="${k}"]`, out); if (s) s.value = m ? m.id : 'new'; });
+      out.addEventListener('change', () => { const n = $$('[data-on]', out).filter(c => c.checked).length; sv.textContent = `${n}개 제품에 반영`; });
+      if (text) draw();
+      sheetSave = async () => {
+        if (!items.length) { draw(); if (!items.length) toast('읽을 제품이 없어요.', 'crit'); return false; }
+        if (writeBlocked()) return false;
+        const undo = [], made = [], res = { made: 0, upd: 0, add: { ship: 0, sample: 0, mile: 0, issue: 0 } };
+        for (let k = 0; k < items.length; k++) {
+          if (!$(`[data-on="${k}"]`, out).checked) continue;
+          const it = items[k], to = $(`[data-to="${k}"]`, out).value, nm = $(`[data-nm="${k}"]`, out).value.trim() || it.name;
+          const cur = to !== 'new' ? plById(to) : null;
+          const pl = cur ? JSON.parse(JSON.stringify(cur)) : dvNewPlan(nm, it.stage || 'dev');
+          if (cur) undo.push(JSON.parse(JSON.stringify(cur)));
+          const a = dvMerge(pl, it, { report: 1 }); for (const x of Object.keys(res.add)) res.add[x] += a[x];
+          try { const id = await put('plans', pl); if (cur) res.upd++; else { res.made++; made.push(id); } } catch (e) { break; }
+        }
+        dvKeepSel(made);
+        const msg = `${res.made ? `새 제품 ${res.made}` : ''}${res.made && res.upd ? ' · ' : ''}${res.upd ? `업데이트 ${res.upd}` : ''}${dvAddWords(res.add) ? ' · ' + dvAddWords(res.add) : ''}`;
+        undoToast(`정리했어요 · ${msg}`, async () => { for (const p of undo) { try { await put('plans', p); } catch (e) { } } for (const id of made) { try { await remove('plans', id); } catch (e) { } } });
+        S.dvF = 'act'; if (S.route !== 'dev') setTimeout(() => go('dev'), 30);
+        return true;
+      };
+    }
+  });
+}
+
+/* ---------- copy a weekly status back out ---------- */
+function dvReportText(pls) {
+  const t0 = todayStr(), md = s => { const d = parseYmd(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
+  const rng = (a, b) => b && b > a ? (a.slice(0, 7) === b.slice(0, 7) ? `${md(a)}~${+b.slice(8)}` : `${md(a)}~${md(b)}`) : md(a);
+  return pls.map((pl, n) => {
+    const st = dvStage(pl), ss = dvState(pl);
+    const tag = ss === 'done' ? '종료' : ss === 'hold' ? '보류' : st === 'mp' ? '양산중' : st === 'appr' ? '승인 중' : st === 'pr' ? 'PR 시생산' : st === 'es' ? 'ES 샘플' : '개발중';
+    const lines = [`${n + 1}. (${tag}) ${pl.name || ''}${pl.spec ? ' ' + pl.spec : ''}${pl.customer ? ' _' + pl.customer : ''}${ss === 'wait' ? ' · 회신 대기' : ''}`];
+    const ships = dvShipsOf(pl);
+    if (num(pl.orderQty) || ships.length) lines.push(`* ${[num(pl.orderQty) ? `발주 총 ${kq(pl.orderQty)}` : '', ...ships.map(t => `${rng(t.start, t.end)} ${kq(t.qty)} 출하${t.st === 'done' ? ' 완료' : ' 예정'}`)].filter(Boolean).join(', ')}`);
+    const ms = (pl.tasks || []).filter(t => (t.type === 'mile' || t.type === 'inspect') && t.st !== 'done' && isYmd(t.start) && t.start >= addDays(t0, -7)).sort((a, b) => a.start.localeCompare(b.start)).slice(0, 4);
+    if (ms.length) lines.push(`* ${ms.map(t => `${rng(t.start, t.end)} ${t.type === 'inspect' ? '验货' : t.name || ''}`).join(', ')}`);
+    for (const s of dvOpenSm(pl)) lines.push(`* 샘플 ${s.kind || ''} ${s.qty}개${s.due ? ` ${md(s.due)} 목표` : ''} (${L(DV_SM_ST, s.st)})`);
+    for (const i of dvOpenIs(pl)) lines.push(`* ${i.text}${i.due && !i.text.includes(md(i.due)) ? ` (~${md(i.due)})` : ''}`);
+    if (lines.length === 1) { const lg = dvLogs(pl).find(l => !l.auto); if (lg) lines.push(`* ${lg.text.split('\n')[0]}`); }
+    return lines.join('\n');
+  }).join('\n\n');
+}
+function openDvReport(id) {
+  const pls = id ? [plById(id)].filter(Boolean) : dvGroupOrder.flatMap(k => S.plans.filter(p => dvState(p) !== 'done' && dvStage(p) === k).sort((a, b) => num(a.createdAt) - num(b.createdAt)));
+  if (!pls.length) { toast('정리할 제품이 없어요.', 'crit'); return; }
+  const body = `<div class="row-s" style="white-space:normal">${pls.length}개 제품 · 고쳐서 복사해도 돼요. 위챗·메일에 붙여넣으세요.</div><textarea class="in mono" id="dvr-t" rows="16" style="font-size:13px">${esc(dvReportText(pls))}</textarea>`;
+  openSheet(id ? '현황 복사' : '주간 현황 복사', body, `<span class="sp"></span><button type="button" class="btn" data-act="sheet-close">닫기</button><button type="button" class="btn btn-p" id="dvr-copy">복사</button>`, {
+    mount: panel => { $('#dvr-copy', panel).addEventListener('click', () => { const t = $('#dvr-t', panel); copyText(t.value, t); }); }
+  });
+}
+
+/* ---------- the calendar and the two-week list ---------- */
+function dvCalItems(from, to) {
+  const out = []; if (!calCats().prod) return out;
+  for (const pl of plSel()) {
+    if (dvState(pl) === 'done') continue;
+    for (const s of pl.samples || []) if (isYmd(s.due) && ['req', 'make'].includes(s.st) && s.due >= from && s.due <= to) out.push({ k: 'dsm', date: s.due, pl, s });
+    for (const i of pl.issues || []) if (!i.done && isYmd(i.due) && i.due >= from && i.due <= to) out.push({ k: 'dis', date: i.due, pl, i });
+  }
+  return out;
+}
+const dvXChip = x => x.k === 'dsm' ? `<i class="pc-m dsm">샘플<span class="q"> ${esc(pjShort(x.pl))} ${esc(kq(x.s.qty))}</span></i>` : `<i class="pc-m dis">요청<span class="q"> ${esc(pjShort(x.pl))}</span></i>`;
+const dvCalRow = x => `<button class="row" data-act="dv-open" data-id="${esc(x.pl.id)}"><div style="min-width:0"><div class="row-t"><span class="chip ${x.k === 'dsm' ? 'c-steel' : 'c-warn'}">${x.k === 'dsm' ? '샘플' : '요청'}</span><span class="dv-ell">${esc(x.k === 'dsm' ? `${x.s.kind || ''} ${kq(x.s.qty)}개 · ${L(DV_SM_ST, x.s.st)}` : x.i.text)}</span></div><div class="row-s">${esc(x.pl.name || '')}</div></div><span class="row-r">${svg('chev')}</span></button>`;
+function dvUpcoming(days) {
+  const out = [];
+  for (const pl of S.plans) {
+    if (dvState(pl) === 'done') continue;
+    for (const s of pl.samples || []) { if (!isYmd(s.due) || !['req', 'make'].includes(s.st)) continue; const d = dday(s.due); if (d > days || d < -7) continue; out.push({ date: s.due, d, tag: ['샘플', 'c-steel'], title: pl.name || '', sub: `${s.kind || ''} ${kq(s.qty)}개 · ${L(DV_SM_ST, s.st)}`, amt: '', key: `dev|${encodeURIComponent(pl.id + '~' + s.id)}|${s.due}` }); }
+    for (const i of pl.issues || []) { if (i.done || !isYmd(i.due)) continue; const d = dday(i.due); if (d > days || d < -7) continue; out.push({ date: i.due, d, tag: ['요청', 'c-warn'], title: pl.name || '', sub: i.text.length > 60 ? i.text.slice(0, 60) + '…' : i.text, amt: '', key: `dev|${encodeURIComponent(pl.id + '~' + i.id)}|${i.due}` }); }
+  }
+  return out;
+}
+function dvCalSummary(pls) {
+  return `<section class="panel"><div class="list">${pls.map(pl => { const { next } = dvNext(pl); return `<div class="dv-cs"><button class="row" data-act="dv-open" data-id="${esc(pl.id)}"><div style="min-width:0"><div class="row-t"><i class="pjdot" style="background:${pjCol(pl)}"></i><span class="dv-ell">${esc(pl.name || '')}</span><span class="chip">${esc(DV_SHORT[dvStage(pl)])}</span>${dvState(pl) === 'wait' ? '<span class="chip c-warn">회신 대기</span>' : ''}</div><div class="row-s">${next ? `${fmtD(next.date, true)} ${esc(dvAgWord(next))} · ${esc(next.label)}` : '다가오는 날짜 없음'}</div></div><span class="row-r">${svg('chev')}</span></button>${(pl.tasks || []).some(t => t.st !== 'done') ? `<button class="btn btn-s btn-q" data-act="pl-shift" data-id="${esc(pl.id)}" aria-label="${esc(pl.name || '')} 일정 미루기">미루기</button>` : ''}</div>`; }).join('')}</div></section>`;
+}
+
 /* ================= product prices: cost · quote · margin (제품 단가) ================= */
 const PR_CATS = ['PCBA', 'LCD', '센서', 'PCB', '렌즈', '기구', '기타'];
 const PR_TERMS = ['FOB Shenzhen', 'EXW', 'DDP', 'CIF', 'DAP'];
@@ -5546,6 +6159,7 @@ function viewProducts() {
   };
   return `
   <div class="page-head"><div><div class="eyebrow">Cost · Quote · Margin</div><h1>제품 단가</h1></div><div class="actions"><label class="btn">엑셀 불러오기<input type="file" class="sr" accept=".xlsx" data-primport="1"></label><button class="btn" data-act="pr-xlsx">${svg('upload')}엑셀로 받기</button><button class="btn btn-p" data-act="pr-new">${svg('plus')}품목 추가</button></div></div>
+  <div class="filters"><div class="seg" role="group" aria-label="제품 메뉴"><button data-act="go" data-to="dev" aria-pressed="false">개발·양산 현황</button><button data-act="go" data-to="products" aria-pressed="true">단가표</button></div></div>
   <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">
     <div class="tile"><div class="k">등록 품목</div><div class="v">${all.length}</div><div class="s">견적가 입력 ${withSell.length}개</div></div>
     <div class="tile"><div class="k">평균 마진율</div><div class="v">${rates.length ? pct(rates.reduce((a, b) => a + b, 0) / rates.length) : '—'}</div><div class="s">견적가 있는 품목 기준</div></div>
@@ -6119,6 +6733,22 @@ Object.assign(ACT, {
   'pl-all': () => { plSetSel(S.plans.map(p => p.id)); S.planDay = ''; render(); },
   'pl-share': () => openPlShare(),
   'pl-view': el => { S.planView = el.dataset.v; render(); },
+  'dv-open': el => { if (el.closest('.sheet')) closeSheet(); S.dvId = el.dataset.id; S.dvLogAll = ''; go('devp'); },
+  'dv-new': () => openDev(null), 'dv-edit': el => { const pl = plById(el.dataset.id); if (pl) openDev(pl); },
+  'dv-f': el => { S.dvF = el.dataset.v; render(); },
+  'dv-import': () => openDevImport(''), 'dv-report': el => openDvReport(el.dataset.id || ''),
+  'dv-stage': el => dvSetStage(el.dataset.id, el.dataset.k), 'dv-state': el => dvSetState(el.dataset.id, el.dataset.k),
+  'dv-is': el => { const pl = plById(el.dataset.id); const i = pl && (pl.issues || []).find(x => x.id === el.dataset.i); if (i) openDvIssue(pl, i); },
+  'dv-is-done': async el => { el.disabled = true; await dvSave(el.dataset.id, pl => { const i = (pl.issues || []).find(x => x.id === el.dataset.i); if (!i) return false; i.done = !i.done; i.doneAt = i.done ? Date.now() : 0; return i.done; }, d => d ? '요청을 끝냈어요' : '다시 열었어요'); el.disabled = false; },
+  'dv-ship-done': async el => { el.disabled = true; await dvSave(el.dataset.id, pl => { const t = (pl.tasks || []).find(x => x.id === el.dataset.t); if (!t) return false; t.st = t.st === 'done' ? '排' : 'done'; return t.st === 'done'; }, d => d ? '출하 완료로 표시했어요' : '출하 완료를 취소했어요'); el.disabled = false; },
+  'dv-sm': el => { const pl = plById(el.dataset.id); const sm = pl && (pl.samples || []).find(x => x.id === el.dataset.s); if (sm) openDvSample(pl, sm); },
+  'dv-sm-new': el => { const pl = plById(el.dataset.id); if (pl) openDvSample(pl, null); },
+  'dv-log': el => { const pl = plById(el.dataset.id); const l = pl && (pl.log || []).find(x => x.id === el.dataset.l); if (l) openDvLog(pl, l); },
+  'dv-log-all': el => { S.dvLogAll = el.dataset.id; render(); },
+  'dv-note': el => { const pl = plById(el.dataset.id); if (pl) openPlNote(pl, S.planYm || curYm()); },
+  'dv-ship-new': el => { const pl = plById(el.dataset.id); if (pl) openTask(pl, null, { d: todayStr(), t: { type: 'ship', st: '排', b: '' } }); },
+  'dv-mile-new': el => { const pl = plById(el.dataset.id); if (pl) openTask(pl, null, { d: todayStr(), t: { type: 'mile', st: '排', b: '' } }); },
+  'dv-cal': el => { const pl = plById(el.dataset.id); if (!pl) return; dvKeepSel([pl.id]); if (!plSelIds()) plSetSel([pl.id]); const nx = dvNext(pl).next; if (nx) { S.planYm = nx.date.slice(0, 7); S.planDay = nx.date; } go('plan'); },
   'cal-cat': el => { calSetCat(el.dataset.k); render(); },
   'td-new': el => { const q = el.closest('#td-quick'); openTodo(null, { d: el.dataset.d || '', t: q ? { title: (($('[name=title]', q) || {}).value || '').trim() } : {} }); },
   'td-open': el => { const t = tdById(el.dataset.id); if (t) openTodo(t); },
@@ -6162,7 +6792,13 @@ document.addEventListener('input', e => {
 document.addEventListener('submit', async e => {
   e.preventDefault(); const f = e.target; const btn = $('button[type=submit]', f); if (btn) btn.disabled = true;
   try {
-    if (f.id === 'td-quick') {
+    if (f.id === 'dv-up') {
+      const text = String(readForm(f).text || '').trim(); if (!text) { toast('업데이트를 적어 주세요.', 'crit'); return; }
+      await dvUpdate(f.dataset.id, text);
+    } else if (f.id === 'dv-is-add') {
+      const v = readForm(f), text = String(v.text || '').trim(); if (!text) { toast('요청을 적어 주세요.', 'crit'); return; }
+      await dvSave(f.dataset.id, pl => { pl.issues = pl.issues || []; pl.issues.push({ id: 'is' + uid(), text, due: v.due || '', done: false, at: todayStr() }); }, '요청을 추가했어요');
+    } else if (f.id === 'td-quick') {
       const title = String(readForm(f).title || '').trim(); if (!title) { toast('할 일을 적어 주세요.', 'crit'); return; }
       await put('todos', { id: 'td' + uid(), title, date: todayStr(), time: '', note: '', remind: '0', repeat: '', anchor: '', off: 0, done: false, createdAt: Date.now(), updatedAt: Date.now() });
       toast('오늘 할 일로 넣었어요'); setTimeout(() => { const i = $('#td-quick [name=title]'); if (i) { i.value = ''; } }, 0);
