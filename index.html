@@ -773,7 +773,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products', 'todos'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.14-1';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.20-1';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -1228,7 +1228,7 @@ function acctKeyer(txns) {
 /* the fullest way an account has been written before (for a masked *2592 in a new message) */
 function fullAccount(account, currency, bank) {
   const tl = acctTail(account); if (!tl || typeof S === 'undefined') return account;
-  const pool = [...(S.txns || []).filter(t => (t.currency || 'KRW') === (currency || 'KRW')).map(t => t.account), ...((S.co && S.co.banks) || []).filter(b => (b.currency || 'USD') === currency).map(b => b.account)];
+  const pool = [...(S.txns || []).filter(t => (t.currency || 'KRW') === (currency || 'KRW')).map(t => t.account), ...(S.co ? [...(S.co.banks || []), ...(S.co.oldBanks || [])] : []).filter(b => b && (b.currency || 'USD') === currency).map(b => b.account)];
   const best = pool.filter(a => acctTail(a) === tl).sort((a, b) => String(b).replace(/\D/g, '').length - String(a).replace(/\D/g, '').length)[0];
   return best && String(best).replace(/\D/g, '').length > String(account).replace(/\D/g, '').length ? String(best).replace(/\s/g, '') : account;
 }
@@ -1548,7 +1548,7 @@ function viewHome(alerts) {
     </div>
     ${heroMark()}</section>
   <section class="panel quick"><div class="panel-b" style="padding-top:14px;display:flex;flex-direction:column;gap:8px">
-    <label for="quick-in" style="font-size:12px;font-weight:600;color:var(--ink-2)">빠른 입력 · 은행 문자, 청구서·주문, 주간 개발 현황을 붙여넣으면 알아서 정리해요</label>
+    <label for="quick-in" style="font-size:12px;font-weight:600;color:var(--ink-2)">빠른 입력 · 은행 문자, 청구서·주문, 주간 개발 현황, 계좌 증명서를 붙여넣으면 알아서 정리해요</label>
     <div style="display:flex;gap:8px;align-items:stretch"><textarea id="quick-in" class="in" rows="2" placeholder="여기에 붙여넣기">${esc(S.quick)}</textarea><button class="btn btn-p" data-act="quick-go">정리</button></div>
     <div class="actions" style="align-items:center"><button class="btn btn-s" data-act="smart" data-kind="auto">${svg('upload')}파일·사진 올리기</button>${co.smsAuto ? smsFileBtn('btn btn-s', '은행 문자 파일') : ''}<small class="muted">PDF·사진·엑셀 (청구서·은행 내역·진도관리)</small></div></div></section>
   ${hasSample() ? `<div class="banner info"><span>지금 보이는 기록 중 <b>예시</b> 표시가 있는 건 둘러보기용이에요.</span><button class="btn btn-s" data-act="clear-samples">예시 모두 지우기</button></div>` : ''}
@@ -1751,7 +1751,7 @@ function viewCompany() {
     const bankBlock = c => { const b = (co.banks || []).find(x => x && (x.currency || 'USD') === c) || {}; const k = f => `bk_${c}_${f}`;
       return `<div class="fsec full">${c} 입금 계좌 ${c === 'CNY' ? '(国内·人民币 서류에 들어가요)' : c === 'USD' ? '(수출 서류에 들어가요)' : ''}</div>
       ${F('은행명', inp(k('bankName'), b.bankName, { ph: c === 'CNY' ? '中国银行…支行' : 'BANK OF CHINA SHENZHEN BRANCH' }))}${F('계좌번호', inp(k('account'), b.account, { mono: 1 }))}
-      ${F('예금주 (收款人)', inp(k('holder'), b.holder, { ph: c === 'CNY' ? co.nameZh || '' : co.nameEn || '' }))}${c === 'CNY' ? '' : F('SWIFT 코드', inp(k('swift'), b.swift, { mono: 1 }))}
+      ${F('예금주 (收款人)', inp(k('holder'), b.holder, { ph: c === 'CNY' ? co.nameZh || '' : co.nameEn || '' }))}${c === 'CNY' ? F('行号 (联行号)', inp(k('cnaps'), b.cnaps, { mono: 1, ph: '12자리 · 국내 송금용' })) : F('SWIFT 코드', inp(k('swift'), b.swift, { mono: 1 }))}
       ${c === 'CNY' ? '' : F('은행 주소', inp(k('bankAddress'), b.bankAddress), 'full')}`; };
     body = `<section class="panel"><div class="panel-b" style="padding-top:16px"><form id="co-form" class="fgrid" autocomplete="off">
       <div class="fsec full">사업자 정보</div>
@@ -2241,7 +2241,7 @@ function openImport() {
 const PT_KIND = [['buyer', '고객 · 우리가 받는 곳'], ['supplier', '공급사 · 우리가 주는 곳'], ['forwarder', '물류 · 포워더'], ['etc', '기타 · 서비스']];
 const PT_SHORT = { buyer: '고객', supplier: '공급사', forwarder: '물류', etc: '기타' };
 const digits = s => String(s || '').replace(/\D/g, '');
-const ourAccounts = () => new Set((S.co.banks || []).map(b => digits(b.account)).filter(x => x.length >= 6));
+const ourAccounts = () => new Set([...(S.co.banks || []), ...(S.co.oldBanks || [])].filter(Boolean).map(b => digits(b.account)).filter(x => x.length >= 6));
 const ptById = id => S.partners.find(p => p.id === id);
 function ptOf(rec) { if (!rec) return null; return (rec.partnerId && ptById(rec.partnerId)) || partnerByName(rec.partnerName) || matchPartner(rec.partnerName) || null; }
 function ptMatch(pt, name) { const n = String(name || '').trim(); if (!n) return false; if ((pt.name || '').trim().toLowerCase() === n.toLowerCase()) return true; const m = matchPartner(n); return !!m && m.id === pt.id; }
@@ -2335,7 +2335,7 @@ const PUBLIC_MAIL = /@(gmail|qq|163|126|yeah|sina|sohu|foxmail|aliyun|hotmail|ou
 let OURS_C = null;
 function ourProfile() {
   const co = S.co || {};
-  const sig = JSON.stringify([co.nameZh, co.nameEn, co.nameKo, co.brand, co.aliases, co.bizNo, co.tel, co.telKr, co.fax, co.email, (co.banks || []).map(b => [b.account, b.holder]), co.addressZh, co.addressEn, co.regAddressZh, co.addressKo, co.contactZh, co.contactEn, co.legalRep, co.ceoKo]);
+  const sig = JSON.stringify([co.nameZh, co.nameEn, co.nameKo, co.brand, co.aliases, co.bizNo, co.tel, co.telKr, co.fax, co.email, [...(co.banks || []), ...(co.oldBanks || [])].map(b => [b && b.account, b && b.holder]), co.addressZh, co.addressEn, co.regAddressZh, co.addressKo, co.contactZh, co.contactEn, co.legalRep, co.ceoKo]);
   if (OURS_C && OURS_C.sig === sig) return OURS_C;
   const names = [co.nameZh, co.nameEn, co.nameKo, ...(co.banks || []).map(b => b && b.holder), ...String(co.aliases || '').split(/[,，;；\n]/)].map(s => String(s || '').trim()).filter(s => s.length >= 2);
   const full = [...new Set(names.map(coKey).filter(k => k.length >= 4))];
@@ -2351,7 +2351,7 @@ function ourProfile() {
     sig, full, cores, mids: [...mids],
     tax: coKey(co.bizNo || '').length >= 8 ? coKey(co.bizNo) : '',
     tels: [co.tel, co.telKr, co.fax].map(x => String(x || '').replace(/\D/g, '')).filter(x => x.length >= 7),
-    accts: (co.banks || []).map(b => String((b && b.account) || '').replace(/\D/g, '')).filter(x => x.length >= 6),
+    accts: [...(co.banks || []), ...(co.oldBanks || [])].map(b => String((b && b.account) || '').replace(/\D/g, '')).filter(x => x.length >= 6),
     mails, addrs: [co.addressZh, co.addressEn, co.regAddressZh, co.addressKo].map(addrKey).filter(Boolean),
     people: [co.contactZh, co.contactEn, co.legalRep, co.ceoKo, co.ceoEn].map(x => String(x || '').trim()).filter(x => x.length >= 2)
   };
@@ -3131,7 +3131,7 @@ function docEn(d) {
     d.type === 'pi' && ['Packing', d.packing], (d.type === 'ci' || d.type === 'pl') && ['Shipping Marks', d.marks]
   ].filter(r => r && r[0] && r[1]);
   const bank = bankFor(cur);
-  const bankRows = d.showBank && !isPL ? [[W.beneficiary, bank.holder || (zh ? co.nameZh : '') || co.nameEn || co.nameKo], [W.bank, bank.bankName], [W.account, bank.account], [W.swift, bank.swift], [W.bankAddr, bank.bankAddress]].filter(r => r[1]) : [];
+  const bankRows = d.showBank && !isPL ? [[W.beneficiary, bank.holder || (zh ? co.nameZh : '') || co.nameEn || co.nameKo], [W.bank, bank.bankName], [W.account, bank.account], [W.swift, bank.swift], [W.cnaps, bank.cnaps], [W.bankAddr, bank.bankAddress]].filter(r => r[1]) : [];
   const kvTable = rows => rows.length ? `<table class="p-terms"><tbody>${rows.map(([k, v]) => `<tr><th>${k}</th><td>${nl(v)}</td></tr>`).join('')}</tbody></table>` : '';
   const sec = t => `<div style="font-size:9.5px;font-weight:700;letter-spacing:.1em;margin-bottom:4px">${t}</div>`;
   return `<div class="paper">
@@ -3253,7 +3253,7 @@ function docAvory(d) {
   else terms = tr('起运地 / From', d.pol) + tr('目的地 / Destination', d.pod) + tr('原产地 / Origin', d.origin) + tr(L2('包装·尺寸', 'Packaging / Dimensions'), d.packing) + tr('备注 / Remarks', d.remarks);
   const b = bankFor(cur);
   const bankLines = (t === 'quote' || t === 'pi' || t === 'ci') && d.showBank !== false && (b.account || b.bankName) ? (cur === 'CNY'
-    ? [`${b.bankName || ''} | 账号 / Account: ${b.account || ''}`, `收款人 / Beneficiary: ${b.holder || co.nameZh || ''}`]
+    ? [`${b.bankName || ''} | 账号 / Account: ${b.account || ''}`, `收款人 / Beneficiary: ${b.holder || co.nameZh || ''}${b.cnaps ? ' | 行号 / Bank code: ' + b.cnaps : ''}`]
     : [`${b.bankName || ''} | Account: ${b.account || ''}${b.swift ? ' | SWIFT: ' + b.swift : ''}`, `Beneficiary: ${b.holder || co.nameEn || ''}`, b.bankAddress ? `Bank address: ${b.bankAddress}` : '']).filter(Boolean) : [];
   const note = isPL ? '<div class="av-note">请填写每行的数量、箱数、重量及体积合计，勿重复计算箱号。<br>Enter line totals, not per-package values. Do not double-count packages.</div>' : '';
   const foot = t === 'ci' ? ['本商业发票不替代中国税务发票。请核对内容后签发。', 'This commercial invoice does not replace a Chinese tax invoice. Review before issue.'] : d.showStamp && co.stamp ? ['本文件含印章图样，仅供授权签发。', 'Seal image included. Issue only after authorized review.'] : [];
@@ -3832,7 +3832,7 @@ function remindText(name, lang) {
     L.push(`${who} 您好：`, '', '感谢贵司一直以来的支持。以下款项已到期或即将到期，烦请安排付款：');
     items.forEach(x => L.push(`- 订单 ${x.p.no || ''}：${x.cur} ${fmtNum(x.bal, x.cur)}${x.due ? `，到期日 ${fmtZh(x.due.date)}${x.d < 0 ? `（已逾期 ${-x.d} 天）` : ''}` : ''}`));
     L.push(`合计：${totS}`, '');
-    if (b.account) L.push(`收款账户：${[b.holder || co.nameZh || co.nameEn, b.bankName, b.account, b.swift ? 'SWIFT ' + b.swift : ''].filter(Boolean).join('，')}`);
+    if (b.account) L.push(`收款账户：${[b.holder || co.nameZh || co.nameEn, b.bankName, b.account, b.swift ? 'SWIFT ' + b.swift : '', b.cnaps ? '行号 ' + b.cnaps : ''].filter(Boolean).join('，')}`);
     L.push('付款后请将水单发给我们，谢谢！', '', co.nameZh || co.nameEn || co.nameKo || '', [co.tel, co.email].filter(Boolean).join('  '));
   } else if (lang === 'ko') {
     L.push(`${who} 담당자님, 안녕하세요.`, '', '아래 대금의 결제 기한이 지났거나 다가와 안내드립니다.');
@@ -3844,7 +3844,7 @@ function remindText(name, lang) {
     L.push(`Dear ${who},`, '', 'This is a friendly reminder that the following payment(s) are due or overdue:');
     items.forEach(x => L.push(`- P/O ${x.p.no || ''}: ${x.cur} ${fmtNum(x.bal, x.cur)}${x.due ? `, due ${fmtEn(x.due.date)}${x.d < 0 ? ` (${-x.d} days overdue)` : ''}` : ''}`));
     L.push(`Total: ${totS}`, '');
-    if (b.account) L.push(`Bank details: ${[b.holder || co.nameEn, b.bankName, 'A/C ' + b.account, b.swift ? 'SWIFT ' + b.swift : ''].filter(Boolean).join(', ')}`);
+    if (b.account) L.push(`Bank details: ${[b.holder || co.nameEn, b.bankName, 'A/C ' + b.account, b.swift ? 'SWIFT ' + b.swift : '', b.cnaps ? 'CNAPS ' + b.cnaps : ''].filter(Boolean).join(', ')}`);
     L.push('Kindly arrange the payment and send us the remittance slip. Thank you.', '', 'Best regards,', co.nameEn || co.nameKo || '', [co.tel, co.email].filter(Boolean).join('  '));
   }
   return L.join('\n').trim();
@@ -4522,6 +4522,7 @@ function openSmart(opts = {}) {
         }
         st.innerHTML = '';
         const all = [text, pdfText, sheetText.trim(), photoText.trim()].filter(Boolean).join('\n\n');
+        if (kind === 'auto' || kind === 'bank') { const ob = ownBankRead(all); if (ob) { go.disabled = false; ob.fromPhoto = !!photoText.trim() && !text; openOwnBank(ob); return; } }
         pending = { text: all, note, imgs: [...pdfImgs, ...(await Promise.all(photos.map(f => toJpeg(f))))] };
         if (sheetTxns.length && (kind === 'auto' || kind === 'bank')) { go.disabled = false; show({ kind: 'bank', summary_ko: `엑셀 거래내역에서 ${sheetTxns.length}건을 읽었어요.`, transactions: sheetTxns, _local: true }, true); return; }
         if (kind !== 'text') { const r = localRead(all, note, kind); if (r) { go.disabled = false; show(r, true); return; } }
@@ -4566,10 +4567,139 @@ function openSmart(opts = {}) {
 }
 const openOcr = kind => openSmart({ kind: kind || 'auto' });
 
+/* ================= our own bank account (账户信息证明 · 계좌 변경 안내) → the company's receiving accounts ================= */
+const OB_MARK = /账户信息证明|帐户信息证明|账户证明|开户证明|开户许可证|账户类型|ACCOUNT\s*(?:CERTIFICATE|CONFIRMATION)|계좌\s*(?:변경|증명)/i;
+const OB_HEAD = /账户信息证明|帐户信息证明|账户证明|开户证明|ACCOUNT\s*(?:CERTIFICATE|CONFIRMATION)/i;
+const OB_ACCT = /账\s*号|帐\s*号|帳\s*號|账户号码|ACCOUNT\s*(?:NO\b\.?|NUMBER)|A\/C\s*NO\b\.?|계좌\s*번호/i;
+const OB_LABEL = /^(?:客户名称|户\s*名|账户名称|账户类型|账\s*号|帐\s*号|公司地址|开户(?:银)?行|银行地址|SWIFT|行\s*号|联行号|CNAPS|BANK\s*(?:NAME|ADDRESS|CODE)|ACCOUNT|BENEFICIARY|币\s*种|CURRENCY)/i;
+function obCur(s) {
+  s = String(s || '');
+  if (/美元|美金|\bUSD\b|US\s*DOLLAR|달러/i.test(s)) return 'USD';
+  if (/人民币|\bRMB\b|\bCNY\b|위안/i.test(s)) return 'CNY';
+  const m = s.match(/\b(EUR|JPY|HKD|KRW|GBP)\b/i); if (m) return m[1].toUpperCase();
+  const z = s.match(/欧元|日元|港币|港元|韩元/); return z ? ({ 欧元: 'EUR', 日元: 'JPY', 港币: 'HKD', 港元: 'HKD', 韩元: 'KRW' })[z[0]] : '';
+}
+/* null unless the text is an account certificate (or a pasted 계좌 변경 note) for OUR company */
+function ownBankRead(text) {
+  const raw = String(text || '');
+  if (raw.length < 20 || raw.length > 5000 || !OB_MARK.test(raw)) return null;
+  const t = raw.replace(/（/g, '(').replace(/）/g, ')').replace(/：/g, ':').replace(/\r/g, '');
+  const L = t.split('\n').map(l => l.replace(/[|｜]/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
+  const co = S.co || {};
+  // once the company is set up, our name has to be on it: a supplier's certificate is theirs, not ours
+  const named = [co.nameZh, co.nameEn, co.nameKo].some(Boolean);
+  const zhName = (L.map(l => (l.match(/[一-龥()]{4,}?(?:有限责任公司|有限公司|公司)/) || [])[0]).find(n => n && !/银行/.test(n) && (!named || isOurs(n))) || '').replace(/\(/g, '（').replace(/\)/g, '）');
+  const enName = (L.map(l => (l.replace(/^[^A-Za-z]*/, '').match(/^[A-Z][A-Z0-9 .,&()'\-]{4,}?(?:CO\.?,?\s*LTD\.?|LIMITED|COMPANY|CORP(?:ORATION)?\.?|INC\.?)/) || [])[0]).find(n => n && !/BANK/.test(n) && (!named || isOurs(n))) || '').trim();
+  if (named && !zhName && !enName) return null;
+  const starts = L.map((l, i) => OB_HEAD.test(l) ? i : -1).filter(i => i >= 0);
+  if (!starts.length || starts[0] !== 0) starts.unshift(0);
+  const blocks = starts.map((s, k) => L.slice(s, k + 1 < starts.length ? starts[k + 1] : L.length));
+  const field = (B, re) => { for (let i = 0; i < B.length; i++) { const m = B[i].match(re); if (m) return { i, rest: B[i].slice(m.index + m[0].length).replace(/^[\s:]*/, '') }; } return null; };
+  const all = {};
+  const per = blocks.map(B => {
+    const J = B.join('\n'), o = {};
+    o.swift = ((J.match(/SWIFT(?:\s*(?:CODE|BIC|\/\s*BIC))?\s*:?\s*([A-Z]{6}[A-Z0-9]{2}(?:[A-Z0-9]{3})?)(?![A-Z0-9])/i) || [])[1] || '').toUpperCase();
+    o.cnaps = (J.match(/(?:联行号|支付系统行号|行\s*号|CNAPS(?:\s*CODE)?|BANK\s*CODE)\s*(?:\(CNAPS\))?\s*:?\s*(\d{12})(?!\d)/i) || [])[1] || '';
+    let zhB = '', enB = '';
+    const pickB = s => {
+      const z = s.match(/[一-龥()]*银行[一-龥()]*/); if (z && !zhB) zhB = z[0];
+      const e = s.match(/[A-Z][A-Z0-9 ().,&'\-]*\bBANK\b[A-Z0-9 ().,&'\-]*/); if (e && !enB && !/ADDRESS/.test(e[0])) enB = e[0].trim().replace(/[ ,.]+$/, '');
+    };
+    const bk = field(B, /开户(?:银)?行(?!\s*地址)(?:名称)?|银行名称|收款银行|BENEFICIARY\s*BANK|BANK\s*NAME/i);
+    if (bk) { pickB(bk.rest); for (let j = bk.i + 1; j < Math.min(B.length, bk.i + 3); j++) { if (OB_LABEL.test(B[j])) break; pickB(B[j]); } }
+    if (!enB) { const e = B.find(l => /^[A-Z][A-Z0-9 ().,&'\-]*\bBANK\b[A-Z0-9 ().,&'\-]*$/.test(l) && !/ADDRESS/.test(l)); if (e) enB = e.replace(/[ ,.]+$/, ''); }
+    o.bankZh = zhB.replace(/\(/g, '（').replace(/\)/g, '）'); o.bankEn = enB;
+    const ad = field(B, /开户(?:银)?行地址|银行地址|BANK\s*ADDRESS/i); const zp = [], ep = [];
+    if (ad) {
+      const parts = [ad.rest];
+      for (let j = ad.i + 1; j < B.length; j++) { if (OB_LABEL.test(B[j]) || OB_MARK.test(B[j]) || /特此证明|^\d{4}\s*[-年.]/.test(B[j])) break; parts.push(B[j]); }
+      for (const p of parts.join(' / ').split(/\s+\/\s+/)) { const s = p.replace(/^[^A-Za-z0-9一-龥]+/, '').trim(); if (!s) continue; if (/[一-龥]{2}/.test(s)) { if (/[省市区县路街道号楼层室座大厦]/.test(s)) zp.push(s); } else if (/ROOM|FLOOR|BUILDING|ROAD|STREET|DISTRICT|CITY|PROVINCE|CHINA|TOWER|AVENUE|BLOCK|PLAZA|CENTER|CENTRE/i.test(s)) ep.push(s); }
+    }
+    o.addrZh = zp.join('').replace(/\s+/g, '');
+    o.addrEn = ep.join(' ').replace(/、/g, ', ').replace(/\s*,\s*/g, ', ').replace(/\bROOMS?(?=\d)/i, m => m + ' ').replace(/\s+/g, ' ').replace(/[ ,]+$/, '').trim().toUpperCase();
+    for (const k of Object.keys(o)) if (!all[k] && o[k]) all[k] = o[k];
+    o.accts = [];
+    B.forEach((l, i) => {
+      const m = l.match(OB_ACCT); if (!m) return;
+      let d = (l.slice(m.index + m[0].length).match(/\d[\d \-]{6,}\d/) || [])[0];
+      if (!d && B[i + 1] && /^\D{0,4}\d[\d \-]{6,}\d\D{0,8}$/.test(B[i + 1])) d = B[i + 1].match(/\d[\d \-]{6,}\d/)[0];
+      d = String(d || '').replace(/\D/g, ''); if (d.length < 8 || d.length > 30) return;
+      let c = obCur(l);
+      for (let j = i - 1; !c && j >= 0; j--) c = obCur(B[j]);
+      for (let j = i + 1; !c && j < B.length; j++) if (!OB_ACCT.test(B[j])) c = obCur(B[j]);
+      o.accts.push({ c, d });
+    });
+    if (!o.accts.length && (o.bankZh || o.bankEn || o.swift)) o.accts.push({ c: obCur(J), d: '' });
+    return o;
+  });
+  const out = [];
+  for (const o of per) for (const a of o.accts) {
+    if (a.d && out.some(x => x.account === a.d)) continue;
+    const cny = a.c === 'CNY', g = k => o[k] || all[k] || '';
+    out.push({
+      currency: a.c, account: a.d, bankName: cny ? (g('bankZh') || g('bankEn')) : (g('bankEn') || g('bankZh')),
+      holder: cny ? (zhName || co.nameZh || enName) : (enName || co.nameEn || zhName),
+      swift: cny ? '' : g('swift'), bankAddress: cny ? '' : (g('addrEn') || g('addrZh')), cnaps: cny ? g('cnaps') : ''
+    });
+  }
+  if (!out.length) return null;
+  const same = out.every(e => e.account && (co.banks || []).some(b => b && (b.currency || 'USD') === e.currency && digits(b.account) === e.account));
+  return { list: out.slice(0, 4), same };
+}
+function openOwnBank(ob) {
+  const co = S.co || {}, list = ob.list;
+  const curOpts = c => [...new Set(['USD', 'CNY', ...CURS, c || 'USD'])].map(x => [x, x === 'USD' ? 'USD · 수출 서류' : x === 'CNY' ? 'CNY · 国内·人民币 서류' : x]);
+  const nowOf = c => (co.banks || []).find(b => b && (b.currency || 'USD') === c && (b.account || b.bankName));
+  const blk = (b, i) => {
+    const k = f => `ob_${i}_${f}`, c = b.currency || 'USD', old = nowOf(c);
+    return `<div class="fsec full">${list.length > 1 ? `계좌 ${i + 1}` : '새 계좌'} · ${esc(c)}</div>
+      ${F('통화', sel(k('currency'), c, curOpts(c)))}${F('계좌번호', inp(k('account'), b.account, { mono: 1, ph: '증명서의 账号' }))}
+      ${F('은행명', inp(k('bankName'), b.bankName), 'full')}
+      ${F('예금주 (收款人)', inp(k('holder'), b.holder), 'full')}
+      ${c === 'CNY' ? F('行号 (联行号)', inp(k('cnaps'), b.cnaps, { mono: 1, ph: '12자리 · 국내 송금용' }), 'full') : `${F('SWIFT 코드', inp(k('swift'), b.swift, { mono: 1 }))}${F('은행 주소 (영문)', inp(k('bankAddress'), b.bankAddress), 'full')}`}
+      <div class="full row-s" style="white-space:normal">${old ? `지금 ${esc(c)} 서류에 들어가는 계좌: ${esc([old.bankName, old.account].filter(Boolean).join(' · '))}` : `지금은 ${esc(c)} 계좌가 비어 있어요`}</div>`;
+  };
+  const body = `${ob.fromPhoto ? '<div class="banner crit"><span>사진에서 읽은 글자라 틀릴 수 있어요. 계좌번호와 SWIFT를 증명서와 한 글자씩 맞춰 보고, 못 읽은 칸은 직접 채워 주세요.</span></div>' : ''}
+    <div class="banner info"><span>${ob.same ? '이미 회사 입금 계좌와 같아요.' : '은행 계좌 증명서에서 <b>우리 회사 입금 계좌</b>를 읽었어요.'} 바꾸면 견적서·PI·CI와 받을 돈 안내에 새 계좌가 들어가요. 이미 만든 서류도 다시 열면 새 계좌로 나와요.</span></div>
+    <form class="fgrid" id="ob-form" autocomplete="off">${list.map(blk).join('')}</form>
+    <div class="row-s" style="white-space:normal">예전 계좌는 서류에서 빠지고, 은행 문자·서류에서 우리 계좌를 알아보는 데만 남겨 둬요. 설정 → 회사 정보에서 언제든 고칠 수 있어요.</div>`;
+  openSheet('회사 입금 계좌 바꾸기', body, footStd(false, '회사 계좌 바꾸기'), {
+    mount: panel => {
+      sheetSave = async () => {
+        if (writeBlocked()) return false;
+        const v = readForm(panel), nb = [];
+        for (let i = 0; i < list.length; i++) {
+          const g = f => String(v[`ob_${i}_${f}`] || '').trim();
+          const acct = g('account').replace(/[\s\-]/g, ''); if (!acct) continue;
+          if (!/^\d{6,30}$/.test(acct)) { toast('계좌번호는 숫자만 넣어 주세요.', 'crit'); return false; }
+          const e = { currency: g('currency') || 'USD', bankName: g('bankName'), account: acct, holder: g('holder') };
+          if (g('swift')) e.swift = g('swift').toUpperCase().replace(/\s/g, '');
+          if (g('bankAddress')) e.bankAddress = g('bankAddress');
+          if (g('cnaps')) e.cnaps = g('cnaps').replace(/\D/g, '');
+          nb.push(e);
+        }
+        if (!nb.length) { toast('계좌번호를 넣어 주세요.', 'crit'); return false; }
+        const curs = new Set(nb.map(b => b.currency));
+        if (curs.size < nb.length) { toast('같은 통화의 계좌가 두 개예요. 통화를 확인해 주세요.', 'crit'); return false; }
+        const rank = c => c === 'USD' ? 0 : c === 'CNY' ? 1 : 2; nb.sort((a, b) => rank(a.currency) - rank(b.currency));
+        const prev = JSON.parse(JSON.stringify({ banks: co.banks || [], oldBanks: co.oldBanks || [] }));
+        const isNew = b => nb.some(n => digits(n.account) === digits(b.account));
+        const keep = (co.banks || []).filter(b => b && !curs.has(b.currency || 'USD'));
+        const gone = (co.banks || []).filter(b => b && curs.has(b.currency || 'USD') && b.account && !isNew(b)).map(b => Object.assign({}, b, { until: todayStr() }));
+        const olds = [...gone, ...(co.oldBanks || [])].filter((b, i, a) => b && b.account && !isNew(b) && a.findIndex(x => digits(x.account) === digits(b.account)) === i).slice(0, 12);
+        await saveCo({ banks: [...nb, ...keep], oldBanks: olds });
+        undoToast(`회사 입금 계좌를 바꿨어요 · ${nb.map(b => `${b.currency} ${b.account}`).join(', ')}`, async () => { try { await saveCo(prev); toast('되돌렸어요'); } catch (e) { } });
+        return true;
+      };
+    }
+  });
+}
+
 /* quick paste on the home screen: bank messages are recorded at once (with undo), anything else goes to smart input */
 async function quickHandle(text) {
   text = String(text || '').trim(); if (!text) return;
   if (dvIsReport(text)) { const q = $('#quick-in'); if (q) q.value = ''; S.quick = ''; openDevImport(text); return; }
+  { const ob = ownBankRead(text); if (ob) { const q = $('#quick-in'); if (q) q.value = ''; S.quick = ''; openOwnBank(ob); return; } }
   const blocks = splitSmsBlocks(text);
   const local = !parseBankScreenText(text).length && blocks.every(b => b.length <= 320) ? parseBankSms(text) : [];
   const ord = parseOrderText(text);
@@ -4717,8 +4847,8 @@ function cnUpper(v) {
   return s;
 }
 const DL = {
-  en: { messrs: 'MESSRS.', from: 'FROM', supplier: 'SUPPLIER', buyer: 'BUYER', seller: 'SELLER / SHIPPER', consignee: 'BUYER / CONSIGNEE', no: 'No.', date: 'Date', ref: 'Ref.', poNo: 'P.O. No.', valid: 'Valid until', desc: 'Description of Goods', hs: 'HS Code', qty: "Q'ty", price: 'Unit Price', amount: 'Amount', total: 'TOTAL', terms: 'Terms of Delivery', payment: 'Payment', delivery: 'Delivery', reqDate: 'Required Date', shipTo: 'Ship To', bankInfo: 'BANK INFORMATION', beneficiary: 'Beneficiary', bank: 'Bank', account: 'Account No.', swift: 'SWIFT', bankAddr: 'Bank Address', remarks: 'REMARKS', onBehalf: 'For and on behalf of', sign: 'Authorized Signature' },
-  zh: { messrs: '客户', from: '报价方', supplier: '供应商', buyer: '采购方', seller: '卖方', consignee: '买方', no: '编号', date: '日期', ref: '参考', poNo: '订单号', valid: '有效期至', desc: '品名 / 规格', hs: '海关编码', qty: '数量', price: '单价', amount: '金额', total: '合计', terms: '交货条款', payment: '付款方式', delivery: '交货期', reqDate: '交货日期', shipTo: '送货地址', bankInfo: '收款账户', beneficiary: '户名', bank: '开户行', account: '账号', swift: 'SWIFT', bankAddr: '银行地址', remarks: '备注', onBehalf: '', sign: '授权签字（盖章）' }
+  en: { messrs: 'MESSRS.', from: 'FROM', supplier: 'SUPPLIER', buyer: 'BUYER', seller: 'SELLER / SHIPPER', consignee: 'BUYER / CONSIGNEE', no: 'No.', date: 'Date', ref: 'Ref.', poNo: 'P.O. No.', valid: 'Valid until', desc: 'Description of Goods', hs: 'HS Code', qty: "Q'ty", price: 'Unit Price', amount: 'Amount', total: 'TOTAL', terms: 'Terms of Delivery', payment: 'Payment', delivery: 'Delivery', reqDate: 'Required Date', shipTo: 'Ship To', bankInfo: 'BANK INFORMATION', beneficiary: 'Beneficiary', bank: 'Bank', account: 'Account No.', swift: 'SWIFT', bankAddr: 'Bank Address', cnaps: 'Bank Code (CNAPS)', remarks: 'REMARKS', onBehalf: 'For and on behalf of', sign: 'Authorized Signature' },
+  zh: { messrs: '客户', from: '报价方', supplier: '供应商', buyer: '采购方', seller: '卖方', consignee: '买方', no: '编号', date: '日期', ref: '参考', poNo: '订单号', valid: '有效期至', desc: '品名 / 规格', hs: '海关编码', qty: '数量', price: '单价', amount: '金额', total: '合计', terms: '交货条款', payment: '付款方式', delivery: '交货期', reqDate: '交货日期', shipTo: '送货地址', bankInfo: '收款账户', beneficiary: '户名', bank: '开户行', account: '账号', swift: 'SWIFT', bankAddr: '银行地址', cnaps: '行号', remarks: '备注', onBehalf: '', sign: '授权签字（盖章）' }
 };
 const ZH_TITLE = { quote: '报价单', po: '采购订单' };
 
