@@ -3279,7 +3279,7 @@ function docNo(type, partnerName) {
 
 /* read the company's Excel forms: the settings sheet, logo and seal */
 const JSZIP_URL = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-const FORM_KEYS = [[/公司名称\s*CN|CN name/i, 'nameZh'], [/公司名称\s*EN|EN name/i, 'nameEn'], [/USCC|统一社会信用代码/i, 'bizNo'], [/注册地址|Registered/i, 'regAddressZh'], [/办公地址\s*CN/i, 'addressZh'], [/办公地址\s*EN/i, 'addressEn'], [/联系人\s*CN/i, 'contactZh'], [/联系人\s*EN/i, 'contactEn'], [/中国电话|China tel/i, 'tel'], [/韩国电话|Korea tel/i, 'telKr'], [/电子邮箱|Email/i, 'email'], [/法定代表人|Legal rep/i, 'legalRep'], [/CNY\s*开户行/i, 'cny.bankName'], [/CNY\s*账号/i, 'cny.account'], [/USD\s*收款人/i, 'usd.holder'], [/USD\s*账号/i, 'usd.account'], [/^SWIFT$/i, 'usd.swift'], [/USD\s*开户行/i, 'usd.bankName'], [/USD\s*银行地址/i, 'usd.bankAddress']];
+const FORM_KEYS = [[/公司名称\s*CN|CN name/i, 'nameZh'], [/公司名称\s*EN|EN name/i, 'nameEn'], [/USCC|统一社会信用代码/i, 'bizNo'], [/注册地址|Registered/i, 'regAddressZh'], [/办公地址\s*CN/i, 'addressZh'], [/办公地址\s*EN/i, 'addressEn'], [/联系人\s*CN/i, 'contactZh'], [/联系人\s*EN/i, 'contactEn'], [/中国电话|China tel/i, 'tel'], [/韩国电话|Korea tel/i, 'telKr'], [/电子邮箱|Email/i, 'email'], [/法定代表人|Legal rep/i, 'legalRep'], [/CNY\s*开户行/i, 'cny.bankName'], [/CNY\s*账号/i, 'cny.account'], [/USD\s*收款人/i, 'usd.holder'], [/USD\s*账号/i, 'usd.account'], [/^SWIFT$/i, 'usd.swift'], [/USD\s*开户行/i, 'usd.bankName'], [/USD\s*银行地址/i, 'usd.bankAddress'], [/CNY\s*行号|Bank\s*code/i, 'cny.cnaps']];
 async function readFormsWorkbook(file) {
   await loadScript(XLSX_URL);
   const buf = await file.arrayBuffer();
