@@ -773,7 +773,7 @@ let DB = null, SAMPLE = null, ASSETS = null;
 const COLS = ['partners', 'pos', 'ships', 'txns', 'docs', 'plans', 'products', 'todos'];
 
 /* ================= data layer: everything lives on this device (IndexedDB) ================= */
-const APP_ID = 'avory-desk', APP_BUILD = '2026.11.20-1';
+const APP_ID = 'avory-desk', APP_BUILD = '2026.11.21-1';
 let IDB = null; const FILE_URL = new Map();
 S.meta = {}; S.persisted = null;
 const bc = (() => { try { return new BroadcastChannel(APP_ID); } catch (e) { return null; } })();
@@ -4627,7 +4627,8 @@ function ownBankRead(text) {
       let c = obCur(l);
       for (let j = i - 1; !c && j >= 0; j--) c = obCur(B[j]);
       for (let j = i + 1; !c && j < B.length; j++) if (!OB_ACCT.test(B[j])) c = obCur(B[j]);
-      o.accts.push({ c, d });
+      const bm = l.match(/(?:余\s*额|잔\s*액|BALANCE)\s*:?\s*(-?[\d,]+(?:\.\d+)?)/i);
+      o.accts.push({ c, d, bal: bm ? bm[1].replace(/,/g, '') : '' });
     });
     if (!o.accts.length && (o.bankZh || o.bankEn || o.swift)) o.accts.push({ c: obCur(J), d: '' });
     return o;
@@ -4639,7 +4640,7 @@ function ownBankRead(text) {
     out.push({
       currency: a.c, account: a.d, bankName: cny ? (g('bankZh') || g('bankEn')) : (g('bankEn') || g('bankZh')),
       holder: cny ? (zhName || co.nameZh || enName) : (enName || co.nameEn || zhName),
-      swift: cny ? '' : g('swift'), bankAddress: cny ? '' : (g('addrEn') || g('addrZh')), cnaps: cny ? g('cnaps') : ''
+      swift: cny ? '' : g('swift'), bankAddress: cny ? '' : (g('addrEn') || g('addrZh')), cnaps: cny ? g('cnaps') : '', balance: a.bal || ''
     });
   }
   if (!out.length) return null;
@@ -4657,11 +4658,24 @@ function openOwnBank(ob) {
       ${F('은행명', inp(k('bankName'), b.bankName), 'full')}
       ${F('예금주 (收款人)', inp(k('holder'), b.holder), 'full')}
       ${c === 'CNY' ? F('行号 (联行号)', inp(k('cnaps'), b.cnaps, { mono: 1, ph: '12자리 · 국내 송금용' }), 'full') : `${F('SWIFT 코드', inp(k('swift'), b.swift, { mono: 1 }))}${F('은행 주소 (영문)', inp(k('bankAddress'), b.bankAddress), 'full')}`}
+      ${F(`지금 잔액 (${esc(c)})`, inp(k('bal'), b.balance, { type: 'number', ph: '모르면 비워 두세요' }), 'full', '적으면 자금 탭의 이 계좌 잔액이 이 금액으로 맞춰져요')}
       <div class="full row-s" style="white-space:normal">${old ? `지금 ${esc(c)} 서류에 들어가는 계좌: ${esc([old.bankName, old.account].filter(Boolean).join(' · '))}` : `지금은 ${esc(c)} 계좌가 비어 있어요`}</div>`;
   };
+  // accounts being left behind (by number, or by the old bank's name): offer to bring their balance to 0
+  const sameCur = b => list.some(n => (n.currency || 'USD') === (b.currency || 'USD'));
+  const leaving = [...(co.oldBanks || []), ...(co.banks || []).filter(b => b && b.account && sameCur(b) && !list.some(n => n.account && digits(n.account) === digits(b.account)))];
+  const oldDig = leaving.map(b => digits(b.account)).filter(Boolean);
+  const oldWords = [...new Set(leaving.map(b => (String(b.bankName || '').match(/[一-龥]{2,}?银行/) || [])[0] || (/BANK\s*OF\s*CHINA/i.test(b.bankName || '') ? '中国银行' : '')).filter(Boolean))];
+  const newDig = new Set(list.map(n => digits(n.account)).filter(Boolean));
+  const olds = accountBalances().filter(a => {
+    const d = digits(a.account), tl = acctTail(a.account);
+    if (d && newDig.has(d)) return false;
+    return (d && oldDig.some(o => o === d || (tl && o.endsWith(tl)))) || (a.bank && oldWords.some(w => a.bank.includes(w)));
+  });
+  const oldHTML = olds.length ? `<div class="fsec full">예전 계좌 잔액</div>${olds.map((a, j) => `<label class="check full"><input type="checkbox" name="ob_zero_${j}" ${a.bal !== 0 ? 'checked' : ''}><span>${esc(a.bank || '계좌')} <span class="mono">${esc(a.account || '')}</span> · 지금 ${a.bal === null ? '잔액 모름' : money(a.bal, a.cur)} → <b>0</b></span></label>`).join('')}` : '';
   const body = `${ob.fromPhoto ? '<div class="banner crit"><span>사진에서 읽은 글자라 틀릴 수 있어요. 계좌번호와 SWIFT를 증명서와 한 글자씩 맞춰 보고, 못 읽은 칸은 직접 채워 주세요.</span></div>' : ''}
-    <div class="banner info"><span>${ob.same ? '이미 회사 입금 계좌와 같아요.' : '은행 계좌 증명서에서 <b>우리 회사 입금 계좌</b>를 읽었어요.'} 바꾸면 견적서·PI·CI와 받을 돈 안내에 새 계좌가 들어가요. 이미 만든 서류도 다시 열면 새 계좌로 나와요.</span></div>
-    <form class="fgrid" id="ob-form" autocomplete="off">${list.map(blk).join('')}</form>
+    <div class="banner info"><span>${ob.same ? '이미 회사 입금 계좌와 같아요.' : '은행 계좌 증명서에서 <b>우리 회사 입금 계좌</b>를 읽었어요.'} 바꾸면 견적서·PI·CI와 받을 돈 안내에 새 계좌가 들어가요. 이미 만든 서류도 다시 열면 새 계좌로 나와요. 잔액을 적으면 자금 탭의 계좌 잔액도 맞춰요.</span></div>
+    <form class="fgrid" id="ob-form" autocomplete="off">${list.map(blk).join('')}${oldHTML}</form>
     <div class="row-s" style="white-space:normal">예전 계좌는 서류에서 빠지고, 은행 문자·서류에서 우리 계좌를 알아보는 데만 남겨 둬요. 설정 → 회사 정보에서 언제든 고칠 수 있어요.</div>`;
   openSheet('회사 입금 계좌 바꾸기', body, footStd(false, '회사 계좌 바꾸기'), {
     mount: panel => {
@@ -4686,9 +4700,24 @@ function openOwnBank(ob) {
         const isNew = b => nb.some(n => digits(n.account) === digits(b.account));
         const keep = (co.banks || []).filter(b => b && !curs.has(b.currency || 'USD'));
         const gone = (co.banks || []).filter(b => b && curs.has(b.currency || 'USD') && b.account && !isNew(b)).map(b => Object.assign({}, b, { until: todayStr() }));
-        const olds = [...gone, ...(co.oldBanks || [])].filter((b, i, a) => b && b.account && !isNew(b) && a.findIndex(x => digits(x.account) === digits(b.account)) === i).slice(0, 12);
-        await saveCo({ banks: [...nb, ...keep], oldBanks: olds });
-        undoToast(`회사 입금 계좌를 바꿨어요 · ${nb.map(b => `${b.currency} ${b.account}`).join(', ')}`, async () => { try { await saveCo(prev); toast('되돌렸어요'); } catch (e) { } });
+        const oldList = [...gone, ...(co.oldBanks || [])].filter((b, i, a) => b && b.account && !isNew(b) && a.findIndex(x => digits(x.account) === digits(b.account)) === i).slice(0, 12);
+        await saveCo({ banks: [...nb, ...keep], oldBanks: oldList });
+        // balances: a 'transfer' row (kept out of income and costs) that brings each account to the amount given
+        const now = new Date(), hm = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+        const zhShort = nb.map(b => (String(b.bankName || '').match(/[一-龥]{2,}?银行/) || [])[0]).find(Boolean) || '';
+        const bals = accountBalances(), rows = [];
+        const row = (bank, account, cur, from, to, note) => { const diff = Math.round((to - from) * 100) / 100; rows.push({ date: todayStr(), time: hm, bank, account, currency: cur, dir: diff < 0 ? 'out' : 'in', amount: Math.abs(diff), balance: to, category: 'transfer', counterparty: '', memo: `잔액 맞춤 · 계좌 변경 · ${note}`, source: 'manual' }); };
+        for (let i = 0; i < list.length; i++) {
+          const bv = v[`ob_${i}_bal`]; if (bv === '' || bv == null || isNaN(num(bv))) continue;
+          const acct = String(v[`ob_${i}_account`] || '').replace(/[\s\-]/g, ''); const e = nb.find(n => n.account === acct); if (!e) continue;
+          const a = bals.find(x => x.cur === e.currency && digits(x.account) === e.account);
+          if (a && a.bal !== null && Math.abs(a.bal - num(bv)) < 0.005) continue;
+          row((String(e.bankName || '').match(/[一-龥]{2,}?银行/) || [])[0] || zhShort || e.bankName, e.account, e.currency, a && a.bal !== null ? a.bal : 0, num(bv), '시작 잔액');
+        }
+        olds.forEach((a, j) => { if (v[`ob_zero_${j}`] && a.bal !== 0) row(a.bank, a.account, a.cur, a.bal || 0, 0, '잔액 0으로'); });
+        const ids = []; for (const r of rows) ids.push(await put('txns', r));
+        const msg = ob.same ? (rows.length ? `계좌 잔액 ${rows.length}개를 맞췄어요` : '회사 계좌는 이미 같아요') : `회사 입금 계좌를 바꿨어요 · ${nb.map(b => `${b.currency} ${b.account}`).join(', ')}${rows.length ? ` · 잔액 ${rows.length}개 맞춤` : ''}`;
+        undoToast(msg, async () => { try { for (const id of ids) await remove('txns', id); await saveCo(prev); toast('되돌렸어요'); } catch (e) { } });
         return true;
       };
     }
